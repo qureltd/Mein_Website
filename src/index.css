@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background-color: #ffffff;
+    color: #111111;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    line-height: 1.65;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-blue-mein text-white font-sora font-semibold px-7 py-3.5 rounded-full text-sm tracking-wide transition-all duration-200 hover:bg-blue-dark hover:shadow-lg hover:shadow-blue-mein/30 active:scale-95 inline-flex items-center gap-2;
+  }
+
+  .btn-secondary {
+    @apply border-2 border-charcoal text-charcoal font-sora font-semibold px-7 py-3.5 rounded-full text-sm tracking-wide transition-all duration-200 hover:bg-charcoal hover:text-white active:scale-95 inline-flex items-center gap-2;
+  }
+
+  .btn-outline-blue {
+    @apply border-2 border-blue-mein text-blue-mein font-sora font-semibold px-7 py-3.5 rounded-full text-sm tracking-wide transition-all duration-200 hover:bg-blue-mein hover:text-white active:scale-95 inline-flex items-center gap-2;
+  }
+
+  .btn-gold {
+    @apply bg-gold-mein text-charcoal font-sora font-semibold px-7 py-3.5 rounded-full text-sm tracking-wide transition-all duration-200 hover:bg-gold-dark hover:shadow-lg active:scale-95 inline-flex items-center gap-2;
+  }
+
+  .section-padding {
+    @apply px-5 md:px-10 lg:px-16 xl:px-20;
+  }
+
+  .container-tight {
+    @apply max-w-5xl mx-auto;
+  }
+
+  .container-wide {
+    @apply max-w-7xl mx-auto;
+  }
+
+  .handwritten {
+    font-family: 'Caveat', cursive;
+    font-weight: 600;
+  }
+
+  .tag-badge {
+    @apply inline-flex items-center gap-1.5 bg-blue-pale text-blue-mein text-xs font-sora font-semibold px-3 py-1.5 rounded-full uppercase tracking-widest;
+  }
+
+  .tag-badge-gold {
+    @apply inline-flex items-center gap-1.5 bg-gold-pale text-gold-dark text-xs font-sora font-semibold px-3 py-1.5 rounded-full uppercase tracking-widest;
+  }
+
+  .move-card {
+    @apply relative bg-white border-2 border-gray-support rounded-2xl p-7 cursor-pointer transition-all duration-300 hover:border-blue-mein hover:shadow-xl hover:shadow-blue-mein/10 hover:-translate-y-1;
+  }
+
+  .section-divider {
+    @apply w-12 h-1 bg-blue-mein rounded-full;
+  }
+
+  .text-gradient-blue {
+    @apply bg-gradient-to-r from-blue-mein to-blue-light bg-clip-text text-transparent;
+  }
+
+  .input-field {
+    @apply w-full bg-white border-2 border-gray-support rounded-xl px-4 py-3 font-sora text-sm text-charcoal placeholder-gray-mid focus:outline-none focus:border-blue-mein transition-colors duration-200;
+  }
+
+  .select-field {
+    @apply w-full bg-white border-2 border-gray-support rounded-xl px-4 py-3 font-sora text-sm text-charcoal focus:outline-none focus:border-blue-mein transition-colors duration-200 appearance-none;
+  }
+
+  .textarea-field {
+    @apply w-full bg-white border-2 border-gray-support rounded-xl px-4 py-3 font-sora text-sm text-charcoal placeholder-gray-mid focus:outline-none focus:border-blue-mein transition-colors duration-200 resize-none;
+  }
+}
+
+@layer utilities {
+  .animate-delay-100 { animation-delay: 100ms; }
+  .animate-delay-200 { animation-delay: 200ms; }
+  .animate-delay-300 { animation-delay: 300ms; }
+  .animate-delay-400 { animation-delay: 400ms; }
+  .animate-delay-500 { animation-delay: 500ms; }
+
+  .opacity-0-start {
+    opacity: 0;
+  }
+
+  .clip-portal {
+    clip-path: ellipse(50% 60% at 50% 50%);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2F6BFF;
+  border-radius: 10px;
+}
+
+/* Mobile sticky CTA spacing */
+@media (max-width: 768px) {
+  .with-mobile-cta {
+    padding-bottom: 88px;
+  }
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
