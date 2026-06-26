@@ -173,16 +173,24 @@ export default function HomePage() {
               </FadeUp>
 
               <FadeUp delay={460}>
-                <div className="mt-8 flex items-center gap-4 lg:hidden">
-                  <div className="relative flex-shrink-0 w-14 h-14">
-                    <div className="absolute inset-0 rounded-full border-2 border-dashed border-blue-mein/30" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <OpenMIcon size={30} />
+                {/* Mobile-only compact portal identity strip */}
+                <div className="mt-7 lg:hidden">
+                  <div className="flex items-center gap-4">
+                    {/* Small portal circle */}
+                    <div className="relative flex-shrink-0 w-16 h-16">
+                      <div className="absolute inset-0 rounded-full border-2 border-dashed border-blue-mein/40 animate-spin-slow" />
+                      <div className="absolute inset-[10%] rounded-full border border-dashed border-gold-mein/30" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <OpenMIcon size={32} />
+                      </div>
+                      {/* Small gold dot on orbit */}
+                      <div className="absolute top-0.5 right-2 w-2 h-2 rounded-full bg-gold-mein" />
                     </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <StickerNote text="Future me." rotate={-2} color="blue" />
-                    <MovementFragment text="Step in. Pick your move." className="text-sm text-gray-mid" />
+                    {/* One sticker + fragment */}
+                    <div className="flex flex-col gap-1.5">
+                      <StickerNote text="Future me." rotate={-2} color="blue" />
+                      <MovementFragment text="Step in. Pick your move." className="text-sm text-gray-mid" />
+                    </div>
                   </div>
                 </div>
               </FadeUp>
@@ -197,11 +205,11 @@ export default function HomePage() {
       </section>
 
       {/* ─── MOVE CARDS ───────────────────────────────────────────────── */}
-      <section className="relative bg-gray-support/30 py-20 md:py-28">
+      <section className="relative bg-gray-support/30 pt-12 pb-16 md:py-28">
         <MeinEnergyTexture />
         <div className="container-wide section-padding relative z-10">
           <FadeUp>
-            <div className="flex flex-col items-center text-center mb-14">
+            <div className="flex flex-col items-center text-center mb-10 md:mb-14">
               <SectionDivider />
               <h2 className="mt-5 font-sora font-extrabold text-3xl md:text-4xl text-charcoal">
                 Choose your move.
@@ -209,25 +217,30 @@ export default function HomePage() {
               <p className="mt-3 text-gray-dark max-w-lg font-sora">
                 You do not need to know every step. Choose one and start there.
               </p>
+              {/* Mobile-only swipe hint */}
+              <p className="mt-2 font-caveat text-gray-mid text-base md:hidden">
+                Swipe to see all moves.
+              </p>
             </div>
           </FadeUp>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {/* Mobile: horizontal snap-scroll. sm+: grid */}
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-5 px-5 no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-visible md:pb-0 md:mx-0 md:px-0 md:gap-5 items-stretch">
             {moveCards.map((card, i) => (
-              <FadeUp key={card.label} delay={i * 80}>
+              <FadeUp key={card.label} delay={i * 80} className="snap-start flex-shrink-0 w-[82vw] md:w-auto">
                 <Link
                   to={card.href}
                   className="move-card flex flex-col h-full group"
                   style={{
                     '--accent': card.accent,
-                    transform: `rotate(${i % 2 === 0 ? '-0.8' : '0.8'}deg)`,
+                    transform: `rotate(${i % 2 === 0 ? '-0.5' : '0.5'}deg)`,
                     transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
                   } as React.CSSProperties}
                   onMouseEnter={(e) => {
                     ;(e.currentTarget as HTMLElement).style.transform = 'rotate(0deg) translateY(-4px)'
                   }}
                   onMouseLeave={(e) => {
-                    ;(e.currentTarget as HTMLElement).style.transform = `rotate(${i % 2 === 0 ? '-0.8' : '0.8'}deg)`
+                    ;(e.currentTarget as HTMLElement).style.transform = `rotate(${i % 2 === 0 ? '-0.5' : '0.5'}deg)`
                   }}
                 >
                   <div className="flex items-start justify-between mb-4">
@@ -276,33 +289,39 @@ export default function HomePage() {
       </section>
 
       {/* ─── WHY JOIN MEIN? — BENEFIT BAND ───────────────────────────── */}
-      <section className="bg-gray-support/25 border-y border-gray-support">
-        <div className="container-wide section-padding py-8 md:py-10">
+      <section className="bg-gray-support/40 border-y border-gray-support">
+        <div className="container-wide section-padding py-9 md:py-11">
 
           {/* Desktop: two-column — heading left, pills + CTA right */}
           <div className="hidden md:grid md:grid-cols-[auto_1fr] md:gap-10 md:items-center">
-            <div className="flex-shrink-0">
-              <h2 className="font-sora font-extrabold text-2xl text-charcoal leading-tight">
-                Why join Mein?
-              </h2>
-              <p className="mt-1 font-caveat text-lg text-blue-mein">
-                One move can open a door.
-              </p>
+            <div className="flex-shrink-0 flex items-stretch gap-4">
+              {/* Left accent bar */}
+              <div className="w-1 rounded-full bg-blue-mein flex-shrink-0" />
+              <div>
+                <h2 className="font-sora font-extrabold text-2xl text-charcoal leading-tight">
+                  Why join Mein?
+                </h2>
+                <p className="mt-1 font-caveat text-lg text-blue-mein">
+                  One move can open a door.
+                </p>
+              </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
               {benefitStrip.map((item) => (
                 <span
                   key={item.label}
-                  className="inline-flex items-center gap-1.5 bg-white border border-gray-support rounded-full px-3.5 py-1.5 font-sora font-semibold text-charcoal text-xs"
+                  className="inline-flex items-center gap-1.5 bg-white border border-gray-support rounded-full px-4 py-2 font-sora font-semibold text-charcoal text-xs"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-gold-mein flex-shrink-0" />
                   {item.label}
                 </span>
               ))}
+              {/* Visual separator before CTA */}
+              <span className="w-px h-6 bg-gray-support mx-1 flex-shrink-0" />
               <Link
                 to="/join"
-                className="inline-flex items-center gap-1.5 bg-blue-mein text-white font-sora font-bold text-xs rounded-full px-4 py-1.5 hover:bg-blue-dark transition-colors ml-1"
+                className="inline-flex items-center gap-1.5 bg-blue-mein text-white font-sora font-bold text-xs rounded-full px-5 py-2 hover:bg-blue-dark transition-colors"
               >
                 Join the Movement
                 <ArrowRight size={11} />
@@ -312,18 +331,23 @@ export default function HomePage() {
 
           {/* Mobile: heading, scrollable pills, CTA */}
           <div className="md:hidden">
-            <h2 className="font-sora font-extrabold text-xl text-charcoal leading-tight">
-              Why join Mein?
-            </h2>
-            <p className="mt-0.5 mb-4 font-caveat text-lg text-blue-mein">
-              One move can open a door.
-            </p>
+            <div className="flex items-stretch gap-3 mb-4">
+              <div className="w-1 rounded-full bg-blue-mein flex-shrink-0" />
+              <div>
+                <h2 className="font-sora font-extrabold text-xl text-charcoal leading-tight">
+                  Why join Mein?
+                </h2>
+                <p className="mt-0.5 font-caveat text-lg text-blue-mein">
+                  One move can open a door.
+                </p>
+              </div>
+            </div>
 
             <div className="flex overflow-x-auto no-scrollbar gap-2 -mx-5 px-5 pb-1">
               {benefitStrip.map((item) => (
                 <span
                   key={item.label}
-                  className="flex-shrink-0 inline-flex items-center gap-1.5 bg-white border border-gray-support rounded-full px-3.5 py-1.5 font-sora font-semibold text-charcoal text-xs"
+                  className="flex-shrink-0 inline-flex items-center gap-1.5 bg-white border border-gray-support rounded-full px-4 py-2 font-sora font-semibold text-charcoal text-xs"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-gold-mein flex-shrink-0" />
                   {item.label}
@@ -333,7 +357,7 @@ export default function HomePage() {
 
             <Link
               to="/join"
-              className="mt-4 inline-flex items-center gap-1.5 bg-blue-mein text-white font-sora font-bold text-sm rounded-full px-5 py-2 hover:bg-blue-dark transition-colors"
+              className="mt-5 inline-flex items-center gap-1.5 bg-blue-mein text-white font-sora font-bold text-sm rounded-full px-5 py-2.5 hover:bg-blue-dark transition-colors"
             >
               Join the Movement
               <ArrowRight size={13} />
@@ -370,7 +394,7 @@ export default function HomePage() {
                 const styles = {
                   blue: 'bg-white text-blue-mein',
                   gold: 'bg-gold-mein text-charcoal',
-                  light: 'bg-white/12 text-white',
+                  light: 'bg-white/18 text-white',
                 }
                 return (
                   <FadeUp key={badge.text} delay={i * 70}>
@@ -401,16 +425,15 @@ export default function HomePage() {
             </FadeUp>
           </div>
         </div>
-
-        {/* Gradient bridge into The Wall */}
-        <div
-          className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
-          style={{ background: 'linear-gradient(to bottom, transparent, #111111)' }}
-        />
       </section>
 
       {/* ─── THE WALL — STORIES PREVIEW ───────────────────────────────── */}
       <section className="pt-12 pb-20 md:pt-16 md:pb-28 bg-charcoal overflow-hidden relative">
+        {/* Gradient bridge from blue manifesto — inside charcoal section so it's never clipped */}
+        <div
+          className="absolute top-0 left-0 right-0 h-16 pointer-events-none z-0"
+          style={{ background: 'linear-gradient(to bottom, #2F6BFF, #111111)' }}
+        />
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none select-none">
           <OpenMIcon size={560} className="absolute -right-16 -bottom-16" />
         </div>
