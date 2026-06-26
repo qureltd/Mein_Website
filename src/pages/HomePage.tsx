@@ -276,15 +276,15 @@ export default function HomePage() {
       </section>
 
       {/* ─── WHY JOIN MEIN? — BENEFIT TICKER ─────────────────────────── */}
-      <section className="py-10 md:py-14 bg-charcoal">
+      <section className="py-10 md:py-12 bg-charcoal">
         <div className="container-wide section-padding">
           <FadeUp>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-7">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
               <div>
                 <h2 className="font-sora font-extrabold text-xl md:text-2xl text-white">
                   Why join Mein?
                 </h2>
-                <p className="mt-1 font-caveat text-lg text-gold-mein">
+                <p className="mt-0.5 font-caveat text-lg text-gold-mein">
                   Because one move can open a door.
                 </p>
               </div>
@@ -295,16 +295,14 @@ export default function HomePage() {
             </div>
           </FadeUp>
 
-          {/* Scrollable benefit strip — mobile horizontal, desktop wrapping row */}
-          <div className="flex overflow-x-auto no-scrollbar gap-3 pb-1 -mx-5 px-5 md:mx-0 md:px-0 md:flex-wrap">
+          {/* Compact pill strip — borderless, mobile horizontal scroll */}
+          <div className="flex overflow-x-auto no-scrollbar gap-2 pb-1 -mx-5 px-5 md:mx-0 md:px-0 md:flex-wrap">
             {benefitStrip.map((item, i) => (
-              <FadeUp key={item.label} delay={i * 50} className="flex-shrink-0">
-                <div className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3 min-w-[200px] md:min-w-0">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gold-mein flex-shrink-0 mt-[7px]" />
-                  <div>
-                    <p className="font-sora font-bold text-white text-sm leading-tight">{item.label}</p>
-                    <p className="font-sora text-white/55 text-xs mt-0.5 leading-snug">{item.sub}</p>
-                  </div>
+              <FadeUp key={item.label} delay={i * 40} className="flex-shrink-0">
+                <div className="flex items-center gap-2 bg-white/8 rounded-full px-4 py-2.5 min-w-max">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gold-mein flex-shrink-0" />
+                  <span className="font-sora font-semibold text-white text-xs whitespace-nowrap">{item.label}</span>
+                  <span className="hidden sm:inline font-sora text-white/45 text-xs">— {item.sub}</span>
                 </div>
               </FadeUp>
             ))}
@@ -313,17 +311,17 @@ export default function HomePage() {
       </section>
 
       {/* ─── BELONGING MANIFESTO WALL ─────────────────────────────────── */}
-      <section className="relative py-20 md:py-28 bg-blue-mein overflow-hidden">
-        {/* Subtle Open M watermark */}
-        <div className="absolute inset-0 opacity-[0.06] pointer-events-none select-none flex items-center justify-center">
-          <OpenMIcon size={520} />
+      <section className="relative pt-20 pb-24 md:pt-28 md:pb-32 bg-blue-mein overflow-hidden">
+        {/* Watermark */}
+        <div className="absolute inset-0 opacity-[0.05] pointer-events-none select-none flex items-center justify-center">
+          <OpenMIcon size={560} />
         </div>
 
         <div className="container-wide section-padding relative z-10">
           <div className="max-w-4xl mx-auto">
             <FadeUp>
-              <div className="text-center mb-10 md:mb-14">
-                <p className="font-caveat text-white/70 text-xl mb-3">This space is yours.</p>
+              <div className="text-center mb-12 md:mb-16">
+                <p className="font-caveat text-white/65 text-xl mb-3">This space is yours.</p>
                 <h2 className="font-sora font-extrabold text-4xl md:text-5xl text-white leading-tight">
                   You belong here.
                 </h2>
@@ -333,18 +331,18 @@ export default function HomePage() {
               </div>
             </FadeUp>
 
-            {/* Expressive sticker badges — natural wrap with rotation */}
-            <div className="flex flex-wrap gap-3 justify-center">
+            {/* Sticker badges — natural wrap, small rotations */}
+            <div className="flex flex-wrap gap-3 md:gap-4 justify-center">
               {belongingBadges.map((badge, i) => {
                 const styles = {
                   blue: 'bg-white text-blue-mein',
                   gold: 'bg-gold-mein text-charcoal',
-                  light: 'bg-white/15 text-white border border-white/20',
+                  light: 'bg-white/12 text-white',
                 }
                 return (
                   <FadeUp key={badge.text} delay={i * 70}>
                     <span
-                      className={`inline-block ${styles[badge.color]} font-sora font-bold text-sm md:text-base px-5 py-3 rounded-2xl shadow-lg`}
+                      className={`inline-block ${styles[badge.color]} font-sora font-bold text-sm md:text-base px-5 py-3 rounded-2xl shadow-md`}
                       style={{ transform: `rotate(${badge.rotate})` }}
                     >
                       {badge.text}
@@ -354,14 +352,14 @@ export default function HomePage() {
               })}
             </div>
 
-            <FadeUp delay={480}>
-              <p className="text-center mt-10 font-caveat text-white/60 text-xl">
+            <FadeUp delay={500}>
+              <p className="text-center mt-12 font-caveat text-white/55 text-xl">
                 No perfect story needed. Start with one move.
               </p>
             </FadeUp>
 
-            <FadeUp delay={560}>
-              <div className="text-center mt-8">
+            <FadeUp delay={580}>
+              <div className="text-center mt-7">
                 <Link to="/join" className="btn-gold text-base py-4 px-9 inline-flex">
                   Become a Mein Mover
                   <ArrowRight size={16} />
@@ -370,10 +368,16 @@ export default function HomePage() {
             </FadeUp>
           </div>
         </div>
+
+        {/* Gradient bridge into The Wall */}
+        <div
+          className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
+          style={{ background: 'linear-gradient(to bottom, transparent, #111111)' }}
+        />
       </section>
 
       {/* ─── THE WALL — STORIES PREVIEW ───────────────────────────────── */}
-      <section className="py-20 md:py-28 bg-charcoal overflow-hidden relative">
+      <section className="pt-12 pb-20 md:pt-16 md:pb-28 bg-charcoal overflow-hidden relative">
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none select-none">
           <OpenMIcon size={560} className="absolute -right-16 -bottom-16" />
         </div>
