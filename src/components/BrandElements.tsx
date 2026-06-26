@@ -94,24 +94,39 @@ export function StickerNote({
   text,
   rotate = -2,
   color = 'white',
+  fold = false,
   className = '',
 }: {
   text: string
   rotate?: number
-  color?: 'white' | 'gold' | 'blue'
+  color?: 'white' | 'gold' | 'blue' | 'white-blue' | 'white-dark' | 'offwhite' | 'gold-bold'
+  fold?: boolean
   className?: string
 }) {
   const styles: Record<string, string> = {
     white: 'bg-white border border-gray-support shadow-md',
     gold: 'bg-gold-pale border border-yellow-200 shadow-md',
     blue: 'bg-blue-pale border border-blue-mein/20 shadow-md',
+    'white-blue': 'bg-white border-2 border-blue-mein shadow-[0_5px_20px_rgba(0,0,0,0.13)]',
+    'white-dark': 'bg-white border-2 border-charcoal/60 shadow-[0_5px_20px_rgba(0,0,0,0.13)]',
+    offwhite: 'bg-[#F8F6F1] border-2 border-[#9CA3AF]/65 shadow-[0_5px_18px_rgba(0,0,0,0.11)]',
+    'gold-bold': 'bg-gold-pale border-2 border-[#C8930A] shadow-[0_5px_20px_rgba(0,0,0,0.13)]',
   }
   return (
     <div
-      className={`inline-block px-3 py-1.5 rounded-lg font-caveat text-sm text-charcoal leading-tight select-none ${styles[color]} ${className}`}
+      className={`relative inline-block px-3 py-1.5 rounded-lg font-caveat text-sm text-charcoal leading-tight select-none overflow-hidden ${styles[color]} ${className}`}
       style={{ transform: `rotate(${rotate}deg)` }}
     >
       {text}
+      {fold && (
+        <svg
+          className="absolute bottom-0 right-0 pointer-events-none"
+          width="14" height="14" viewBox="0 0 14 14"
+          aria-hidden="true"
+        >
+          <path d="M14 0 L14 14 L0 14 Z" fill="rgba(0,0,0,0.09)" />
+        </svg>
+      )}
     </div>
   )
 }
