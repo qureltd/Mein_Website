@@ -9,6 +9,7 @@ import AboutPage from './pages/AboutPage'
 import JoinPage from './pages/JoinPage'
 import MakeYourMovePage from './pages/MakeYourMovePage'
 import StoriesPage from './pages/StoriesPage'
+import StoryDetailPage from './pages/StoryDetailPage'
 import FutureMePage from './pages/FutureMePage'
 import ShopPage from './pages/ShopPage'
 import WhyThisMattersPage from './pages/WhyThisMattersPage'
@@ -52,6 +53,7 @@ export default function App() {
         <Route path="/join" element={<SiteLayout><JoinPage /></SiteLayout>} />
         <Route path="/make-your-move" element={<SiteLayout><MakeYourMovePage /></SiteLayout>} />
         <Route path="/stories" element={<SiteLayout><StoriesPage /></SiteLayout>} />
+        <Route path="/stories/:id" element={<SiteLayout><StoryDetailPage /></SiteLayout>} />
         <Route path="/future-me" element={<SiteLayout><FutureMePage /></SiteLayout>} />
         <Route path="/shop" element={<SiteLayout><ShopPage /></SiteLayout>} />
         <Route path="/why-this-matters" element={<SiteLayout><WhyThisMattersPage /></SiteLayout>} />

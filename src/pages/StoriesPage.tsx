@@ -146,7 +146,7 @@ export default function StoriesPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {filtered.map((story, i) => (
                 <FadeUp key={story.id} delay={i * 60}>
-                  <div className="move-card flex flex-col group">
+                  <Link to={`/stories/${story.id}`} className="move-card flex flex-col group h-full">
                     {story.media_url && (
                       <div className="w-full h-44 rounded-xl bg-gray-support/50 overflow-hidden mb-4">
                         <img
@@ -174,7 +174,7 @@ export default function StoriesPage() {
                       <span className="text-xs text-gray-mid font-sora">{story.author_display_name}</span>
                       <ArrowRight size={16} className="text-blue-mein group-hover:translate-x-1 transition-transform" />
                     </div>
-                  </div>
+                  </Link>
                 </FadeUp>
               ))}
             </div>

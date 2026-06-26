@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { ArrowRight, Check } from 'lucide-react'
+import { ArrowRight, Check, AlertCircle } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
 import { OpenMIcon, HandwrittenAccent, SectionDivider } from '../components/BrandElements'
+import { supabase } from '../lib/supabase'
 
 const steps = [
   {
@@ -23,7 +23,7 @@ const steps = [
   {
     number: '04',
     title: 'Listen to your own belief',
-    body: 'Read it back. Watch it back. Hear yourself. This message is built from your own clarity, not someone else\'s expectations.',
+    body: "Read it back. Watch it back. Hear yourself. This message is built from your own clarity, not someone else's expectations.",
   },
   {
     number: '05',
@@ -32,13 +32,52 @@ const steps = [
   },
 ]
 
+const defaultForm = { name: '', email: '', age: '', guardianName: '', guardianEmail: '', message: '' }
+
 export default function FutureMePage() {
-  const [formData, setFormData] = useState({ name: '', email: '', message: '', age: '' })
+  const [form, setForm] = useState(defaultForm)
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const isUnder18 = form.age !== '' && parseInt(form.age) < 18
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    try {
+      const age = parseInt(form.age) || null
+      const under18 = age !== null && age < 18
+      const { error: dbError } = await supabase.from('submissions').insert({
+        name: form.name,
+        email: form.email,
+        age,
+        type: 'future_me',
+        title: 'Future Me Message',
+        content: form.message,
+        status: 'received',
+        is_under_18: under18,
+        guardian_name: under18 ? form.guardianName : null,
+        guardian_email: under18 ? form.guardianEmail : null,
+      })
+      if (dbError) throw dbError
+      setSubmitted(true)
+    } catch (err) {
+      setError('Something went wrong. Please try again.')
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="with-mobile-cta">
-      {/* ─── HERO ─── */}
+      {/* ─── HERO ─────────────────────────────────────────────────────── */}
       <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-white">
         <div className="absolute right-0 top-0 translate-x-1/3 opacity-[0.04] pointer-events-none">
           <OpenMIcon size={600} />
@@ -66,7 +105,7 @@ export default function FutureMePage() {
         </div>
       </section>
 
-      {/* ─── HOW IT WORKS ─── */}
+      {/* ─── HOW IT WORKS ─────────────────────────────────────────────── */}
       <section className="py-20 md:py-28 bg-gray-support/30">
         <div className="container-wide section-padding">
           <FadeUp>
@@ -97,7 +136,7 @@ export default function FutureMePage() {
         </div>
       </section>
 
-      {/* ─── SUBMIT YOUR FUTURE ME ─── */}
+      {/* ─── SUBMIT YOUR FUTURE ME ────────────────────────────────────── */}
       <section className="py-20 md:py-28 bg-white">
         <div className="container-wide section-padding max-w-2xl mx-auto">
           <FadeUp>
@@ -122,7 +161,7 @@ export default function FutureMePage() {
                   Your Future Me message is now under review. When approved, it could appear on The Wall to inspire others.
                 </p>
                 <button
-                  onClick={() => setSubmitted(false)}
+                  onClick={() => { setSubmitted(false); setForm(defaultForm) }}
                   className="mt-7 btn-outline-blue inline-flex"
                 >
                   Write another message
@@ -131,21 +170,16 @@ export default function FutureMePage() {
             </FadeUp>
           ) : (
             <FadeUp delay={100}>
-              <form
-                className="mt-8 space-y-4"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  setSubmitted(true)
-                }}
-              >
+              <form onSubmit={handleSubmit} className="mt-8 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Your Name *</label>
                     <input
                       type="text"
+                      name="name"
                       required
-                      value={formData.name}
-                      onChange={(e) => setFormData((f) => ({ ...f, name: e.target.value }))}
+                      value={form.name}
+                      onChange={handleChange}
                       placeholder="Your name"
                       className="input-field"
                     />
@@ -154,28 +188,101 @@ export default function FutureMePage() {
                     <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Email *</label>
                     <input
                       type="email"
+                      name="email"
                       required
-                      value={formData.email}
-                      onChange={(e) => setFormData((f) => ({ ...f, email: e.target.value }))}
+                      value={form.email}
+                      onChange={handleChange}
                       placeholder="your@email.com"
                       className="input-field"
                     />
                   </div>
                 </div>
+
                 <div>
-                  <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Your Future Me Message *</label>
-                  <textarea
+                  <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Age *</label>
+                  <input
+                    type="number"
+                    name="age"
                     required
-                    value={formData.message}
-                    onChange={(e) => setFormData((f) => ({ ...f, message: e.target.value }))}
+                    min={10}
+                    max={25}
+                    value={form.age}
+                    onChange={handleChange}
+                    placeholder="Your age"
+                    className="input-field"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">
+                    Your Future Me Message *
+                  </label>
+                  <textarea
+                    name="message"
+                    required
+                    value={form.message}
+                    onChange={handleChange}
                     rows={7}
                     placeholder={"Dear [your name],\n\nIn 10 years, you will have..."}
                     className="textarea-field"
                   />
                 </div>
-                <button type="submit" className="btn-primary w-full justify-center py-4">
-                  Send to My Future Self
-                  <ArrowRight size={16} />
+
+                {/* Under-18 guardian section */}
+                {isUnder18 && (
+                  <div className="bg-gold-pale border-2 border-gold-mein/30 rounded-2xl p-5">
+                    <div className="flex items-start gap-3 mb-4">
+                      <AlertCircle size={18} className="text-gold-dark mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-sora font-bold text-sm text-charcoal">We keep it safe. We need your guardian's details.</p>
+                        <p className="text-xs text-gray-dark mt-0.5 font-sora">
+                          Your message is safe with us. We'll contact your guardian before anything goes live.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Guardian's Name *</label>
+                        <input
+                          type="text"
+                          name="guardianName"
+                          required={isUnder18}
+                          value={form.guardianName}
+                          onChange={handleChange}
+                          placeholder="Parent / guardian name"
+                          className="input-field"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Guardian's Email *</label>
+                        <input
+                          type="email"
+                          name="guardianEmail"
+                          required={isUnder18}
+                          value={form.guardianEmail}
+                          onChange={handleChange}
+                          placeholder="guardian@email.com"
+                          className="input-field"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {error && (
+                  <div className="flex items-center gap-2.5 bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700 font-sora">
+                    <AlertCircle size={16} className="flex-shrink-0" />
+                    {error}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn-primary w-full justify-center py-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Sending...' : 'Send to My Future Self'}
+                  {!loading && <ArrowRight size={16} />}
                 </button>
               </form>
             </FadeUp>
