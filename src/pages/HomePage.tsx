@@ -275,72 +275,69 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── WHY JOIN MEIN? — MOVEMENT RIBBON ────────────────────────── */}
-      <section className="bg-white border-y border-gray-support">
-        <div className="container-wide section-padding py-5 md:py-0">
+      {/* ─── WHY JOIN MEIN? — BENEFIT BAND ───────────────────────────── */}
+      <section className="bg-gray-support/25 border-y border-gray-support">
+        <div className="container-wide section-padding py-8 md:py-10">
 
-          {/* Desktop: single-row ribbon layout */}
-          <div className="hidden md:flex items-center gap-0 min-h-[88px]">
-            {/* Label */}
-            <div className="flex-shrink-0 pr-6 border-r border-gray-support">
-              <p className="font-sora font-extrabold text-sm text-charcoal leading-tight">Why join Mein?</p>
-              <p className="font-caveat text-sm text-blue-mein mt-0.5">One move opens a door.</p>
+          {/* Desktop: two-column — heading left, pills + CTA right */}
+          <div className="hidden md:grid md:grid-cols-[auto_1fr] md:gap-10 md:items-center">
+            <div className="flex-shrink-0">
+              <h2 className="font-sora font-extrabold text-2xl text-charcoal leading-tight">
+                Why join Mein?
+              </h2>
+              <p className="mt-1 font-caveat text-lg text-blue-mein">
+                One move can open a door.
+              </p>
             </div>
 
-            {/* Benefit items with arrow separators */}
-            <div className="flex items-center flex-1 overflow-x-auto no-scrollbar px-5">
-              {benefitStrip.map((item, i) => (
-                <React.Fragment key={item.label}>
-                  <span className="flex-shrink-0 font-sora font-semibold text-charcoal text-xs whitespace-nowrap">
-                    {item.label}
-                  </span>
-                  {i < benefitStrip.length - 1 && (
-                    <span className="flex-shrink-0 mx-3 text-gold-mein font-bold text-xs select-none">→</span>
-                  )}
-                </React.Fragment>
+            <div className="flex flex-wrap items-center gap-2">
+              {benefitStrip.map((item) => (
+                <span
+                  key={item.label}
+                  className="inline-flex items-center gap-1.5 bg-white border border-gray-support rounded-full px-3.5 py-1.5 font-sora font-semibold text-charcoal text-xs"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-gold-mein flex-shrink-0" />
+                  {item.label}
+                </span>
               ))}
-            </div>
-
-            {/* CTA */}
-            <div className="flex-shrink-0 pl-6 border-l border-gray-support">
               <Link
                 to="/join"
-                className="inline-flex items-center gap-1.5 font-sora font-bold text-xs text-blue-mein hover:text-blue-dark transition-colors whitespace-nowrap"
+                className="inline-flex items-center gap-1.5 bg-blue-mein text-white font-sora font-bold text-xs rounded-full px-4 py-1.5 hover:bg-blue-dark transition-colors ml-1"
               >
                 Join the Movement
-                <ArrowRight size={12} />
+                <ArrowRight size={11} />
               </Link>
             </div>
           </div>
 
-          {/* Mobile: stacked header + horizontally scrollable ribbon */}
+          {/* Mobile: heading, scrollable pills, CTA */}
           <div className="md:hidden">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <p className="font-sora font-extrabold text-sm text-charcoal">Why join Mein?</p>
-                <p className="font-caveat text-sm text-blue-mein">One move opens a door.</p>
-              </div>
-              <Link
-                to="/join"
-                className="inline-flex items-center gap-1 font-sora font-bold text-xs text-blue-mein flex-shrink-0"
-              >
-                Join
-                <ArrowRight size={11} />
-              </Link>
-            </div>
-            {/* Scrollable pill row */}
-            <div className="flex overflow-x-auto no-scrollbar gap-0 -mx-5 px-5 pb-1">
-              {benefitStrip.map((item, i) => (
-                <React.Fragment key={item.label}>
-                  <span className="flex-shrink-0 font-sora font-semibold text-charcoal text-xs whitespace-nowrap">
-                    {item.label}
-                  </span>
-                  {i < benefitStrip.length - 1 && (
-                    <span className="flex-shrink-0 mx-2.5 text-gold-mein font-bold text-xs select-none">→</span>
-                  )}
-                </React.Fragment>
+            <h2 className="font-sora font-extrabold text-xl text-charcoal leading-tight">
+              Why join Mein?
+            </h2>
+            <p className="mt-0.5 mb-4 font-caveat text-lg text-blue-mein">
+              One move can open a door.
+            </p>
+
+            <div className="flex overflow-x-auto no-scrollbar gap-2 -mx-5 px-5 pb-1">
+              {benefitStrip.map((item) => (
+                <span
+                  key={item.label}
+                  className="flex-shrink-0 inline-flex items-center gap-1.5 bg-white border border-gray-support rounded-full px-3.5 py-1.5 font-sora font-semibold text-charcoal text-xs"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-gold-mein flex-shrink-0" />
+                  {item.label}
+                </span>
               ))}
             </div>
+
+            <Link
+              to="/join"
+              className="mt-4 inline-flex items-center gap-1.5 bg-blue-mein text-white font-sora font-bold text-sm rounded-full px-5 py-2 hover:bg-blue-dark transition-colors"
+            >
+              Join the Movement
+              <ArrowRight size={13} />
+            </Link>
           </div>
 
         </div>
