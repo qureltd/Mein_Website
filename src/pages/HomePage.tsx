@@ -763,7 +763,14 @@ export default function HomePage() {
                 What's Mein?
               </Link>
             </div>
-            <p className="mt-6 font-caveat text-xl text-gray-mid">It's you, upgraded.</p>
+            <div className="mt-5 flex flex-col items-center gap-2">
+              {/* Hand-drawn arrow pointing down at the tagline */}
+              <svg width="28" height="36" viewBox="0 0 28 36" fill="none" aria-hidden="true" className="opacity-30">
+                <path d="M14 2C13 10 12 18 11 24C10 28 9 31 8 34" stroke="#111111" strokeWidth="2" strokeLinecap="round" fill="none" />
+                <path d="M4 30L8 34L12 30" stroke="#111111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <p className="font-caveat text-2xl md:text-3xl text-charcoal">It's you, upgraded.</p>
+            </div>
           </FadeUp>
         </div>
       </section>
