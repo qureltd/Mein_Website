@@ -482,14 +482,23 @@ export default function HomePage() {
       </section>
 
       {/* ─── BELONGING MANIFESTO WALL ─────────────────────────────────── */}
-      <section className="relative py-16 md:py-20 bg-blue-mein overflow-hidden">
-        {/* Watermark */}
-        <div className="absolute inset-0 opacity-[0.05] pointer-events-none select-none flex items-center justify-center">
-          <OpenMIcon size={560} />
+      <section
+        className="relative py-14 md:py-20 overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #2F6BFF 0%, #2F6BFF 60%, #2456E8 100%)' }}
+      >
+        {/* Large intentional Open M watermark — anchored to right side behind image */}
+        <div className="absolute right-[-80px] top-1/2 -translate-y-1/2 opacity-[0.08] pointer-events-none select-none">
+          <OpenMIcon size={680} />
         </div>
 
+        {/* Soft radial glow behind image area */}
+        <div
+          className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at 70% 50%, rgba(255,255,255,0.07) 0%, transparent 70%)' }}
+        />
+
         <div className="relative z-10 max-w-7xl mx-auto px-5 md:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-10 lg:gap-14 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-0 lg:gap-14 items-center">
 
             {/* Left — text, badges, CTA */}
             <div>
@@ -542,11 +551,12 @@ export default function HomePage() {
 
             {/* Right — youth group image */}
             <FadeUp delay={300}>
-              <div className="flex justify-center lg:justify-end">
+              <div className="flex justify-center lg:justify-end mt-8 lg:mt-0">
                 <img
                   src={meinYouthCrew}
                   alt="Diverse young Mein Movers wearing Mein gear and celebrating together"
-                  className="w-[120%] max-w-none sm:w-full lg:w-full lg:max-w-none object-contain drop-shadow-2xl pointer-events-none select-none"
+                  className="w-[115%] max-w-none sm:w-full lg:w-full lg:max-w-none object-contain drop-shadow-2xl pointer-events-none select-none"
+                  style={{ filter: 'drop-shadow(0 24px 48px rgba(0,0,0,0.35))' }}
                 />
               </div>
             </FadeUp>
