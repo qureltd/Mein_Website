@@ -8,27 +8,42 @@ const steps = [
   {
     number: '01',
     title: 'See yourself',
-    body: 'Imagine the person you are becoming. Fast forward 10 years. Who are you?',
+    body: 'Picture the person you are becoming. Fast forward 10 years. Who are you?',
+    bg: 'bg-blue-pale',
+    accent: 'text-blue-mein',
+    rotate: '-rotate-1',
   },
   {
     number: '02',
     title: 'Step in',
-    body: 'Answer as your future self. Not who you are today — who you are becoming.',
+    body: 'Answer like future you is already here. Use "I am," not "I want to be."',
+    bg: 'bg-gold-pale',
+    accent: 'text-gold-dark',
+    rotate: 'rotate-1',
   },
   {
     number: '03',
     title: 'Say it',
-    body: 'Write your message. Speak directly to the person you are right now.',
+    body: 'Create the message you need to hear. Speak it directly to yourself, right now.',
+    bg: 'bg-white',
+    accent: 'text-blue-mein',
+    rotate: '-rotate-1',
   },
   {
     number: '04',
     title: 'Keep the proof',
-    body: 'Read it back. Hear yourself. Use it when you need belief.',
+    body: 'Save it for the days you need belief. Your own voice, your own clarity.',
+    bg: 'bg-gold-pale',
+    accent: 'text-gold-dark',
+    rotate: 'rotate-1',
   },
   {
     number: '05',
     title: 'Make one move',
-    body: 'Turn the future into action today. One step toward that version of you.',
+    body: 'Turn the message into one step today. The future starts with a single action.',
+    bg: 'bg-blue-pale',
+    accent: 'text-blue-mein',
+    rotate: '-rotate-1',
   },
 ]
 
@@ -39,6 +54,7 @@ export default function FutureMePage() {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [expandedStep, setExpandedStep] = useState<string | null>(null)
 
   const isUnder18 = form.age !== '' && parseInt(form.age) < 18
 
@@ -169,86 +185,107 @@ export default function FutureMePage() {
         </div>
       </section>
 
-      {/* ─── THE EXPERIENCE ───────────────────────────────────────────── */}
-      <section className="py-20 md:py-28 bg-white">
+      {/* ─── YOUR MESSAGE FROM FUTURE YOU ────────────────────────────── */}
+      <section className="py-20 md:py-28 bg-white overflow-hidden">
         <div className="container-wide section-padding">
           <FadeUp>
             <div className="text-center mb-14">
               <SectionDivider className="mx-auto" />
               <h2 className="mt-5 font-sora font-extrabold text-3xl md:text-4xl text-charcoal">
-                The experience.
+                Your message from future you.
               </h2>
-              <p className="mt-2 text-gray-mid font-sora text-sm">Five steps. Your own voice.</p>
+              <p className="mt-2 text-gray-mid font-sora text-sm">
+                Five simple moves. One future-facing message.
+              </p>
             </div>
           </FadeUp>
 
-          {/* Mobile: vertical path. Desktop: alternating. */}
-          <div className="max-w-3xl mx-auto">
-
-            {/* Mobile layout — simple vertical cards with dashed connector */}
-            <div className="md:hidden space-y-0">
-              {steps.map((step, i) => (
-                <FadeUp key={step.number} delay={i * 80}>
-                  <div className="flex gap-4">
-                    {/* Connector column */}
-                    <div className="flex flex-col items-center flex-shrink-0 w-10">
-                      <div className="w-10 h-10 rounded-xl bg-blue-pale flex items-center justify-center flex-shrink-0">
-                        <span className="font-sora font-bold text-blue-mein text-xs">{step.number}</span>
+          {/* Mobile: clean stacked cards */}
+          <div className="md:hidden max-w-sm mx-auto space-y-4">
+            {steps.map((step, i) => {
+              const isOpen = expandedStep === step.number
+              return (
+                <FadeUp key={step.number} delay={i * 70}>
+                  <button
+                    onClick={() => setExpandedStep(isOpen ? null : step.number)}
+                    className={`w-full text-left rounded-2xl border border-gray-support shadow-sm transition-all duration-300 overflow-hidden ${step.bg} ${isOpen ? 'shadow-md' : ''}`}
+                  >
+                    <div className="px-6 py-5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className={`font-sora font-bold text-xs uppercase tracking-widest ${step.accent}`}>
+                            {step.number}
+                          </span>
+                          <p className={`font-caveat text-xl leading-none ${step.accent}`}>{step.title}</p>
+                        </div>
+                        <span className={`text-sm font-sora transition-transform duration-300 ${isOpen ? 'rotate-180' : ''} ${step.accent}`}>
+                          ↓
+                        </span>
                       </div>
-                      {i < steps.length - 1 && (
-                        <div className="flex-1 mt-1 mb-1" style={{ width: 1, borderLeft: '2px dashed rgba(47,107,255,0.2)', minHeight: 28 }} />
+                      {isOpen && (
+                        <p className="mt-3 text-sm text-gray-dark font-sora leading-relaxed border-t border-black/5 pt-3">
+                          {step.body}
+                        </p>
                       )}
                     </div>
-                    {/* Card */}
-                    <div className="flex-1 pb-5">
-                      <div className="bg-gray-support/20 rounded-2xl p-5 border border-gray-support hover:border-blue-mein transition-colors duration-300">
-                        <HandwrittenAccent text={step.title} className="text-xl block mb-1" />
-                        <p className="text-sm text-gray-dark font-sora leading-relaxed">{step.body}</p>
-                      </div>
-                    </div>
-                  </div>
+                  </button>
                 </FadeUp>
-              ))}
+              )
+            })}
+          </div>
+
+          {/* Desktop: staggered scattered card layout */}
+          <div className="hidden md:block relative max-w-4xl mx-auto" style={{ minHeight: 640 }}>
+            {/* Faint Open M watermark behind cards */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+              <OpenMIcon size={340} className="opacity-[0.03]" />
             </div>
 
-            {/* Desktop layout — alternating left/right with dashed centre line */}
-            <div className="hidden md:block relative">
-              {/* Dashed centre line */}
-              <div
-                className="absolute left-1/2 top-6 bottom-6 -translate-x-1/2 pointer-events-none"
-                style={{ width: 1, borderLeft: '2px dashed rgba(47,107,255,0.2)' }}
-              />
+            {steps.map((step, i) => {
+              // Stagger positions: two columns left/right, offset vertically, subtle rotation
+              const positions = [
+                { top: '0%',   left: '0%',   width: '42%' },
+                { top: '8%',   left: '56%',  width: '42%' },
+                { top: '36%',  left: '12%',  width: '42%' },
+                { top: '44%',  left: '54%',  width: '42%' },
+                { top: '73%',  left: '24%',  width: '42%' },
+              ]
+              const pos = positions[i]
+              const isOpen = expandedStep === step.number
 
-              <div className="space-y-8">
-                {steps.map((step, i) => {
-                  const isLeft = i % 2 === 0
-                  return (
-                    <FadeUp key={step.number} delay={i * 80}>
-                      <div className={`flex items-center gap-6 ${isLeft ? 'flex-row' : 'flex-row-reverse'}`}>
-                        {/* Card */}
-                        <div className="flex-1">
-                          <div className="bg-gray-support/20 rounded-2xl p-6 border border-gray-support hover:border-blue-mein hover:shadow-md transition-all duration-300">
-                            <div className="flex items-center gap-3 mb-2">
-                              <div className="w-9 h-9 rounded-xl bg-blue-pale flex items-center justify-center flex-shrink-0">
-                                <span className="font-sora font-bold text-blue-mein text-xs">{step.number}</span>
-                              </div>
-                              <HandwrittenAccent text={step.title} className="text-xl" />
-                            </div>
-                            <p className="text-sm text-gray-dark font-sora leading-relaxed">{step.body}</p>
-                          </div>
+              return (
+                <FadeUp key={step.number} delay={i * 90}>
+                  <button
+                    onClick={() => setExpandedStep(isOpen ? null : step.number)}
+                    className={`absolute text-left rounded-2xl border shadow-md transition-all duration-300 group ${step.bg} ${step.rotate} ${
+                      isOpen
+                        ? 'shadow-xl scale-[1.03] border-blue-mein/30 z-10'
+                        : 'border-gray-support hover:shadow-lg hover:scale-[1.02] hover:z-10'
+                    }`}
+                    style={{ top: pos.top, left: pos.left, width: pos.width }}
+                  >
+                    <div className="px-6 py-5">
+                      {/* Card header */}
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div>
+                          <p className={`font-sora text-[10px] font-bold uppercase tracking-[0.18em] mb-1 ${step.accent}`}>
+                            Move {step.number}
+                          </p>
+                          <p className={`font-caveat text-2xl leading-tight ${step.accent}`}>{step.title}</p>
                         </div>
-                        {/* Centre dot */}
-                        <div className="flex-shrink-0 w-4 flex justify-center">
-                          <div className="w-3 h-3 rounded-full bg-blue-mein ring-4 ring-blue-pale" />
-                        </div>
-                        {/* Spacer */}
-                        <div className="flex-1" />
+                        <span className={`font-sora text-xs mt-1 flex-shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''} ${step.accent} opacity-60`}>
+                          ↓
+                        </span>
                       </div>
-                    </FadeUp>
-                  )
-                })}
-              </div>
-            </div>
+                      {/* Body — always visible on desktop */}
+                      <p className="text-sm text-gray-dark font-sora leading-relaxed">
+                        {step.body}
+                      </p>
+                    </div>
+                  </button>
+                </FadeUp>
+              )
+            })}
           </div>
         </div>
       </section>
