@@ -196,7 +196,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── MOVE CARDS ───────────────────────────────────────────────── */}
-      <section className="relative bg-gray-support/30 py-20 md:py-28 overflow-hidden">
+      <section className="relative bg-gray-support/30 py-20 md:py-28">
         {/* Youth energy texture — artwork-inspired decorative fragments */}
         <MeinEnergyTexture />
         <div className="container-wide section-padding relative z-10">
