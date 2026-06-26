@@ -489,7 +489,7 @@ export default function HomePage() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-5 md:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-10 lg:gap-14 items-center">
 
             {/* Left — text, badges, CTA */}
             <div>
@@ -546,7 +546,7 @@ export default function HomePage() {
                 <img
                   src={meinYouthCrew}
                   alt="Diverse young Mein Movers wearing Mein gear and celebrating together"
-                  className="w-[115%] max-w-none sm:w-full lg:max-w-2xl object-contain drop-shadow-2xl pointer-events-none select-none"
+                  className="w-[120%] max-w-none sm:w-full lg:w-full lg:max-w-none object-contain drop-shadow-2xl pointer-events-none select-none"
                 />
               </div>
             </FadeUp>
