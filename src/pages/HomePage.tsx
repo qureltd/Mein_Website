@@ -487,7 +487,10 @@ export default function HomePage() {
         style={{ background: 'linear-gradient(135deg, #2F6BFF 0%, #2F6BFF 60%, #2456E8 100%)' }}
       >
         {/* Large intentional Open M watermark — anchored to right side behind image */}
-        <div className="absolute right-[-80px] top-1/2 -translate-y-1/2 opacity-[0.08] pointer-events-none select-none">
+        <div
+          className="absolute right-[-80px] top-1/2 -translate-y-1/2 opacity-[0.13] pointer-events-none select-none"
+          style={{ filter: 'brightness(0) invert(1)' }}
+        >
           <OpenMIcon size={680} />
         </div>
 
