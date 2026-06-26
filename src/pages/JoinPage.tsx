@@ -33,9 +33,6 @@ export default function JoinPage() {
         </div>
         <div className="container-wide section-padding relative z-10">
           <FadeUp>
-            <span className="inline-flex items-center text-xs font-sora font-semibold px-3 py-1.5 rounded-full uppercase tracking-widest bg-white/20 text-white mb-5">
-              Join Mein
-            </span>
             <h1 className="font-sora font-extrabold text-5xl md:text-6xl text-white leading-tight max-w-3xl">
               Become a Mein{' '}
               <HandwrittenAccent text="Mover." className="text-5xl md:text-6xl text-white/90" />

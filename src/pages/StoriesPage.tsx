@@ -63,9 +63,6 @@ export default function StoriesPage() {
         </div>
         <div className="container-wide section-padding relative z-10">
           <FadeUp>
-            <span className="inline-flex items-center text-xs font-sora font-semibold px-3 py-1.5 rounded-full uppercase tracking-widest bg-white/10 text-white mb-5">
-              The Wall
-            </span>
             <h1 className="font-sora font-extrabold text-5xl md:text-6xl text-white leading-tight">
               Real moves.<br />
               <HandwrittenAccent text="Real stories." className="text-5xl md:text-6xl text-gold-mein" />

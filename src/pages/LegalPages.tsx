@@ -10,7 +10,6 @@ export default function PrivacyPage() {
         </div>
         <div className="container-wide section-padding relative z-10 max-w-3xl">
           <FadeUp>
-            <span className="tag-badge mb-5 inline-flex">Legal</span>
             <h1 className="font-sora font-extrabold text-4xl md:text-5xl text-charcoal">Privacy Policy</h1>
             <p className="mt-3 text-gray-mid text-sm font-sora">Last updated: {new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
           </FadeUp>
@@ -48,7 +47,6 @@ export function TermsPage() {
         </div>
         <div className="container-wide section-padding relative z-10 max-w-3xl">
           <FadeUp>
-            <span className="tag-badge mb-5 inline-flex">Legal</span>
             <h1 className="font-sora font-extrabold text-4xl md:text-5xl text-charcoal">Terms of Use</h1>
             <p className="mt-3 text-gray-mid text-sm font-sora">Last updated: {new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
           </FadeUp>

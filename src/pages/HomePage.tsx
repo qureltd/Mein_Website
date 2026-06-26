@@ -72,7 +72,6 @@ export default function HomePage() {
             <FadeUp>
               <div className="flex items-center gap-2 mb-6">
                 <StarAccent />
-                <span className="tag-badge">Youth Movement</span>
                 <span className="font-caveat text-gray-mid text-base ml-1">Create. Express. Build. Become.</span>
               </div>
             </FadeUp>

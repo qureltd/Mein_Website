@@ -25,7 +25,6 @@ export default function WhyThisMattersPage() {
         </div>
         <div className="container-wide section-padding relative z-10 max-w-3xl">
           <FadeUp>
-            <span className="tag-badge mb-5 inline-flex">For Parents & Partners</span>
             <h1 className="font-sora font-extrabold text-5xl md:text-6xl text-charcoal leading-tight">
               Young people need more than{' '}
               <HandwrittenAccent text="motivation." className="text-5xl md:text-6xl" />

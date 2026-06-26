@@ -22,7 +22,6 @@ export default function ShopPage() {
         </div>
         <div className="container-wide section-padding relative z-10 max-w-3xl">
           <FadeUp>
-            <span className="tag-badge mb-5 inline-flex">Drop Coming</span>
             <h1 className="font-sora font-extrabold text-5xl md:text-6xl text-charcoal leading-tight">
               Wear what{' '}
               <HandwrittenAccent text="you're building." className="text-5xl md:text-6xl" />

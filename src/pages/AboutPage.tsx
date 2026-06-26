@@ -47,7 +47,6 @@ export default function AboutPage() {
         </div>
         <div className="container-wide section-padding relative z-10">
           <FadeUp>
-            <span className="tag-badge mb-5 inline-flex">What's Mein?</span>
             <h1 className="font-sora font-extrabold text-5xl md:text-6xl text-charcoal leading-tight max-w-3xl">
               Mein is for the person{' '}
               <HandwrittenAccent text="you're becoming." className="text-5xl md:text-6xl" />

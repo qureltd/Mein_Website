@@ -49,7 +49,6 @@ export default function CommunityRulesPage() {
         </div>
         <div className="container-wide section-padding relative z-10 max-w-3xl">
           <FadeUp>
-            <span className="tag-badge mb-5 inline-flex">Community Rules</span>
             <h1 className="font-sora font-extrabold text-5xl md:text-6xl text-charcoal leading-tight">
               This movement is built on{' '}
               <HandwrittenAccent text="respect." className="text-5xl md:text-6xl" />
