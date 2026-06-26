@@ -482,7 +482,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── BELONGING MANIFESTO WALL ─────────────────────────────────── */}
-      <section className="relative pt-20 pb-0 md:pt-28 bg-blue-mein overflow-hidden">
+      <section className="relative pt-16 pb-0 md:pt-24 bg-blue-mein overflow-hidden">
         {/* Watermark */}
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none select-none flex items-center justify-center">
           <OpenMIcon size={560} />
@@ -491,7 +491,7 @@ export default function HomePage() {
         <div className="container-wide section-padding relative z-10">
           <div className="max-w-4xl mx-auto">
             <FadeUp>
-              <div className="text-center mb-12 md:mb-16">
+              <div className="text-center mb-10 md:mb-12">
                 <p className="font-caveat text-white/80 text-2xl mb-3">This space is yours.</p>
                 <h2 className="font-sora font-extrabold text-4xl md:text-5xl text-white leading-tight">
                   You belong here.
@@ -524,13 +524,13 @@ export default function HomePage() {
             </div>
 
             <FadeUp delay={500}>
-              <p className="text-center mt-12 font-caveat text-white/75 text-2xl">
+              <p className="text-center mt-10 font-caveat text-white/75 text-2xl">
                 No perfect story needed. Start with one move.
               </p>
             </FadeUp>
 
             <FadeUp delay={580}>
-              <div className="text-center mt-7">
+              <div className="text-center mt-6">
                 <Link to="/join" className="btn-gold text-base py-4 px-9 inline-flex">
                   Become a Mein Mover
                   <ArrowRight size={16} />
@@ -540,13 +540,14 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Youth crew image — anchored to bottom, peeks up into view */}
-        <FadeUp delay={660}>
-          <div className="relative z-10 mt-12 md:mt-16 flex justify-center">
+        {/* Youth crew image — sits close below CTA, anchored to section bottom */}
+        <FadeUp delay={640}>
+          <div className="relative z-10 mt-10 md:mt-12 flex justify-center overflow-hidden">
             <img
               src={meinYouthCrew}
               alt="Diverse young Mein Movers wearing Mein gear and celebrating together"
-              className="w-full max-w-4xl object-contain object-bottom pointer-events-none select-none mix-blend-multiply max-h-72 md:max-h-none"
+              className="w-[115%] max-w-none md:w-full md:max-w-5xl object-contain object-top pointer-events-none select-none mix-blend-multiply -mb-2"
+              style={{ maxHeight: '420px' }}
             />
           </div>
         </FadeUp>
