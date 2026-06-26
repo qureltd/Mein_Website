@@ -110,7 +110,7 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} Mein. All rights reserved.
           </p>
           <p className="font-caveat text-white/30 text-base">
-            Building me. Becoming me.
+            Mein is for the person you're becoming.
           </p>
         </div>
       </div>

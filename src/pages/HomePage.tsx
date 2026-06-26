@@ -8,6 +8,8 @@ import {
   SectionDivider,
   StarAccent,
   ConsentBadge,
+  StickerNote,
+  MovementFragment,
 } from '../components/BrandElements'
 import PortalZone from '../components/PortalZone'
 
@@ -61,6 +63,28 @@ const whyCards = [
   { text: 'You are still figuring things out' },
   { text: 'You want to be part of something positive' },
   { text: 'You want your future to feel possible' },
+]
+
+const cardDoodles = [
+  // Create — pencil strokes
+  <svg key="d0" width="60" height="60" viewBox="0 0 60 60" fill="none" aria-hidden="true">
+    <line x1="12" y1="50" x2="50" y2="12" stroke="#2F6BFF" strokeWidth="2.5" strokeLinecap="round" />
+    <line x1="18" y1="55" x2="55" y2="18" stroke="#2F6BFF" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="5 6" />
+  </svg>,
+  // Speak — sound wave
+  <svg key="d1" width="60" height="60" viewBox="0 0 60 60" fill="none" aria-hidden="true">
+    <path d="M6 30Q16 18 26 30Q36 42 46 30Q52 24 56 30" stroke="#111111" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+    <path d="M10 40Q20 28 30 40Q40 50 50 40" stroke="#111111" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+  </svg>,
+  // Build — bar chart columns
+  <svg key="d2" width="60" height="60" viewBox="0 0 60 60" fill="none" aria-hidden="true">
+    <rect x="8" y="26" width="14" height="26" rx="2" stroke="#F4B400" strokeWidth="2.5" />
+    <rect x="30" y="12" width="14" height="40" rx="2" stroke="#F4B400" strokeWidth="2.5" />
+  </svg>,
+  // Represent — star outline
+  <svg key="d3" width="60" height="60" viewBox="0 0 60 60" fill="none" aria-hidden="true">
+    <path d="M30 8L35.5 23.5H52L38.5 32.5L43 48L30 39L17 48L21.5 32.5L8 23.5H24.5L30 8Z" stroke="#2F6BFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>,
 ]
 
 export default function HomePage() {
@@ -143,6 +167,22 @@ export default function HomePage() {
                   <ConsentBadge />
                 </div>
               </FadeUp>
+
+              {/* Mobile portal cue — compact portal identity for small screens */}
+              <FadeUp delay={460}>
+                <div className="mt-8 flex items-center gap-4 lg:hidden">
+                  <div className="relative flex-shrink-0 w-14 h-14">
+                    <div className="absolute inset-0 rounded-full border-2 border-dashed border-blue-mein/30" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <OpenMIcon size={30} />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <StickerNote text="Future me." rotate={-2} color="blue" />
+                    <MovementFragment text="Step in." className="text-sm text-gray-mid" />
+                  </div>
+                </div>
+              </FadeUp>
             </div>
 
             {/* ── Right: Portal Zone (desktop only) ── */}
@@ -222,6 +262,11 @@ export default function HomePage() {
                   >
                     Make this move.
                     <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1" />
+                  </div>
+
+                  {/* Doodle background accent */}
+                  <div className="absolute bottom-4 right-4 opacity-[0.07] pointer-events-none select-none">
+                    {cardDoodles[i]}
                   </div>
                 </Link>
               </FadeUp>
@@ -309,6 +354,12 @@ export default function HomePage() {
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
               <div>
                 <div className="w-10 h-1 bg-blue-mein rounded-full mb-4" />
+                {/* "The Wall" sticker label */}
+                <div className="mb-2" style={{ transform: 'rotate(-1deg)', display: 'inline-block' }}>
+                  <span className="font-caveat text-4xl md:text-5xl text-gold-mein leading-none">
+                    The Wall.
+                  </span>
+                </div>
                 <h2 className="font-sora font-extrabold text-3xl md:text-4xl text-white leading-tight">
                   Real moves.<br />Real stories.
                 </h2>
@@ -420,6 +471,14 @@ export default function HomePage() {
         <div className="container-wide section-padding">
           <div className="max-w-3xl mx-auto text-center">
             <FadeUp>
+              {/* Mini portal doorway graphic */}
+              <div className="relative w-20 h-20 mx-auto mb-6">
+                <div className="absolute inset-0 rounded-full border-2 border-dashed border-blue-mein/30" />
+                <div className="absolute inset-[18%] rounded-full border border-dashed border-gold-mein/40" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <OpenMIcon size={36} />
+                </div>
+              </div>
               <SectionDivider className="mx-auto mb-5" />
               <h2 className="font-sora font-extrabold text-3xl md:text-5xl text-charcoal leading-tight">
                 Meet the future you.
@@ -446,12 +505,12 @@ export default function HomePage() {
           <FadeUp>
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               <div>
-                <p className="font-caveat text-blue-mein text-lg mb-1">Drop Coming</p>
+                <p className="font-caveat text-blue-mein text-lg mb-1">Drop 001 — loading.</p>
                 <h2 className="font-sora font-extrabold text-2xl md:text-3xl text-charcoal">
                   Wear what you're building.
                 </h2>
                 <p className="mt-2 font-caveat text-xl text-gray-dark">
-                  This is not just merch. It is a reminder: I'm building it.
+                  Built for Mein Movers. I'm building it.
                 </p>
               </div>
               <Link to="/shop" className="btn-primary flex-shrink-0">
