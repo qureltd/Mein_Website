@@ -234,58 +234,118 @@ export default function FutureMePage() {
             })}
           </div>
 
-          {/* Desktop: staggered scattered card layout */}
-          <div className="hidden md:block relative max-w-4xl mx-auto" style={{ minHeight: 640 }}>
+          {/* Desktop: two-column staggered card grid */}
+          <div className="hidden md:block relative max-w-4xl mx-auto">
             {/* Faint Open M watermark behind cards */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-              <OpenMIcon size={340} className="opacity-[0.03]" />
+              <OpenMIcon size={360} className="opacity-[0.03]" />
             </div>
 
-            {steps.map((step, i) => {
-              // Stagger positions: two columns left/right, offset vertically, subtle rotation
-              const positions = [
-                { top: '0%',   left: '0%',   width: '42%' },
-                { top: '8%',   left: '56%',  width: '42%' },
-                { top: '36%',  left: '12%',  width: '42%' },
-                { top: '44%',  left: '54%',  width: '42%' },
-                { top: '73%',  left: '24%',  width: '42%' },
-              ]
-              const pos = positions[i]
-              const isOpen = expandedStep === step.number
-
-              return (
-                <FadeUp key={step.number} delay={i * 90}>
-                  <button
-                    onClick={() => setExpandedStep(isOpen ? null : step.number)}
-                    className={`absolute text-left rounded-2xl border shadow-md transition-all duration-300 group ${step.bg} ${step.rotate} ${
-                      isOpen
-                        ? 'shadow-xl scale-[1.03] border-blue-mein/30 z-10'
-                        : 'border-gray-support hover:shadow-lg hover:scale-[1.02] hover:z-10'
-                    }`}
-                    style={{ top: pos.top, left: pos.left, width: pos.width }}
+            {/* Row 1: cards 1 + 2 */}
+            <div className="flex gap-8 items-start">
+              {[0, 1].map((i) => {
+                const step = steps[i]
+                const isOpen = expandedStep === step.number
+                return (
+                  <div
+                    key={step.number}
+                    className="flex-1"
+                    style={{
+                      marginTop: i === 1 ? 40 : 0,
+                      opacity: 0,
+                      animation: `fadeUp 0.6s ease-out ${i * 100}ms forwards`,
+                    }}
                   >
-                    <div className="px-6 py-5">
-                      {/* Card header */}
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <div>
-                          <p className={`font-sora text-[10px] font-bold uppercase tracking-[0.18em] mb-1 ${step.accent}`}>
-                            Move {step.number}
-                          </p>
-                          <p className={`font-caveat text-2xl leading-tight ${step.accent}`}>{step.title}</p>
-                        </div>
-                        <span className={`font-sora text-xs mt-1 flex-shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''} ${step.accent} opacity-60`}>
-                          ↓
-                        </span>
+                    <button
+                      onClick={() => setExpandedStep(isOpen ? null : step.number)}
+                      className={`w-full text-left rounded-2xl border shadow-md transition-all duration-300 ${step.bg} ${step.rotate} ${
+                        isOpen
+                          ? 'shadow-xl scale-[1.02] border-blue-mein/30'
+                          : 'border-gray-support hover:shadow-lg hover:scale-[1.01]'
+                      }`}
+                    >
+                      <div className="px-6 py-6">
+                        <p className={`font-sora text-[10px] font-bold uppercase tracking-[0.18em] mb-1 ${step.accent}`}>
+                          Move {step.number}
+                        </p>
+                        <p className={`font-caveat text-2xl leading-tight mb-3 ${step.accent}`}>{step.title}</p>
+                        <p className="text-sm text-gray-dark font-sora leading-relaxed">{step.body}</p>
                       </div>
-                      {/* Body — always visible on desktop */}
-                      <p className="text-sm text-gray-dark font-sora leading-relaxed">
-                        {step.body}
-                      </p>
-                    </div>
-                  </button>
-                </FadeUp>
-              )
-            })}
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Row 2: cards 3 + 4 */}
+            <div className="flex gap-8 items-start mt-8">
+              {[2, 3].map((i) => {
+                const step = steps[i]
+                const isOpen = expandedStep === step.number
+                return (
+                  <div
+                    key={step.number}
+                    className="flex-1"
+                    style={{
+                      marginTop: i === 3 ? 40 : 0,
+                      opacity: 0,
+                      animation: `fadeUp 0.6s ease-out ${i * 100}ms forwards`,
+                    }}
+                  >
+                    <button
+                      onClick={() => setExpandedStep(isOpen ? null : step.number)}
+                      className={`w-full text-left rounded-2xl border shadow-md transition-all duration-300 ${step.bg} ${step.rotate} ${
+                        isOpen
+                          ? 'shadow-xl scale-[1.02] border-blue-mein/30'
+                          : 'border-gray-support hover:shadow-lg hover:scale-[1.01]'
+                      }`}
+                    >
+                      <div className="px-6 py-6">
+                        <p className={`font-sora text-[10px] font-bold uppercase tracking-[0.18em] mb-1 ${step.accent}`}>
+                          Move {step.number}
+                        </p>
+                        <p className={`font-caveat text-2xl leading-tight mb-3 ${step.accent}`}>{step.title}</p>
+                        <p className="text-sm text-gray-dark font-sora leading-relaxed">{step.body}</p>
+                      </div>
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Row 3: card 5 centred */}
+            <div className="flex justify-center mt-8">
+              {(() => {
+                const step = steps[4]
+                const isOpen = expandedStep === step.number
+                return (
+                  <div
+                    style={{
+                      width: '46%',
+                      opacity: 0,
+                      animation: 'fadeUp 0.6s ease-out 400ms forwards',
+                    }}
+                  >
+                    <button
+                      onClick={() => setExpandedStep(isOpen ? null : step.number)}
+                      className={`w-full text-left rounded-2xl border shadow-md transition-all duration-300 ${step.bg} ${step.rotate} ${
+                        isOpen
+                          ? 'shadow-xl scale-[1.02] border-blue-mein/30'
+                          : 'border-gray-support hover:shadow-lg hover:scale-[1.01]'
+                      }`}
+                    >
+                      <div className="px-6 py-6">
+                        <p className={`font-sora text-[10px] font-bold uppercase tracking-[0.18em] mb-1 ${step.accent}`}>
+                          Move {step.number}
+                        </p>
+                        <p className={`font-caveat text-2xl leading-tight mb-3 ${step.accent}`}>{step.title}</p>
+                        <p className="text-sm text-gray-dark font-sora leading-relaxed">{step.body}</p>
+                      </div>
+                    </button>
+                  </div>
+                )
+              })()}
+            </div>
           </div>
         </div>
       </section>
