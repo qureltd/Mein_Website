@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ArrowRight, Pen, Play, Hammer, Megaphone, Star, Upload, Check, AlertCircle } from 'lucide-react'
+import { ArrowRight, Pen, Play, Hammer, Megaphone, Star, HelpCircle, Check, AlertCircle } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
 import { OpenMIcon, HandwrittenAccent, SectionDivider, StarAccent } from '../components/BrandElements'
 import { supabase } from '../lib/supabase'
@@ -93,6 +93,10 @@ export default function MakeYourMovePage() {
   const [form, setForm] = useState<FormData>({ ...defaultForm, moveType: searchParams.get('type') || '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [notSureOpen, setNotSureOpen] = useState(false)
+  const [notSureForm, setNotSureForm] = useState({ name: '', email: '', interests: '' })
+  const [notSureDone, setNotSureDone] = useState(false)
+  const [notSureLoading, setNotSureLoading] = useState(false)
 
   const isUnder18 = parseInt(form.age) < 18 && form.age !== ''
   const selectedMove = moveTypes.find((m) => m.id === selected)
@@ -140,6 +144,22 @@ export default function MakeYourMovePage() {
     }
   }
 
+  async function handleNotSureSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setNotSureLoading(true)
+    await supabase.from('submissions').insert({
+      name: notSureForm.name,
+      email: notSureForm.email,
+      type: 'contact',
+      title: 'Not sure yet — help me find my move',
+      content: notSureForm.interests || 'No details provided.',
+      status: 'received',
+      is_under_18: false,
+    })
+    setNotSureLoading(false)
+    setNotSureDone(true)
+  }
+
   return (
     <div className="with-mobile-cta">
       {/* ─── HERO ─── */}
@@ -159,7 +179,7 @@ export default function MakeYourMovePage() {
           </FadeUp>
           <FadeUp delay={150}>
             <p className="mt-5 text-lg text-gray-dark font-sora">
-              Choose one lane. Start there. One move is enough.
+              Choose one move. Start there. One move is enough.
             </p>
           </FadeUp>
         </div>
@@ -226,7 +246,105 @@ export default function MakeYourMovePage() {
                     </button>
                   </FadeUp>
                 ))}
+
+                {/* Not sure yet? — 6th card */}
+                <FadeUp delay={moveTypes.length * 60} className="snap-start flex-shrink-0 w-[82vw] md:w-auto">
+                  <button
+                    onClick={() => setNotSureOpen((v) => !v)}
+                    className="w-full h-full flex flex-col text-left rounded-2xl border-2 border-dashed border-gray-support bg-white p-6 hover:border-blue-mein hover:bg-blue-pale/30 transition-all duration-200 group"
+                  >
+                    <div className="w-11 h-11 rounded-xl bg-gray-support/50 flex items-center justify-center mb-4 group-hover:bg-blue-pale transition-colors">
+                      <HelpCircle size={20} className="text-gray-mid group-hover:text-blue-mein transition-colors" strokeWidth={1.8} />
+                    </div>
+                    <p className="text-[10px] font-sora font-semibold uppercase tracking-[0.18em] text-gray-mid mb-1">Not sure yet?</p>
+                    <HandwrittenAccent text="That's okay." className="text-xl mb-2" />
+                    <p className="text-sm text-gray-dark font-sora flex-1">
+                      Tell us a bit about yourself and we'll help you find your move.
+                    </p>
+                    <div className="mt-5 flex items-center gap-1.5 text-sm font-semibold font-sora text-gray-mid group-hover:text-blue-mein group-hover:gap-3 transition-all duration-200">
+                      Help me start
+                      <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </button>
+                </FadeUp>
               </div>
+
+              {/* Not Sure expandable panel */}
+              {notSureOpen && (
+                <FadeUp>
+                  <div className="mt-6 bg-blue-pale/40 border border-blue-mein/20 rounded-2xl p-6 md:p-8">
+                    {notSureDone ? (
+                      <div className="text-center py-4">
+                        <div className="w-12 h-12 rounded-full bg-blue-mein flex items-center justify-center mx-auto mb-4">
+                          <Check size={22} className="text-white" strokeWidth={2.5} />
+                        </div>
+                        <h3 className="font-sora font-bold text-xl text-charcoal">We've got you.</h3>
+                        <HandwrittenAccent text="We'll be in touch soon." className="text-lg block mt-1" />
+                        <p className="mt-3 text-sm text-gray-dark font-sora max-w-sm mx-auto">
+                          The Mein team will reach out to help you figure out your first move.
+                        </p>
+                        <button
+                          onClick={() => { setNotSureOpen(false); setNotSureDone(false); setNotSureForm({ name: '', email: '', interests: '' }) }}
+                          className="mt-5 btn-outline-blue inline-flex text-sm"
+                        >
+                          Done
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <h3 className="font-sora font-bold text-xl text-charcoal mb-1">Help me find my move.</h3>
+                        <p className="text-sm text-gray-dark font-sora mb-5">
+                          Tell us a bit about yourself and what you're into. We'll point you in the right direction.
+                        </p>
+                        <form onSubmit={handleNotSureSubmit} className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Your Name *</label>
+                              <input
+                                type="text"
+                                required
+                                value={notSureForm.name}
+                                onChange={(e) => setNotSureForm((f) => ({ ...f, name: e.target.value }))}
+                                placeholder="Your name"
+                                className="input-field"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Email *</label>
+                              <input
+                                type="email"
+                                required
+                                value={notSureForm.email}
+                                onChange={(e) => setNotSureForm((f) => ({ ...f, email: e.target.value }))}
+                                placeholder="your@email.com"
+                                className="input-field"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">What are you into? <span className="font-normal text-gray-mid">(optional)</span></label>
+                            <textarea
+                              rows={3}
+                              value={notSureForm.interests}
+                              onChange={(e) => setNotSureForm((f) => ({ ...f, interests: e.target.value }))}
+                              placeholder="e.g. I love drawing but also want to start a business..."
+                              className="textarea-field"
+                            />
+                          </div>
+                          <button
+                            type="submit"
+                            disabled={notSureLoading}
+                            className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {notSureLoading ? 'Sending...' : 'Help me start'}
+                            {!notSureLoading && <ArrowRight size={14} />}
+                          </button>
+                        </form>
+                      </>
+                    )}
+                  </div>
+                </FadeUp>
+              )}
             </>
           )}
 

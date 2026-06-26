@@ -84,14 +84,18 @@ export default function FutureMePage() {
         </div>
         <div className="container-wide section-padding relative z-10 max-w-3xl">
           <FadeUp>
+            <p className="font-caveat text-blue-mein text-xl mb-4">Meet Future Me</p>
             <h1 className="font-sora font-extrabold text-5xl md:text-6xl text-charcoal leading-tight">
-              Meet the{' '}
-              <HandwrittenAccent text="future you." className="text-5xl md:text-6xl" />
+              Take the Future Me{' '}
+              <HandwrittenAccent text="Challenge." className="text-5xl md:text-6xl" />
             </h1>
           </FadeUp>
           <FadeUp delay={150}>
-            <p className="mt-6 text-xl text-gray-dark font-sora leading-relaxed max-w-xl">
-              Meet Future Me is a guided experience where you imagine who you are becoming, speak as your future self, and use that message to build confidence, clarity, and action today.
+            <p className="mt-5 font-caveat text-2xl md:text-3xl text-charcoal">
+              Future you has something to say.
+            </p>
+            <p className="mt-4 text-xl text-gray-dark font-sora leading-relaxed max-w-xl">
+              A guided experience where you imagine who you are becoming, speak as your future self, and use that message to build confidence, clarity, and action today.
             </p>
           </FadeUp>
           <FadeUp delay={250}>
@@ -281,7 +285,7 @@ export default function FutureMePage() {
                   disabled={loading}
                   className="btn-primary w-full justify-center py-4 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? 'Sending...' : 'Send to My Future Self'}
+                  {loading ? 'Sending...' : 'Send My Future Me Message'}
                   {!loading && <ArrowRight size={16} />}
                 </button>
               </form>

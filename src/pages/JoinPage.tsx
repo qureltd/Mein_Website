@@ -108,6 +108,31 @@ export default function JoinPage() {
         </div>
       </section>
 
+      {/* ─── BENEFITS STRIP ───────────────────────────────────────────── */}
+      <section className="py-8 bg-charcoal border-t border-white/10">
+        <div className="container-wide section-padding">
+          <div className="flex flex-wrap gap-2 justify-center">
+            {[
+              'Get featured on The Wall',
+              'Submit art, writing, and videos',
+              'Share your story',
+              'Join creator calls',
+              'Be part of drops',
+              'Explore entrepreneurship',
+              'Start even if unsure',
+            ].map((benefit) => (
+              <span
+                key={benefit}
+                className="inline-flex items-center gap-1.5 bg-white/10 text-white/80 border border-white/10 rounded-full px-4 py-2 text-xs font-sora font-medium"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-gold-mein flex-shrink-0" />
+                {benefit}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ─── BELONGING BADGES ─────────────────────────────────────────── */}
       <section className="py-20 md:py-28 bg-white overflow-hidden">
         <div className="container-wide section-padding">
@@ -228,6 +253,17 @@ export default function JoinPage() {
                 </Link>
               ))}
             </div>
+          </FadeUp>
+
+          <FadeUp delay={480}>
+            <p className="mt-7 text-center">
+              <Link
+                to="/make-your-move"
+                className="text-sm font-sora text-gray-mid hover:text-blue-mein transition-colors underline underline-offset-2"
+              >
+                Not sure which move fits? Start here.
+              </Link>
+            </p>
           </FadeUp>
         </div>
       </section>
