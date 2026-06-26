@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Pen, Mic, Lightbulb, Megaphone, HelpCircle } from 'lucide-react'
+import meinYouthCrew from '../assets/Youth_that_belong.png'
 import { FadeUp } from '../hooks/useInView'
 import {
   OpenMIcon,
@@ -481,7 +482,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── BELONGING MANIFESTO WALL ─────────────────────────────────── */}
-      <section className="relative pt-20 pb-24 md:pt-28 md:pb-32 bg-blue-mein overflow-hidden">
+      <section className="relative pt-20 pb-0 md:pt-28 bg-blue-mein overflow-hidden">
         {/* Watermark */}
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none select-none flex items-center justify-center">
           <OpenMIcon size={560} />
@@ -538,6 +539,17 @@ export default function HomePage() {
             </FadeUp>
           </div>
         </div>
+
+        {/* Youth crew image — anchored to bottom, peeks up into view */}
+        <FadeUp delay={660}>
+          <div className="relative z-10 mt-12 md:mt-16 flex justify-center">
+            <img
+              src={meinYouthCrew}
+              alt="Diverse young Mein Movers wearing Mein gear and celebrating together"
+              className="w-full max-w-4xl object-contain object-bottom pointer-events-none select-none mix-blend-multiply max-h-72 md:max-h-none"
+            />
+          </div>
+        </FadeUp>
       </section>
 
       {/* ─── THE WALL — STORIES PREVIEW ───────────────────────────────── */}
