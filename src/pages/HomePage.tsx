@@ -12,6 +12,7 @@ import {
   MovementFragment,
 } from '../components/BrandElements'
 import PortalZone from '../components/PortalZone'
+import MeinEnergyTexture from '../components/MeinEnergyTexture'
 
 const moveCards = [
   {
@@ -195,8 +196,10 @@ export default function HomePage() {
       </section>
 
       {/* ─── MOVE CARDS ───────────────────────────────────────────────── */}
-      <section className="bg-gray-support/30 py-20 md:py-28">
-        <div className="container-wide section-padding">
+      <section className="relative bg-gray-support/30 py-20 md:py-28 overflow-hidden">
+        {/* Youth energy texture — artwork-inspired decorative fragments */}
+        <MeinEnergyTexture />
+        <div className="container-wide section-padding relative z-10">
           <FadeUp>
             <div className="flex flex-col items-center text-center mb-14">
               <SectionDivider />
