@@ -1,6 +1,31 @@
-import { OpenMIcon, StickerNote } from './BrandElements'
+import { OpenMIcon } from './BrandElements'
 
-const STICKER = 'text-xl px-6 py-3 font-bold rounded-xl'
+const stickers = [
+  {
+    src: '/assets/icons/ChatGPT_Image_Jun_26,_2026,_01_15_08_PM_(1).png',
+    alt: 'Creating it.',
+    rotate: -4,
+    className: 'absolute -top-8 left-2',
+  },
+  {
+    src: '/assets/icons/ChatGPT_Image_Jun_26,_2026,_01_15_09_PM_(2).png',
+    alt: 'My move.',
+    rotate: 2.5,
+    className: 'absolute bottom-14 -left-8',
+  },
+  {
+    src: '/assets/icons/ChatGPT_Image_Jun_26,_2026,_01_15_09_PM_(3).png',
+    alt: 'Building it.',
+    rotate: 3.5,
+    className: 'absolute top-[8%] -right-16',
+  },
+  {
+    src: '/assets/icons/ChatGPT_Image_Jun_26,_2026,_01_15_10_PM_(4).png',
+    alt: 'Future me.',
+    rotate: -2,
+    className: 'absolute -bottom-6 -right-4',
+  },
+]
 
 export default function PortalZone() {
   return (
@@ -25,108 +50,19 @@ export default function PortalZone() {
         </div>
       </div>
 
-      {/* ── Creating it. (top-left) — white with blue border, corner fold ── */}
-      <div className="absolute -top-8 left-2">
-        <StickerNote
-          text="Creating it."
-          rotate={-4}
-          color="white-blue"
-          fold
-          className={STICKER}
-        />
-      </div>
-      {/* Chunky blue arrow below the sticker, curving into portal energy zone */}
-      <svg
-        className="absolute pointer-events-none"
-        style={{ top: 42, left: 28, width: 56, height: 44 }}
-        viewBox="0 0 56 44"
-        fill="none"
-        aria-hidden="true"
-      >
-        <path d="M4 38C8 26 20 14 40 10" stroke="#2F6BFF" strokeWidth="3.5" strokeLinecap="round" fill="none" opacity="0.65" />
-        <path d="M35 4L40 10L34 16" stroke="#2F6BFF" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.65" />
-      </svg>
-
-      {/* ── My move. (bottom-left) — gold with dark gold border, corner fold ── */}
-      <div className="absolute bottom-14 -left-8">
-        <StickerNote
-          text="My move."
-          rotate={2.5}
-          color="gold-bold"
-          fold
-          className={STICKER}
-        />
-      </div>
-      {/* Gold starburst accent above-right of the sticker */}
-      <svg
-        className="absolute pointer-events-none"
-        style={{ bottom: 124, left: 82, width: 34, height: 34 }}
-        viewBox="0 0 34 34"
-        fill="none"
-        aria-hidden="true"
-      >
-        <g stroke="#C8930A" strokeWidth="2.8" strokeLinecap="round" opacity="0.8">
-          <line x1="17" y1="2" x2="17" y2="32" />
-          <line x1="2" y1="17" x2="32" y2="17" />
-          <line x1="6" y1="6" x2="28" y2="28" />
-          <line x1="28" y1="6" x2="6" y2="28" />
-        </g>
-      </svg>
-
-      {/* ── Future me. (bottom-right) — off-white with gray border ── */}
-      <div className="absolute -bottom-6 -right-4">
-        <StickerNote
-          text="Future me."
-          rotate={-2}
-          color="offwhite"
-          className={STICKER}
-        />
-      </div>
-      {/* Charcoal curved swoosh accent above the sticker */}
-      <svg
-        className="absolute pointer-events-none"
-        style={{ bottom: 56, right: 18, width: 68, height: 24 }}
-        viewBox="0 0 68 24"
-        fill="none"
-        aria-hidden="true"
-      >
-        <path
-          d="M4 20C12 8 28 2 46 8C54 12 62 10 66 6"
-          stroke="#2A2A2A"
-          strokeWidth="2.8"
-          strokeLinecap="round"
-          fill="none"
-          opacity="0.26"
-        />
-      </svg>
-
-      {/* ── Building it. (right) — white with charcoal border ── */}
-      <div className="absolute top-[8%] -right-16">
-        <StickerNote
-          text="Building it."
-          rotate={3.5}
-          color="white-dark"
-          className={STICKER}
-        />
-      </div>
-      {/* Checker accent below the sticker */}
-      <svg
-        className="absolute pointer-events-none"
-        style={{ top: '27%', right: 52, width: 28, height: 28 }}
-        viewBox="0 0 28 28"
-        fill="none"
-        aria-hidden="true"
-      >
-        <rect x="1"  y="1"  width="8" height="8" rx="1.5" fill="#2A2A2A" opacity="0.42" />
-        <rect x="11" y="1"  width="8" height="8" rx="1.5" fill="#2A2A2A" opacity="0.1"  />
-        <rect x="21" y="1"  width="8" height="8" rx="1.5" fill="#2A2A2A" opacity="0.42" />
-        <rect x="1"  y="11" width="8" height="8" rx="1.5" fill="#2A2A2A" opacity="0.1"  />
-        <rect x="11" y="11" width="8" height="8" rx="1.5" fill="#2A2A2A" opacity="0.42" />
-        <rect x="21" y="11" width="8" height="8" rx="1.5" fill="#2A2A2A" opacity="0.1"  />
-        <rect x="1"  y="21" width="8" height="8" rx="1.5" fill="#2A2A2A" opacity="0.42" />
-        <rect x="11" y="21" width="8" height="8" rx="1.5" fill="#2A2A2A" opacity="0.1"  />
-        <rect x="21" y="21" width="8" height="8" rx="1.5" fill="#2A2A2A" opacity="0.42" />
-      </svg>
+      {/* PNG sticker images */}
+      {stickers.map(({ src, alt, rotate, className }) => (
+        <div key={alt} className={className}>
+          <img
+            src={src}
+            alt={alt}
+            width={155}
+            draggable={false}
+            className="pointer-events-none"
+            style={{ transform: `rotate(${rotate}deg)` }}
+          />
+        </div>
+      ))}
     </div>
   )
 }
