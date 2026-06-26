@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Pen, Hammer, Megaphone, Play, Star } from 'lucide-react'
+import { ArrowRight, Pen, Hammer, Megaphone, Play, Star, HelpCircle } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
 import {
   OpenMIcon,
@@ -55,6 +55,16 @@ const moveCards = [
     accent: '#2F6BFF',
     bg: '#EBF0FF',
   },
+  {
+    number: '05',
+    icon: HelpCircle,
+    label: 'Not sure yet?',
+    tagline: "That's okay.",
+    description: "You don't have to know your move yet. Tell us what you're into and we'll help you find your first step.",
+    href: '/make-your-move',
+    accent: '#6B7280',
+    bg: '#F3F4F6',
+  },
 ]
 
 const benefitStrip = [
@@ -90,6 +100,10 @@ const cardDoodles = [
   </svg>,
   <svg key="d3" width="60" height="60" viewBox="0 0 60 60" fill="none" aria-hidden="true">
     <path d="M30 8L35.5 23.5H52L38.5 32.5L43 48L30 39L17 48L21.5 32.5L8 23.5H24.5L30 8Z" stroke="#2F6BFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>,
+  <svg key="d4" width="60" height="60" viewBox="0 0 60 60" fill="none" aria-hidden="true">
+    <path d="M22 20C22 14.477 26.477 10 32 10C37.523 10 42 14.477 42 20C42 24.5 39 27.5 34.5 30C33 30.9 32 32.3 32 34" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round" />
+    <circle cx="32" cy="42" r="2.5" fill="#9CA3AF" />
   </svg>,
 ]
 
@@ -225,12 +239,12 @@ export default function HomePage() {
           </FadeUp>
 
           {/* Mobile: horizontal snap-scroll. sm+: grid */}
-          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-5 px-5 no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-visible md:pb-0 md:mx-0 md:px-0 md:gap-5 items-stretch">
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-5 px-5 no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-5 md:overflow-visible md:pb-0 md:mx-0 md:px-0 md:gap-5 items-stretch">
             {moveCards.map((card, i) => (
               <FadeUp key={card.label} delay={i * 80} className="snap-start flex-shrink-0 w-[82vw] md:w-auto">
                 <Link
                   to={card.href}
-                  className="move-card flex flex-col h-full group"
+                  className={`move-card flex flex-col h-full group${i === moveCards.length - 1 ? ' border-dashed' : ''}`}
                   style={{
                     '--accent': card.accent,
                     transform: `rotate(${i % 2 === 0 ? '-0.5' : '0.5'}deg)`,
@@ -274,7 +288,7 @@ export default function HomePage() {
                     className="mt-5 flex items-center gap-2 text-sm font-semibold font-sora group-hover:gap-3 transition-all duration-200"
                     style={{ color: card.accent }}
                   >
-                    Make this move.
+                    {i === moveCards.length - 1 ? 'Help me start' : 'Make this move.'}
                     <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1" />
                   </div>
 
