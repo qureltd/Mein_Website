@@ -196,7 +196,7 @@ export default function MakeYourMovePage() {
                 <div className="mb-10">
                   <SectionDivider />
                   <h2 className="mt-4 font-sora font-bold text-2xl text-charcoal">Choose your move.</h2>
-                  <p className="mt-1 text-sm text-gray-mid font-sora md:hidden">Swipe to see all options.</p>
+                  <p className="mt-1 font-caveat text-gray-mid text-lg md:hidden">Swipe to see all options →</p>
                 </div>
               </FadeUp>
 
@@ -259,7 +259,7 @@ export default function MakeYourMovePage() {
                     <p className="text-[10px] font-sora font-semibold uppercase tracking-[0.18em] text-gray-mid mb-1">Not sure yet?</p>
                     <HandwrittenAccent text="That's okay." className="text-xl mb-2" />
                     <p className="text-sm text-gray-dark font-sora flex-1">
-                      Tell us a bit about yourself and we'll help you find your move.
+                      You do not need to know your move yet. Tell us what you're into and we'll help you find your first move.
                     </p>
                     <div className="mt-5 flex items-center gap-1.5 text-sm font-semibold font-sora text-gray-mid group-hover:text-blue-mein group-hover:gap-3 transition-all duration-200">
                       Help me start
@@ -272,11 +272,14 @@ export default function MakeYourMovePage() {
               {/* Not Sure expandable panel */}
               {notSureOpen && (
                 <FadeUp>
-                  <div className="mt-6 bg-blue-pale/40 border border-blue-mein/20 rounded-2xl p-6 md:p-8">
+                  <div className="mt-6 bg-white border-2 border-dashed border-blue-mein/30 rounded-2xl overflow-hidden">
+                    {/* Gold top accent strip */}
+                    <div className="h-1 w-full bg-gold-mein" />
+                    <div className="p-6 md:p-8">
                     {notSureDone ? (
                       <div className="text-center py-4">
-                        <div className="w-12 h-12 rounded-full bg-blue-mein flex items-center justify-center mx-auto mb-4">
-                          <Check size={22} className="text-white" strokeWidth={2.5} />
+                        <div className="w-16 h-16 rounded-full bg-gold-pale border-2 border-gold-mein/40 flex items-center justify-center mx-auto mb-4">
+                          <Check size={24} className="text-gold-dark" strokeWidth={2.5} />
                         </div>
                         <h3 className="font-sora font-bold text-xl text-charcoal">Your first step landed.</h3>
                         <HandwrittenAccent text="We'll help you find your move." className="text-lg block mt-1" />
@@ -292,8 +295,13 @@ export default function MakeYourMovePage() {
                       </div>
                     ) : (
                       <>
-                        <h3 className="font-sora font-bold text-xl text-charcoal mb-1">Not sure yet? Start here.</h3>
-                        <p className="text-sm text-gray-dark font-sora mb-5">
+                        <div className="flex items-center gap-3 mb-1">
+                          <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+                            <HelpCircle size={18} className="text-gray-400" strokeWidth={1.8} />
+                          </div>
+                          <h3 className="font-sora font-bold text-xl text-charcoal">Not sure yet? Start here.</h3>
+                        </div>
+                        <p className="text-sm text-gray-dark font-sora mb-5 ml-12">
                           You do not need to know your move yet. Tell us what you're into and we'll help you find your first move.
                         </p>
                         <form onSubmit={handleNotSureSubmit} className="space-y-4">
@@ -336,12 +344,13 @@ export default function MakeYourMovePage() {
                             disabled={notSureLoading}
                             className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            {notSureLoading ? 'Sending...' : 'Help me start'}
+                            {notSureLoading ? 'Sending...' : 'Help me start.'}
                             {!notSureLoading && <ArrowRight size={14} />}
                           </button>
                         </form>
                       </>
                     )}
+                    </div>
                   </div>
                 </FadeUp>
               )}
@@ -549,23 +558,23 @@ export default function MakeYourMovePage() {
           {/* Step: Success */}
           {step === 'success' && (
             <FadeUp>
-              <div className="text-center py-16 md:py-20">
+              <div className="text-center py-14 md:py-20 bg-blue-pale/30 rounded-3xl px-6 md:px-12">
                 {/* Celebration graphic: stars + Open M */}
-                <div className="flex items-center justify-center gap-5 mb-6">
-                  <StarAccent className="opacity-60" />
-                  <div className="w-24 h-24 rounded-full bg-blue-pale flex items-center justify-center shadow-lg shadow-blue-mein/10">
-                    <OpenMIcon size={52} />
+                <div className="flex items-center justify-center gap-5 mb-7">
+                  <StarAccent className="opacity-80" />
+                  <div className="w-28 h-28 rounded-full bg-blue-pale ring-4 ring-blue-mein/10 flex items-center justify-center shadow-lg shadow-blue-mein/10">
+                    <OpenMIcon size={60} />
                   </div>
-                  <StarAccent className="opacity-60" />
+                  <StarAccent className="opacity-80" />
                 </div>
 
-                <h2 className="font-sora font-extrabold text-3xl md:text-5xl text-charcoal">
+                <h2 className="font-caveat text-4xl md:text-6xl text-charcoal leading-tight">
                   Your move has landed.
                 </h2>
                 <HandwrittenAccent text="The Mein team has got it." className="text-2xl block mt-3" />
 
                 <p className="mt-5 text-gray-dark font-sora max-w-md mx-auto leading-relaxed">
-                  The Mein team will review it and get back to you at the email you provided.
+                  The Mein team will review it and get back to you.
                   {form.age && parseInt(form.age) < 18 && (
                     <> A consent request has been sent to your guardian's email.</>
                   )}
