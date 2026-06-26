@@ -109,26 +109,33 @@ export default function JoinPage() {
       </section>
 
       {/* ─── BENEFITS STRIP ───────────────────────────────────────────── */}
-      <section className="py-8 bg-charcoal border-t border-white/10">
+      <section className="py-7 bg-white border-b border-gray-support">
         <div className="container-wide section-padding">
           <div className="flex flex-wrap gap-2 justify-center">
-            {[
-              'Get featured on The Wall',
-              'Submit art, writing, and videos',
-              'Share your story',
-              'Join creator calls',
-              'Be part of drops',
-              'Explore entrepreneurship',
-              'Start even if unsure',
-            ].map((benefit) => (
-              <span
-                key={benefit}
-                className="inline-flex items-center gap-1.5 bg-white/10 text-white/80 border border-white/10 rounded-full px-4 py-2 text-xs font-sora font-medium"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-gold-mein flex-shrink-0" />
-                {benefit}
-              </span>
-            ))}
+            {([
+              { text: 'Get featured on The Wall', variant: 'blue' },
+              { text: 'Submit art, writing, and videos', variant: 'blue' },
+              { text: 'Share your story', variant: 'gold' },
+              { text: 'Join creator calls', variant: 'blue' },
+              { text: 'Be part of drops', variant: 'gold' },
+              { text: 'Explore entrepreneurship', variant: 'blue' },
+              { text: 'Start even if unsure', variant: 'light' },
+            ] as const).map(({ text, variant }) => {
+              const styles = {
+                blue: 'bg-blue-pale text-blue-mein border border-blue-mein/20',
+                gold: 'bg-gold-pale text-gold-dark border border-yellow-200',
+                light: 'bg-gray-support/50 text-charcoal border border-gray-support',
+              }
+              return (
+                <span
+                  key={text}
+                  className={`inline-flex items-center gap-1.5 ${styles[variant]} rounded-full px-4 py-2 text-xs font-sora font-semibold`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${variant === 'gold' ? 'bg-gold-mein' : 'bg-blue-mein'}`} />
+                  {text}
+                </span>
+              )
+            })}
           </div>
         </div>
       </section>

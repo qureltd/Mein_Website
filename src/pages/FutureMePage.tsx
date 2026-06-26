@@ -142,7 +142,7 @@ export default function FutureMePage() {
 
       {/* ─── SUBMIT YOUR FUTURE ME ────────────────────────────────────── */}
       <section className="py-20 md:py-28 bg-white">
-        <div className="container-wide section-padding max-w-2xl mx-auto">
+        <div className="container-wide section-padding max-w-2xl mx-auto pb-6 md:pb-0">
           <FadeUp>
             <SectionDivider />
             <h2 className="mt-5 font-sora font-extrabold text-3xl text-charcoal">

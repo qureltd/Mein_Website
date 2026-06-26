@@ -294,10 +294,10 @@ export default function HomePage() {
       </section>
 
       {/* ─── WHY JOIN MEIN? ───────────────────────────────────────────── */}
-      <section className="py-12 md:py-16 bg-white">
+      <section className="py-14 md:py-18 bg-gray-support/20">
         <div className="container-wide section-padding">
           <FadeUp>
-            <div className="text-center mb-8">
+            <div className="text-center mb-10">
               <SectionDivider />
               <h2 className="mt-4 font-sora font-extrabold text-2xl md:text-3xl text-charcoal">
                 Why join Mein?
@@ -318,20 +318,20 @@ export default function HomePage() {
               >
                 <Link
                   to={card.href}
-                  className="flex flex-col h-full bg-white border border-gray-support rounded-2xl p-5 hover:border-blue-mein hover:shadow-md hover:shadow-blue-mein/5 transition-all duration-200 group"
+                  className="flex flex-col h-full bg-white border-2 border-gray-support rounded-2xl p-5 hover:border-blue-mein hover:shadow-lg hover:shadow-blue-mein/8 transition-all duration-200 group"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-blue-pale flex items-center justify-center mb-3 group-hover:bg-blue-mein transition-colors duration-200 flex-shrink-0">
+                  <div className="w-11 h-11 rounded-xl bg-blue-pale flex items-center justify-center mb-4 group-hover:bg-blue-mein transition-colors duration-200 flex-shrink-0">
                     <card.icon
-                      size={18}
+                      size={20}
                       className="text-blue-mein group-hover:text-white transition-colors"
                       strokeWidth={2}
                     />
                   </div>
-                  <p className="font-sora font-bold text-charcoal text-sm mb-1">{card.title}</p>
-                  <p className="text-xs text-gray-dark font-sora flex-1 leading-relaxed">{card.desc}</p>
-                  <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-blue-mein font-sora group-hover:gap-2 transition-all duration-200">
+                  <p className="font-sora font-bold text-charcoal text-base mb-1.5">{card.title}</p>
+                  <p className="text-sm text-gray-dark font-sora flex-1 leading-relaxed">{card.desc}</p>
+                  <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-blue-mein font-sora group-hover:gap-2 transition-all duration-200">
                     Start here
-                    <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" />
+                    <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
                   </div>
                 </Link>
               </FadeUp>
@@ -446,10 +446,10 @@ export default function HomePage() {
               {wallStrip.map((item) => (
                 <div
                   key={item.text}
-                  className="flex-shrink-0 flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2"
+                  className="flex-shrink-0 flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-2"
                 >
                   <span className={`w-2 h-2 rounded-full flex-shrink-0 animate-pulse ${item.dot}`} />
-                  <span className="font-sora text-white/70 text-xs font-medium whitespace-nowrap">
+                  <span className="font-sora text-white/90 text-xs font-medium whitespace-nowrap">
                     {item.text}
                   </span>
                 </div>

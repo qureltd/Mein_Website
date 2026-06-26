@@ -278,8 +278,8 @@ export default function MakeYourMovePage() {
                         <div className="w-12 h-12 rounded-full bg-blue-mein flex items-center justify-center mx-auto mb-4">
                           <Check size={22} className="text-white" strokeWidth={2.5} />
                         </div>
-                        <h3 className="font-sora font-bold text-xl text-charcoal">We've got you.</h3>
-                        <HandwrittenAccent text="We'll be in touch soon." className="text-lg block mt-1" />
+                        <h3 className="font-sora font-bold text-xl text-charcoal">Your first step landed.</h3>
+                        <HandwrittenAccent text="We'll help you find your move." className="text-lg block mt-1" />
                         <p className="mt-3 text-sm text-gray-dark font-sora max-w-sm mx-auto">
                           The Mein team will reach out to help you figure out your first move.
                         </p>
@@ -292,9 +292,9 @@ export default function MakeYourMovePage() {
                       </div>
                     ) : (
                       <>
-                        <h3 className="font-sora font-bold text-xl text-charcoal mb-1">Help me find my move.</h3>
+                        <h3 className="font-sora font-bold text-xl text-charcoal mb-1">Not sure yet? Start here.</h3>
                         <p className="text-sm text-gray-dark font-sora mb-5">
-                          Tell us a bit about yourself and what you're into. We'll point you in the right direction.
+                          You do not need to know your move yet. Tell us what you're into and we'll help you find your first move.
                         </p>
                         <form onSubmit={handleNotSureSubmit} className="space-y-4">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
