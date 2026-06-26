@@ -1,49 +1,48 @@
 import { useState } from 'react'
 import { ArrowRight, Check, AlertCircle } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
-import { OpenMIcon, HandwrittenAccent, SectionDivider, StarAccent, StickerNote } from '../components/BrandElements'
+import { HandwrittenAccent, SectionDivider } from '../components/BrandElements'
 import { supabase } from '../lib/supabase'
 
-const steps = [
+import futureMePortal from '../assets/Portal_Icon.png'
+import futureMeNoteCard from '../assets/Future_Me_Letter.png'
+import futureCardSeeYourself from '../assets/See_Yourself.png'
+import futureCardStepIn from '../assets/Step_In.png'
+import futureCardSayIt from '../assets/Say_It.png'
+import futureCardKeepProof from '../assets/Keep_the_Proof.png'
+import futureCardMakeMove from '../assets/Make_One_Move.png'
+import futureMeDoodles from '../assets/Doodle_Pack.png'
+
+const moveCards = [
   {
-    number: '01',
-    title: 'See yourself',
-    body: 'Picture the person you are becoming. Fast forward 10 years. Who are you?',
-    bg: 'bg-blue-pale',
-    accent: 'text-blue-mein',
-    rotate: '-rotate-1',
+    img: futureCardSeeYourself,
+    alt: 'See yourself message card',
+    rotate: '-2deg',
+    offsetY: 0,
   },
   {
-    number: '02',
-    title: 'Step in',
-    body: 'Answer like future you is already here. Use "I am," not "I want to be."',
-    bg: 'bg-gold-pale',
-    accent: 'text-gold-dark',
-    rotate: 'rotate-1',
+    img: futureCardStepIn,
+    alt: 'Step in message card',
+    rotate: '1.5deg',
+    offsetY: 28,
   },
   {
-    number: '03',
-    title: 'Say it',
-    body: 'Create the message you need to hear. Speak it directly to yourself, right now.',
-    bg: 'bg-white',
-    accent: 'text-blue-mein',
-    rotate: '-rotate-1',
+    img: futureCardSayIt,
+    alt: 'Say it message card',
+    rotate: '-1deg',
+    offsetY: 0,
   },
   {
-    number: '04',
-    title: 'Keep the proof',
-    body: 'Save it for the days you need belief. Your own voice, your own clarity.',
-    bg: 'bg-gold-pale',
-    accent: 'text-gold-dark',
-    rotate: 'rotate-1',
+    img: futureCardKeepProof,
+    alt: 'Keep the proof message card',
+    rotate: '2deg',
+    offsetY: 28,
   },
   {
-    number: '05',
-    title: 'Make one move',
-    body: 'Turn the message into one step today. The future starts with a single action.',
-    bg: 'bg-blue-pale',
-    accent: 'text-blue-mein',
-    rotate: '-rotate-1',
+    img: futureCardMakeMove,
+    alt: 'Make one move message card',
+    rotate: '-1.5deg',
+    offsetY: 0,
   },
 ]
 
@@ -54,7 +53,6 @@ export default function FutureMePage() {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [expandedStep, setExpandedStep] = useState<string | null>(null)
 
   const isUnder18 = form.age !== '' && parseInt(form.age) < 18
 
@@ -95,235 +93,182 @@ export default function FutureMePage() {
     <div className="with-mobile-cta">
 
       {/* ─── HERO ─────────────────────────────────────────────────────── */}
-      <section className="relative pt-32 pb-0 md:pt-40 overflow-hidden bg-white">
-        {/* Faint background M */}
-        <div className="absolute right-0 top-0 translate-x-1/3 opacity-[0.04] pointer-events-none select-none">
-          <OpenMIcon size={600} />
+      <section className="relative pt-28 pb-16 md:pt-36 md:pb-20 overflow-hidden bg-white">
+        {/* Doodle accent — top-right, faint */}
+        <div className="absolute top-10 right-0 w-52 md:w-72 opacity-[0.12] pointer-events-none select-none">
+          <img src={futureMeDoodles} alt="" className="w-full object-contain" />
         </div>
 
-        <div className="container-wide section-padding relative z-10 max-w-3xl">
-          <FadeUp>
-            <p className="font-caveat text-blue-mein text-xl mb-4">Meet Future Me</p>
-            <h1 className="font-sora font-extrabold text-5xl md:text-6xl text-charcoal leading-tight">
-              Take the Future Me{' '}
-              <HandwrittenAccent text="Challenge." className="text-5xl md:text-6xl" />
-            </h1>
-          </FadeUp>
-          <FadeUp delay={150}>
-            <p className="mt-5 font-caveat text-2xl md:text-3xl text-charcoal">
-              Future you has something to say.
-            </p>
-          </FadeUp>
-        </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-5 md:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
 
-        {/* ── Portal graphic ── */}
-        <div className="flex justify-center mt-10 mb-0 relative">
-          {/* Outer dashed ring — slow spin */}
-          <div
-            className="absolute w-56 h-56 md:w-64 md:h-64 rounded-full border-2 border-dashed border-gold-mein/50 animate-spin-slow"
-            style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
-          />
-          {/* Inner solid ring */}
-          <div className="relative w-44 h-44 md:w-52 md:h-52 rounded-full bg-blue-pale border-4 border-blue-mein/20 shadow-xl shadow-blue-mein/10 flex items-center justify-center animate-float">
-            {/* Gold accent dot top-right */}
-            <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gold-mein shadow-md" />
-            <OpenMIcon size={80} />
-          </div>
-        </div>
-
-        {/* Quote anchor */}
-        <FadeUp delay={200}>
-          <div className="text-center mt-8 pb-16 md:pb-20 px-6">
-            <p className="font-caveat text-3xl md:text-4xl text-charcoal max-w-xl mx-auto leading-snug">
-              "Sometimes the voice you need to hear is your own."
-            </p>
-          </div>
-        </FadeUp>
-      </section>
-
-      {/* ─── SAMPLE MESSAGE CARD ──────────────────────────────────────── */}
-      <section className="py-16 md:py-20 bg-gray-support/20">
-        <div className="container-wide section-padding max-w-2xl mx-auto">
-          <FadeUp>
-            <div className="text-center mb-8">
-              <SectionDivider className="mx-auto" />
-              <p className="mt-4 font-sora text-sm font-semibold uppercase tracking-widest text-gray-mid">
-                What it looks like
-              </p>
-            </div>
-          </FadeUp>
-          <FadeUp delay={100}>
-            <div className="relative">
-              {/* Star accent */}
-              <div className="absolute -top-3 -right-3 md:-right-5">
-                <StarAccent className="w-7 h-7 md:w-8 md:h-8" />
-              </div>
-              {/* Note card */}
-              <div className="bg-white border border-gray-support rounded-3xl p-8 md:p-10 shadow-lg shadow-blue-mein/5">
-                {/* Sticker label */}
-                <div className="mb-5">
-                  <StickerNote text="Future Me · 10 years from now" color="gold" rotate={-1} />
+            {/* Left — copy */}
+            <div className="max-w-lg mx-auto lg:mx-0">
+              <FadeUp>
+                <p className="font-caveat text-blue-mein text-xl mb-4">Meet Future Me</p>
+                <h1 className="font-sora font-extrabold text-5xl md:text-6xl text-charcoal leading-tight">
+                  Take the Future Me{' '}
+                  <HandwrittenAccent text="Challenge." className="text-5xl md:text-6xl" />
+                </h1>
+              </FadeUp>
+              <FadeUp delay={150}>
+                <p className="mt-5 font-caveat text-2xl md:text-3xl text-charcoal">
+                  Future you has something to say.
+                </p>
+              </FadeUp>
+              <FadeUp delay={250}>
+                <blockquote className="mt-7 font-caveat text-2xl md:text-3xl text-blue-mein leading-snug">
+                  "Sometimes the voice you need to hear is your own."
+                </blockquote>
+              </FadeUp>
+              <FadeUp delay={350}>
+                <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                  <a href="#take-the-challenge" className="btn-primary inline-flex justify-center">
+                    Take the challenge
+                    <ArrowRight size={16} />
+                  </a>
+                  <a href="#how-it-works" className="btn-outline-blue inline-flex justify-center">
+                    See how it works
+                  </a>
                 </div>
-                <p className="font-caveat text-2xl md:text-3xl text-charcoal leading-relaxed">
-                  Dear [your name],
-                </p>
-                <p className="mt-3 font-caveat text-xl md:text-2xl text-gray-dark leading-relaxed">
-                  In 10 years you will have built something real. You will know your worth. You won't need anyone's permission to take up space.
-                </p>
-                <p className="mt-4 font-caveat text-xl md:text-2xl text-gray-dark leading-relaxed">
-                  The thing you're scared to start? Start it. I did. And it changed everything.
-                </p>
-                <p className="mt-5 font-caveat text-lg text-blue-mein">— Future You</p>
-              </div>
+              </FadeUp>
             </div>
-          </FadeUp>
-          <FadeUp delay={180}>
-            <p className="mt-6 text-center text-sm text-gray-mid font-sora">
-              Your message will look different. That's the point.
-            </p>
-          </FadeUp>
+
+            {/* Right — portal image */}
+            <FadeUp delay={200}>
+              <div className="flex justify-center lg:justify-end">
+                <img
+                  src={futureMePortal}
+                  alt="Mein Open M portal graphic representing the Future Me challenge"
+                  className="w-full max-w-xs md:max-w-sm lg:max-w-md object-contain animate-float drop-shadow-xl pointer-events-none select-none"
+                />
+              </div>
+            </FadeUp>
+
+          </div>
         </div>
       </section>
 
-      {/* ─── YOUR MESSAGE FROM FUTURE YOU ────────────────────────────── */}
-      <section className="py-20 md:py-28 bg-white overflow-hidden">
-        <div className="container-wide section-padding">
+      {/* ─── NOTE CARD SECTION ────────────────────────────────────────── */}
+      <section className="py-16 md:py-20 bg-[#FAFAF8]">
+        <div className="max-w-7xl mx-auto px-5 md:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
+
+            {/* Note card image */}
+            <FadeUp>
+              <div className="flex justify-center md:justify-end">
+                <img
+                  src={futureMeNoteCard}
+                  alt="Future Me message card beginning with Dear your name, in 10 years you will have"
+                  className="w-full max-w-sm md:max-w-md object-contain drop-shadow-lg pointer-events-none select-none"
+                  style={{ transform: 'rotate(-2deg)' }}
+                />
+              </div>
+            </FadeUp>
+
+            {/* Copy */}
+            <FadeUp delay={120}>
+              <div className="max-w-md mx-auto md:mx-0">
+                <SectionDivider className="mb-5" />
+                <h2 className="font-sora font-extrabold text-3xl md:text-4xl text-charcoal leading-tight">
+                  A message from the future you.
+                </h2>
+                <p className="mt-4 font-sora text-gray-dark text-lg leading-relaxed">
+                  Write as the person you are becoming — then use that message when you need belief, direction, or one small move forward.
+                </p>
+                <p className="mt-5 font-caveat text-xl text-gray-mid">
+                  Your message will look different. That's the point.
+                </p>
+              </div>
+            </FadeUp>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ─── FUTURE MESSAGE CARDS ─────────────────────────────────────── */}
+      <section id="how-it-works" className="relative py-20 md:py-28 bg-white overflow-hidden">
+        {/* Doodle accent bottom-left, low opacity */}
+        <div className="absolute bottom-0 left-0 w-40 md:w-56 opacity-[0.10] pointer-events-none select-none rotate-180">
+          <img src={futureMeDoodles} alt="" className="w-full object-contain" />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-5 md:px-8">
           <FadeUp>
             <div className="text-center mb-14">
               <SectionDivider className="mx-auto" />
               <h2 className="mt-5 font-sora font-extrabold text-3xl md:text-4xl text-charcoal">
                 Your message from future you.
               </h2>
-              <p className="mt-2 text-gray-mid font-sora text-sm">
+              <p className="mt-2 font-sora text-gray-mid text-sm">
                 Five simple moves. One future-facing message.
               </p>
             </div>
           </FadeUp>
 
-          {/* Mobile: clean stacked cards */}
-          <div className="md:hidden max-w-sm mx-auto space-y-4">
-            {steps.map((step, i) => {
-              const isOpen = expandedStep === step.number
-              return (
-                <FadeUp key={step.number} delay={i * 70}>
-                  <button
-                    onClick={() => setExpandedStep(isOpen ? null : step.number)}
-                    className={`w-full text-left rounded-2xl border border-gray-support shadow-sm transition-all duration-300 overflow-hidden ${step.bg} ${isOpen ? 'shadow-md' : ''}`}
-                  >
-                    <div className="px-6 py-5">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className={`font-sora font-bold text-xs uppercase tracking-widest ${step.accent}`}>
-                            {step.number}
-                          </span>
-                          <p className={`font-caveat text-xl leading-none ${step.accent}`}>{step.title}</p>
-                        </div>
-                        <span className={`text-sm font-sora transition-transform duration-300 ${isOpen ? 'rotate-180' : ''} ${step.accent}`}>
-                          ↓
-                        </span>
-                      </div>
-                      {isOpen && (
-                        <p className="mt-3 text-sm text-gray-dark font-sora leading-relaxed border-t border-black/5 pt-3">
-                          {step.body}
-                        </p>
-                      )}
-                    </div>
-                  </button>
-                </FadeUp>
-              )
-            })}
+          {/* Mobile: horizontal snap scroll */}
+          <div className="md:hidden -mx-5 px-5">
+            <p className="font-caveat text-lg text-blue-mein mb-4 text-center">Swipe through the moves →</p>
+            <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory pb-4 no-scrollbar">
+              {moveCards.map((card, i) => (
+                <div
+                  key={i}
+                  className="min-w-[82vw] snap-start flex-shrink-0"
+                >
+                  <img
+                    src={card.img}
+                    alt={card.alt}
+                    className="w-full object-contain drop-shadow-md"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Desktop: two-column staggered card grid */}
-          <div className="hidden md:block relative max-w-4xl mx-auto">
-            {/* Faint Open M watermark */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-              <OpenMIcon size={360} className="opacity-[0.03]" />
+          {/* Desktop: staggered 3-2 grid */}
+          <div className="hidden md:block max-w-5xl mx-auto">
+            {/* Row 1: three cards */}
+            <div className="grid grid-cols-3 gap-6 lg:gap-8 items-end">
+              {moveCards.slice(0, 3).map((card, i) => (
+                <FadeUp key={i} delay={i * 80}>
+                  <div style={{ transform: `rotate(${card.rotate})`, marginTop: card.offsetY }}>
+                    <img
+                      src={card.img}
+                      alt={card.alt}
+                      className="w-full object-contain drop-shadow-lg hover:drop-shadow-xl transition-all duration-300 hover:scale-[1.03]"
+                    />
+                  </div>
+                </FadeUp>
+              ))}
             </div>
-
-            {/* Row 1 */}
-            <FadeUp>
-              <div className="flex gap-8 items-start">
-                {[steps[0], steps[1]].map((step, idx) => {
-                  const isOpen = expandedStep === step.number
-                  return (
-                    <div key={step.number} className="flex-1" style={{ marginTop: idx === 1 ? 40 : 0 }}>
-                      <button
-                        onClick={() => setExpandedStep(isOpen ? null : step.number)}
-                        className={`w-full text-left rounded-2xl border shadow-md transition-all duration-300 ${step.bg} ${step.rotate} ${isOpen ? 'shadow-xl scale-[1.02] border-blue-mein/30' : 'border-gray-support hover:shadow-lg hover:scale-[1.01]'}`}
-                      >
-                        <div className="px-6 py-6">
-                          <p className={`font-sora text-[10px] font-bold uppercase tracking-[0.18em] mb-1 ${step.accent}`}>Move {step.number}</p>
-                          <p className={`font-caveat text-2xl leading-tight mb-3 ${step.accent}`}>{step.title}</p>
-                          <p className="text-sm text-gray-dark font-sora leading-relaxed">{step.body}</p>
-                        </div>
-                      </button>
-                    </div>
-                  )
-                })}
-              </div>
-            </FadeUp>
-
-            {/* Row 2 */}
-            <FadeUp delay={120}>
-              <div className="flex gap-8 items-start mt-8">
-                {[steps[2], steps[3]].map((step, idx) => {
-                  const isOpen = expandedStep === step.number
-                  return (
-                    <div key={step.number} className="flex-1" style={{ marginTop: idx === 1 ? 40 : 0 }}>
-                      <button
-                        onClick={() => setExpandedStep(isOpen ? null : step.number)}
-                        className={`w-full text-left rounded-2xl border shadow-md transition-all duration-300 ${step.bg} ${step.rotate} ${isOpen ? 'shadow-xl scale-[1.02] border-blue-mein/30' : 'border-gray-support hover:shadow-lg hover:scale-[1.01]'}`}
-                      >
-                        <div className="px-6 py-6">
-                          <p className={`font-sora text-[10px] font-bold uppercase tracking-[0.18em] mb-1 ${step.accent}`}>Move {step.number}</p>
-                          <p className={`font-caveat text-2xl leading-tight mb-3 ${step.accent}`}>{step.title}</p>
-                          <p className="text-sm text-gray-dark font-sora leading-relaxed">{step.body}</p>
-                        </div>
-                      </button>
-                    </div>
-                  )
-                })}
-              </div>
-            </FadeUp>
-
-            {/* Row 3: card 5 centred */}
-            <FadeUp delay={240}>
-              <div className="flex justify-center mt-8">
-                {(() => {
-                  const step = steps[4]
-                  const isOpen = expandedStep === step.number
-                  return (
-                    <div style={{ width: '46%' }}>
-                      <button
-                        onClick={() => setExpandedStep(isOpen ? null : step.number)}
-                        className={`w-full text-left rounded-2xl border shadow-md transition-all duration-300 ${step.bg} ${step.rotate} ${isOpen ? 'shadow-xl scale-[1.02] border-blue-mein/30' : 'border-gray-support hover:shadow-lg hover:scale-[1.01]'}`}
-                      >
-                        <div className="px-6 py-6">
-                          <p className={`font-sora text-[10px] font-bold uppercase tracking-[0.18em] mb-1 ${step.accent}`}>Move {step.number}</p>
-                          <p className={`font-caveat text-2xl leading-tight mb-3 ${step.accent}`}>{step.title}</p>
-                          <p className="text-sm text-gray-dark font-sora leading-relaxed">{step.body}</p>
-                        </div>
-                      </button>
-                    </div>
-                  )
-                })()}
-              </div>
-            </FadeUp>
+            {/* Row 2: two cards centred */}
+            <div className="grid grid-cols-2 gap-6 lg:gap-8 mt-6 max-w-2xl mx-auto items-end">
+              {moveCards.slice(3).map((card, i) => (
+                <FadeUp key={i} delay={(i + 3) * 80}>
+                  <div style={{ transform: `rotate(${card.rotate})`, marginTop: card.offsetY }}>
+                    <img
+                      src={card.img}
+                      alt={card.alt}
+                      className="w-full object-contain drop-shadow-lg hover:drop-shadow-xl transition-all duration-300 hover:scale-[1.03]"
+                    />
+                  </div>
+                </FadeUp>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* ─── TAKE THE CHALLENGE (form) ────────────────────────────────── */}
-      <section className="py-20 md:py-28 bg-gray-support/20">
-        <div className="container-wide section-padding max-w-2xl mx-auto pb-6 md:pb-0">
+      <section id="take-the-challenge" className="py-20 md:py-28 bg-[#FAFAF8]">
+        <div className="max-w-2xl mx-auto px-5 md:px-8 pb-6 md:pb-0">
           <FadeUp>
             <SectionDivider />
             <h2 className="mt-5 font-sora font-extrabold text-3xl text-charcoal">
               Take the challenge.
             </h2>
-            <p className="mt-3 text-gray-dark font-sora">
-              Speak as your future self. Share what you know, what you've built, and what you want your present self to hear.
+            <p className="mt-3 font-sora text-gray-dark">
+              Send a message to the version of you that is already becoming.
             </p>
           </FadeUp>
 
@@ -406,7 +351,6 @@ export default function FutureMePage() {
                   />
                 </div>
 
-                {/* Under-18 guardian section */}
                 {isUnder18 && (
                   <div className="bg-gold-pale border-2 border-gold-mein/30 rounded-2xl p-5">
                     <div className="flex items-start gap-3 mb-4">
@@ -467,6 +411,7 @@ export default function FutureMePage() {
           )}
         </div>
       </section>
+
     </div>
   )
 }
