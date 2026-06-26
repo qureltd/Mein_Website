@@ -106,9 +106,14 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-3">
-          <p className="text-white/40 text-xs font-sora">
-            &copy; {new Date().getFullYear()} Mein. All rights reserved.
-          </p>
+          <div className="text-center md:text-left">
+            <p className="text-white/40 text-xs font-sora">
+              &copy; {new Date().getFullYear()} Mein Today LLC. All rights reserved.
+            </p>
+            <p className="text-white/25 text-xs font-sora mt-1">
+              1021 E Lincolnway, 10493, Cheyenne, WY 82001, Laramie, US &middot; www.meintoday.com
+            </p>
+          </div>
           <p className="font-caveat text-white/30 text-base">
             Mein is for the person you're becoming.
           </p>
