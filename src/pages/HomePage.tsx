@@ -343,11 +343,11 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="flex overflow-x-auto no-scrollbar gap-2 -mx-5 px-5 pb-1">
+            <div className="flex flex-wrap gap-2">
               {benefitStrip.map((item) => (
                 <span
                   key={item.label}
-                  className="flex-shrink-0 inline-flex items-center gap-1.5 bg-white border border-gray-support rounded-full px-4 py-2 font-sora font-semibold text-charcoal text-xs"
+                  className="inline-flex items-center gap-1.5 bg-white border border-gray-support rounded-full px-4 py-2 font-sora font-semibold text-charcoal text-xs"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-gold-mein flex-shrink-0" />
                   {item.label}
