@@ -2,25 +2,25 @@ import { OpenMIcon } from './BrandElements'
 
 const stickers = [
   {
-    src: '/assets/icons/ChatGPT_Image_Jun_26,_2026,_01_15_08_PM_(1).png',
+    src: '/assets/stickers/Create_It.png',
     alt: 'Creating it.',
     rotate: -4,
     className: 'absolute -top-8 left-2',
   },
   {
-    src: '/assets/icons/ChatGPT_Image_Jun_26,_2026,_01_15_09_PM_(2).png',
+    src: '/assets/stickers/My_Move.png',
     alt: 'My move.',
     rotate: 2.5,
     className: 'absolute bottom-14 -left-8',
   },
   {
-    src: '/assets/icons/ChatGPT_Image_Jun_26,_2026,_01_15_09_PM_(3).png',
+    src: '/assets/stickers/Building_It.png',
     alt: 'Building it.',
     rotate: 3.5,
     className: 'absolute top-[8%] -right-16',
   },
   {
-    src: '/assets/icons/ChatGPT_Image_Jun_26,_2026,_01_15_10_PM_(4).png',
+    src: '/assets/stickers/Future_Me.png',
     alt: 'Future me.',
     rotate: -2,
     className: 'absolute -bottom-6 -right-4',
