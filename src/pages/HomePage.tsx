@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Pen, Hammer, Megaphone, Play, Star, Compass, Zap, TrendingUp } from 'lucide-react'
+import { ArrowRight, Pen, Hammer, Megaphone, Play, Star } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
 import {
   OpenMIcon,
@@ -57,41 +57,23 @@ const moveCards = [
   },
 ]
 
-const whyJoinCards = [
-  {
-    icon: Star,
-    title: 'Get featured',
-    desc: 'Share your story, art, video, or idea.',
-    href: '/make-your-move',
-  },
-  {
-    icon: Compass,
-    title: 'Find your move',
-    desc: 'Create, speak, build, or represent.',
-    href: '/make-your-move',
-  },
-  {
-    icon: Zap,
-    title: 'Join drops and challenges',
-    desc: 'Be part of what is coming next.',
-    href: '/join',
-  },
-  {
-    icon: TrendingUp,
-    title: 'Build something real',
-    desc: 'Start with one move and grow it.',
-    href: '/make-your-move',
-  },
+const benefitStrip = [
+  { label: 'Get featured', sub: 'Share your story, art, video, or idea.' },
+  { label: 'Find your move', sub: 'Create, speak, build, represent — or start unsure.' },
+  { label: 'Join drops', sub: 'Be part of challenges, merch, and what\'s coming next.' },
+  { label: 'Build something real', sub: 'Start with one move and grow it.' },
+  { label: 'Share your story', sub: 'Let your voice live on The Wall.' },
+  { label: 'Start unsure', sub: 'You do not have to know yet.' },
 ]
 
-const whyBelongCards = [
-  { text: 'You are creative' },
-  { text: 'You have a story to tell' },
-  { text: 'You want to build something' },
-  { text: 'You are still figuring things out' },
-  { text: 'You want to be part of something positive' },
-  { text: 'You want your future to feel possible' },
-]
+const belongingBadges = [
+  { text: 'For the quiet ones.', rotate: '-2deg', color: 'blue' },
+  { text: 'For the bold ones.', rotate: '1.5deg', color: 'gold' },
+  { text: 'For the ones still figuring it out.', rotate: '-1deg', color: 'light' },
+  { text: 'For the ones with ideas.', rotate: '2deg', color: 'blue' },
+  { text: "For the ones who haven't started yet.", rotate: '-1.5deg', color: 'light' },
+  { text: 'For the ones building anyway.', rotate: '1deg', color: 'gold' },
+] as const
 
 const cardDoodles = [
   <svg key="d0" width="60" height="60" viewBox="0 0 60 60" fill="none" aria-hidden="true">
@@ -293,116 +275,99 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── WHY JOIN MEIN? ───────────────────────────────────────────── */}
-      <section className="py-14 md:py-18 bg-gray-support/20">
+      {/* ─── WHY JOIN MEIN? — BENEFIT TICKER ─────────────────────────── */}
+      <section className="py-10 md:py-14 bg-charcoal">
         <div className="container-wide section-padding">
           <FadeUp>
-            <div className="text-center mb-10">
-              <SectionDivider />
-              <h2 className="mt-4 font-sora font-extrabold text-2xl md:text-3xl text-charcoal">
-                Why join Mein?
-              </h2>
-              <p className="mt-2 font-caveat text-xl text-gray-mid">
-                Because one move can open a door.
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-7">
+              <div>
+                <h2 className="font-sora font-extrabold text-xl md:text-2xl text-white">
+                  Why join Mein?
+                </h2>
+                <p className="mt-1 font-caveat text-lg text-gold-mein">
+                  Because one move can open a door.
+                </p>
+              </div>
+              <Link to="/join" className="btn-gold self-start sm:self-auto flex-shrink-0 text-sm">
+                Join the Movement
+                <ArrowRight size={14} />
+              </Link>
             </div>
           </FadeUp>
 
-          {/* Mobile: swipeable. Desktop: 4-col grid. */}
-          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 -mx-5 px-5 no-scrollbar md:grid md:grid-cols-4 md:overflow-visible md:pb-0 md:mx-0 md:px-0">
-            {whyJoinCards.map((card, i) => (
-              <FadeUp
-                key={card.title}
-                delay={i * 60}
-                className="snap-start flex-shrink-0 w-[72vw] sm:w-[44vw] md:w-auto"
-              >
-                <Link
-                  to={card.href}
-                  className="flex flex-col h-full bg-white border-2 border-gray-support rounded-2xl p-5 hover:border-blue-mein hover:shadow-lg hover:shadow-blue-mein/8 transition-all duration-200 group"
-                >
-                  <div className="w-11 h-11 rounded-xl bg-blue-pale flex items-center justify-center mb-4 group-hover:bg-blue-mein transition-colors duration-200 flex-shrink-0">
-                    <card.icon
-                      size={20}
-                      className="text-blue-mein group-hover:text-white transition-colors"
-                      strokeWidth={2}
-                    />
+          {/* Scrollable benefit strip — mobile horizontal, desktop wrapping row */}
+          <div className="flex overflow-x-auto no-scrollbar gap-3 pb-1 -mx-5 px-5 md:mx-0 md:px-0 md:flex-wrap">
+            {benefitStrip.map((item, i) => (
+              <FadeUp key={item.label} delay={i * 50} className="flex-shrink-0">
+                <div className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3 min-w-[200px] md:min-w-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gold-mein flex-shrink-0 mt-[7px]" />
+                  <div>
+                    <p className="font-sora font-bold text-white text-sm leading-tight">{item.label}</p>
+                    <p className="font-sora text-white/55 text-xs mt-0.5 leading-snug">{item.sub}</p>
                   </div>
-                  <p className="font-sora font-bold text-charcoal text-base mb-1.5">{card.title}</p>
-                  <p className="text-sm text-gray-dark font-sora flex-1 leading-relaxed">{card.desc}</p>
-                  <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-blue-mein font-sora group-hover:gap-2 transition-all duration-200">
-                    Start here
-                    <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
-                  </div>
-                </Link>
+                </div>
               </FadeUp>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ─── YOU BELONG HERE ──────────────────────────────────────────── */}
-      <section className="py-20 md:py-28 bg-white overflow-hidden">
-        <div className="container-wide section-padding">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
-            <FadeUp className="relative">
-              <div className="relative">
-                <div className="absolute inset-0 rounded-3xl bg-blue-pale scale-105" />
-                <div className="relative rounded-3xl bg-white border-2 border-blue-pale p-10 md:p-12">
-                  <OpenMIcon size={120} className="mb-6" />
-                  <HandwrittenAccent
-                    text="You belong before you have it all figured out."
-                    className="text-2xl md:text-3xl leading-tight block"
-                  />
-                  <div className="mt-6 flex flex-wrap gap-2">
-                    {['confident', 'creative', 'figuring it out', 'ambitious', 'shy', 'ready'].map((tag) => (
-                      <span
-                        key={tag}
-                        className="bg-white border border-gray-support rounded-full px-3 py-1 text-xs font-sora font-medium text-gray-dark"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="absolute top-4 right-4">
-                    <Star size={24} fill="#F4B400" stroke="none" />
-                  </div>
-                </div>
+      {/* ─── BELONGING MANIFESTO WALL ─────────────────────────────────── */}
+      <section className="relative py-20 md:py-28 bg-blue-mein overflow-hidden">
+        {/* Subtle Open M watermark */}
+        <div className="absolute inset-0 opacity-[0.06] pointer-events-none select-none flex items-center justify-center">
+          <OpenMIcon size={520} />
+        </div>
+
+        <div className="container-wide section-padding relative z-10">
+          <div className="max-w-4xl mx-auto">
+            <FadeUp>
+              <div className="text-center mb-10 md:mb-14">
+                <p className="font-caveat text-white/70 text-xl mb-3">This space is yours.</p>
+                <h2 className="font-sora font-extrabold text-4xl md:text-5xl text-white leading-tight">
+                  You belong here.
+                </h2>
+                <p className="mt-3 font-sora text-white/70 text-lg">
+                  Not when you have it all figured out. Right now.
+                </p>
               </div>
             </FadeUp>
 
-            <div>
-              <FadeUp>
-                <SectionDivider />
-                <h2 className="mt-5 font-sora font-extrabold text-3xl md:text-4xl text-charcoal leading-tight">
-                  You belong here.
-                </h2>
-              </FadeUp>
-              <FadeUp delay={100}>
-                <p className="mt-4 text-gray-dark text-lg leading-relaxed font-sora">
-                  Whether you are confused, uncertain, discouraged, ambitious, creative, or simply unsure — Mein is built for exactly where you are right now.
-                </p>
-              </FadeUp>
-
-              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {whyBelongCards.map((card, i) => (
-                  <FadeUp key={card.text} delay={i * 60}>
-                    <div className="flex items-start gap-3 bg-gray-support/40 rounded-xl p-4">
-                      <div className="w-5 h-5 rounded-full bg-blue-mein flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <div className="w-2 h-2 rounded-full bg-white" />
-                      </div>
-                      <p className="text-sm font-sora text-charcoal font-medium">{card.text}</p>
-                    </div>
+            {/* Expressive sticker badges — natural wrap with rotation */}
+            <div className="flex flex-wrap gap-3 justify-center">
+              {belongingBadges.map((badge, i) => {
+                const styles = {
+                  blue: 'bg-white text-blue-mein',
+                  gold: 'bg-gold-mein text-charcoal',
+                  light: 'bg-white/15 text-white border border-white/20',
+                }
+                return (
+                  <FadeUp key={badge.text} delay={i * 70}>
+                    <span
+                      className={`inline-block ${styles[badge.color]} font-sora font-bold text-sm md:text-base px-5 py-3 rounded-2xl shadow-lg`}
+                      style={{ transform: `rotate(${badge.rotate})` }}
+                    >
+                      {badge.text}
+                    </span>
                   </FadeUp>
-                ))}
-              </div>
+                )
+              })}
+            </div>
 
-              <FadeUp delay={400}>
-                <Link to="/join" className="mt-8 btn-outline-blue inline-flex">
+            <FadeUp delay={480}>
+              <p className="text-center mt-10 font-caveat text-white/60 text-xl">
+                No perfect story needed. Start with one move.
+              </p>
+            </FadeUp>
+
+            <FadeUp delay={560}>
+              <div className="text-center mt-8">
+                <Link to="/join" className="btn-gold text-base py-4 px-9 inline-flex">
                   Become a Mein Mover
                   <ArrowRight size={16} />
                 </Link>
-              </FadeUp>
-            </div>
+              </div>
+            </FadeUp>
           </div>
         </div>
       </section>
