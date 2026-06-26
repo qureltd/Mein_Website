@@ -55,16 +55,6 @@ const moveCards = [
     accent: '#2F6BFF',
     bg: '#EBF0FF',
   },
-  {
-    number: '05',
-    icon: HelpCircle,
-    label: 'Not sure yet?',
-    tagline: "That's okay.",
-    description: "You don't have to know your move yet. Tell us what you're into and we'll help you find your first step.",
-    href: '/make-your-move',
-    accent: '#6B7280',
-    bg: '#F3F4F6',
-  },
 ]
 
 const benefitStrip = [
@@ -232,19 +222,98 @@ export default function HomePage() {
                 You do not need to know every step. Choose one and start there.
               </p>
               {/* Mobile-only swipe hint */}
-              <p className="mt-2 font-caveat text-gray-mid text-base md:hidden">
-                Swipe to see all moves.
+              <p className="mt-2 font-caveat text-gray-mid text-lg md:hidden">
+                Swipe to see all moves →
               </p>
             </div>
           </FadeUp>
 
-          {/* Mobile: horizontal snap-scroll. sm+: grid */}
-          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-5 px-5 no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-5 md:overflow-visible md:pb-0 md:mx-0 md:px-0 md:gap-5 items-stretch">
+          {/* ── Mobile: horizontal snap-scroll with all 5 cards + fade edge ── */}
+          {/* ── Desktop/tablet: 4-column grid for primary cards only ─────── */}
+
+          {/* Mobile scroll wrapper — right-edge fade signals more content */}
+          <div className="relative md:hidden">
+            <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-5 px-5 no-scrollbar items-stretch">
+              {/* 4 primary move cards */}
+              {moveCards.map((card, i) => (
+                <div key={card.label} className="snap-start flex-shrink-0 w-[78vw]">
+                  <Link
+                    to={card.href}
+                    className="move-card flex flex-col h-full group"
+                    style={{ '--accent': card.accent } as React.CSSProperties}
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <span className="font-sora font-black text-4xl leading-none tracking-tight" style={{ color: card.bg }}>
+                        {card.number}
+                      </span>
+                      <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: card.bg }}>
+                        <card.icon size={20} style={{ color: card.accent }} strokeWidth={2} />
+                      </div>
+                    </div>
+                    <p className="text-[10px] font-sora font-semibold uppercase tracking-[0.18em] mb-1" style={{ color: card.accent }}>
+                      Move {card.number} — {card.label}
+                    </p>
+                    <HandwrittenAccent text={card.tagline} className="text-2xl mb-2" />
+                    <p className="text-sm text-gray-dark leading-relaxed flex-1 font-sora">{card.description}</p>
+                    <div className="mt-5 flex items-center gap-2 text-sm font-semibold font-sora group-hover:gap-3 transition-all duration-200" style={{ color: card.accent }}>
+                      Make this move.
+                      <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1" />
+                    </div>
+                    <div className="absolute bottom-4 right-4 opacity-[0.07] pointer-events-none select-none">
+                      {cardDoodles[i]}
+                    </div>
+                  </Link>
+                </div>
+              ))}
+
+              {/* 5th card — Not sure yet? */}
+              <div className="snap-start flex-shrink-0 w-[78vw]">
+                <Link
+                  to="/make-your-move"
+                  className="flex flex-col h-full rounded-2xl border-2 border-dashed border-gray-support bg-white p-6 group hover:border-blue-mein/40 hover:bg-blue-pale/20 transition-all duration-200 relative overflow-hidden"
+                >
+                  <div className="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0 mb-4 group-hover:bg-blue-pale transition-colors">
+                    <HelpCircle size={20} className="text-gray-400 group-hover:text-blue-mein transition-colors" strokeWidth={1.8} />
+                  </div>
+                  <p className="text-[10px] font-sora font-semibold uppercase tracking-[0.18em] text-gray-400 mb-1">
+                    Not sure yet?
+                  </p>
+                  <HandwrittenAccent text="That's okay." className="text-2xl mb-2" />
+                  <p className="text-sm text-gray-dark leading-relaxed flex-1 font-sora">
+                    You do not need to know your move yet. Start here and we'll help you find your first move.
+                  </p>
+                  <div className="mt-5 flex items-center gap-2 text-sm font-semibold font-sora text-gray-400 group-hover:text-blue-mein group-hover:gap-3 transition-all duration-200">
+                    Help me start
+                    <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1" />
+                  </div>
+                  <div className="absolute bottom-4 right-4 opacity-[0.07] pointer-events-none select-none">
+                    {cardDoodles[4]}
+                  </div>
+                </Link>
+              </div>
+            </div>
+
+            {/* Right-edge fade — signals more cards to scroll to */}
+            <div className="pointer-events-none absolute right-0 top-0 bottom-4 w-14 bg-gradient-to-l from-gray-support/40 to-transparent" />
+
+            {/* Dot scroll indicator — 5 dots */}
+            <div className="flex items-center justify-center gap-1.5 mt-4">
+              {[...Array(5)].map((_, i) => (
+                <span
+                  key={i}
+                  className={`block rounded-full transition-all ${i === 0 ? 'w-4 h-1.5 bg-blue-mein' : 'w-1.5 h-1.5 bg-gray-300'}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop 4-column grid */}
+          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-5 items-stretch">
             {moveCards.map((card, i) => (
-              <FadeUp key={card.label} delay={i * 80} className="snap-start flex-shrink-0 w-[82vw] md:w-auto">
+              <FadeUp key={card.label} delay={i * 80}>
                 <Link
                   to={card.href}
-                  className={`move-card flex flex-col h-full group${i === moveCards.length - 1 ? ' border-dashed' : ''}`}
+                  className="move-card flex flex-col h-full group"
                   style={{
                     '--accent': card.accent,
                     transform: `rotate(${i % 2 === 0 ? '-0.5' : '0.5'}deg)`,
@@ -258,40 +327,22 @@ export default function HomePage() {
                   }}
                 >
                   <div className="flex items-start justify-between mb-4">
-                    <span
-                      className="font-sora font-black text-4xl leading-none tracking-tight"
-                      style={{ color: card.bg }}
-                    >
+                    <span className="font-sora font-black text-4xl leading-none tracking-tight" style={{ color: card.bg }}>
                       {card.number}
                     </span>
-                    <div
-                      className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={{ backgroundColor: card.bg }}
-                    >
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: card.bg }}>
                       <card.icon size={20} style={{ color: card.accent }} strokeWidth={2} />
                     </div>
                   </div>
-
-                  <p
-                    className="text-[10px] font-sora font-semibold uppercase tracking-[0.18em] mb-1"
-                    style={{ color: card.accent }}
-                  >
+                  <p className="text-[10px] font-sora font-semibold uppercase tracking-[0.18em] mb-1" style={{ color: card.accent }}>
                     Move {card.number} — {card.label}
                   </p>
-
                   <HandwrittenAccent text={card.tagline} className="text-2xl mb-2" />
-                  <p className="text-sm text-gray-dark leading-relaxed flex-1 font-sora">
-                    {card.description}
-                  </p>
-
-                  <div
-                    className="mt-5 flex items-center gap-2 text-sm font-semibold font-sora group-hover:gap-3 transition-all duration-200"
-                    style={{ color: card.accent }}
-                  >
-                    {i === moveCards.length - 1 ? 'Help me start' : 'Make this move.'}
+                  <p className="text-sm text-gray-dark leading-relaxed flex-1 font-sora">{card.description}</p>
+                  <div className="mt-5 flex items-center gap-2 text-sm font-semibold font-sora group-hover:gap-3 transition-all duration-200" style={{ color: card.accent }}>
+                    Make this move.
                     <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1" />
                   </div>
-
                   <div className="absolute bottom-4 right-4 opacity-[0.07] pointer-events-none select-none">
                     {cardDoodles[i]}
                   </div>
@@ -299,6 +350,34 @@ export default function HomePage() {
               </FadeUp>
             ))}
           </div>
+
+          {/* ── "Not sure yet?" fallback panel — desktop only ───────────── */}
+          <FadeUp delay={400} className="hidden md:block">
+            <div className="mt-8">
+              <Link
+                to="/make-your-move"
+                className="group flex flex-col sm:flex-row items-center gap-6 rounded-2xl border-2 border-dashed border-gray-support bg-white/70 px-8 py-6 hover:border-blue-mein/40 hover:bg-blue-pale/20 transition-all duration-300"
+              >
+                <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center group-hover:bg-blue-pale transition-colors">
+                  <HelpCircle size={22} className="text-gray-400 group-hover:text-blue-mein transition-colors" strokeWidth={1.8} />
+                </div>
+                <div className="text-center sm:text-left flex-1">
+                  <p className="font-sora font-bold text-charcoal text-base">
+                    Not sure yet?{' '}
+                    <span className="font-caveat font-normal text-lg text-blue-mein">That's okay.</span>
+                  </p>
+                  <p className="mt-0.5 text-sm text-gray-dark font-sora">
+                    You do not need to know your move yet. Start here and we'll help you find your first move.
+                  </p>
+                </div>
+                <div className="flex-shrink-0 flex items-center gap-1.5 text-sm font-semibold font-sora text-gray-400 group-hover:text-blue-mein group-hover:gap-3 transition-all duration-200">
+                  Help me start
+                  <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1" />
+                </div>
+              </Link>
+            </div>
+          </FadeUp>
+
         </div>
       </section>
 
