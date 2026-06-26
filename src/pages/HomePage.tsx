@@ -179,7 +179,7 @@ export default function HomePage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <StickerNote text="Future me." rotate={-2} color="blue" />
-                    <MovementFragment text="Step in." className="text-sm text-gray-mid" />
+                    <MovementFragment text="Step in. Pick your move." className="text-sm text-gray-mid" />
                   </div>
                 </div>
               </FadeUp>

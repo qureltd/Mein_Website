@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ArrowRight, Pen, Play, Hammer, Megaphone, Star, Upload, Check, AlertCircle } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
-import { OpenMIcon, HandwrittenAccent, SectionDivider } from '../components/BrandElements'
+import { OpenMIcon, HandwrittenAccent, SectionDivider, StarAccent } from '../components/BrandElements'
 import { supabase } from '../lib/supabase'
 
 const moveTypes = [
@@ -144,19 +144,22 @@ export default function MakeYourMovePage() {
     <div className="with-mobile-cta">
       {/* ─── HERO ─── */}
       <section className="relative pt-32 pb-14 md:pt-40 md:pb-20 bg-white overflow-hidden">
-        <div className="absolute right-0 top-0 translate-x-1/3 opacity-[0.04] pointer-events-none">
+        <div className="absolute right-0 top-0 translate-x-1/3 opacity-[0.04] pointer-events-none select-none">
           <OpenMIcon size={500} />
         </div>
         <div className="container-wide section-padding relative z-10 max-w-3xl">
           <FadeUp>
+            <p className="font-caveat text-blue-mein text-xl mb-3">
+              How do you want to make your move?
+            </p>
             <h1 className="font-sora font-extrabold text-5xl md:text-6xl text-charcoal leading-tight">
-              Your next move{' '}
+              Your move{' '}
               <HandwrittenAccent text="starts here." className="text-5xl md:text-6xl" />
             </h1>
           </FadeUp>
           <FadeUp delay={150}>
             <p className="mt-5 text-lg text-gray-dark font-sora">
-              You do not need to know every step. Choose one move and start there.
+              Choose one lane. Start there. One move is enough.
             </p>
           </FadeUp>
         </div>
@@ -172,29 +175,53 @@ export default function MakeYourMovePage() {
               <FadeUp>
                 <div className="mb-10">
                   <SectionDivider />
-                  <h2 className="mt-4 font-sora font-bold text-2xl text-charcoal">What move are you making?</h2>
+                  <h2 className="mt-4 font-sora font-bold text-2xl text-charcoal">Choose your move.</h2>
+                  <p className="mt-1 text-sm text-gray-mid font-sora md:hidden">Swipe to see all options.</p>
                 </div>
               </FadeUp>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+              {/* Mobile: horizontal swipeable scroll. md+: grid. */}
+              <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-5 px-5 no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:overflow-visible md:pb-0 md:mx-0 md:px-0 items-stretch">
                 {moveTypes.map((move, i) => (
-                  <FadeUp key={move.id} delay={i * 70}>
+                  <FadeUp
+                    key={move.id}
+                    delay={i * 60}
+                    className="snap-start flex-shrink-0 w-[82vw] md:w-auto"
+                  >
                     <button
                       onClick={() => handleSelect(move.id)}
-                      className="move-card text-left w-full flex flex-col group"
+                      className="move-card text-left w-full h-full flex flex-col group"
+                      style={{ '--accent': move.accent } as React.CSSProperties}
                     >
-                      <div
-                        className="w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110"
-                        style={{ backgroundColor: move.bg }}
-                      >
-                        <move.icon size={20} style={{ color: move.accent }} strokeWidth={2} />
+                      {/* Number + icon */}
+                      <div className="flex items-start justify-between mb-4">
+                        <span
+                          className="font-sora font-black text-4xl leading-none tracking-tight"
+                          style={{ color: move.bg }}
+                        >
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <div
+                          className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110"
+                          style={{ backgroundColor: move.bg }}
+                        >
+                          <move.icon size={20} style={{ color: move.accent }} strokeWidth={2} />
+                        </div>
                       </div>
-                      <span className="tag-badge mb-3 self-start text-xs" style={{ color: move.accent, backgroundColor: move.bg }}>
-                        {move.label}
-                      </span>
+                      <p
+                        className="text-[10px] font-sora font-semibold uppercase tracking-[0.18em] mb-1"
+                        style={{ color: move.accent }}
+                      >
+                        Move {String(i + 1).padStart(2, '0')} — {move.label}
+                      </p>
                       <HandwrittenAccent text={move.tagline} className="text-xl mb-2" />
-                      <p className="text-sm text-gray-dark font-sora">{move.description}</p>
-                      <div className="mt-5 flex items-center gap-1.5 text-sm font-semibold font-sora text-blue-mein">
-                        Make this move <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                      <p className="text-sm text-gray-dark font-sora flex-1">{move.description}</p>
+                      <div
+                        className="mt-5 flex items-center gap-1.5 text-sm font-semibold font-sora group-hover:gap-3 transition-all duration-200"
+                        style={{ color: move.accent }}
+                      >
+                        Make this move
+                        <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
                       </div>
                     </button>
                   </FadeUp>
@@ -217,6 +244,15 @@ export default function MakeYourMovePage() {
                 <span className="tag-badge">{selectedMove.label}</span>
               </div>
 
+              {/* Path connector — visual bridge from selection to form */}
+              <div className="flex justify-center mb-6">
+                <div className="flex flex-col items-center">
+                  <div className="w-2 h-2 rounded-full bg-blue-mein" />
+                  <div className="mt-0.5 h-10" style={{ width: 1, borderLeft: '2px dashed rgba(47,107,255,0.3)' }} />
+                  <div className="w-2 h-2 rounded-full bg-blue-mein/30" />
+                </div>
+              </div>
+
               <div className="bg-gray-support/20 rounded-3xl p-7 md:p-10 border-2 border-gray-support">
                 <div
                   className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5"
@@ -225,8 +261,9 @@ export default function MakeYourMovePage() {
                   <selectedMove.icon size={24} style={{ color: selectedMove.accent }} strokeWidth={2} />
                 </div>
                 <h2 className="font-sora font-extrabold text-2xl md:text-3xl text-charcoal">
-                  {selectedMove.tagline}
+                  Your move starts here.
                 </h2>
+                <HandwrittenAccent text={selectedMove.tagline} className="text-xl mt-1 block" />
                 <p className="mt-2 text-gray-dark font-sora">{selectedMove.description}</p>
 
                 <form onSubmit={handleSubmit} className="mt-8 space-y-5">
@@ -319,9 +356,9 @@ export default function MakeYourMovePage() {
                       <div className="flex items-start gap-3 mb-4">
                         <AlertCircle size={18} className="text-gold-dark mt-0.5 flex-shrink-0" />
                         <div>
-                          <p className="font-sora font-bold text-sm text-charcoal">Parent or Guardian Required</p>
+                          <p className="font-sora font-bold text-sm text-charcoal">We keep it safe. We need your guardian's details.</p>
                           <p className="text-xs text-gray-dark mt-0.5 font-sora">
-                            Because you are under 18, we need parent or guardian details before your work can be published publicly.
+                            Your submission is safe with us. We'll contact your guardian and get their consent before anything goes live.
                           </p>
                         </div>
                       </div>
@@ -394,21 +431,29 @@ export default function MakeYourMovePage() {
           {/* Step: Success */}
           {step === 'success' && (
             <FadeUp>
-              <div className="text-center py-12">
-                <div className="w-20 h-20 rounded-full bg-blue-pale flex items-center justify-center mx-auto mb-6">
-                  <Check size={32} className="text-blue-mein" strokeWidth={2.5} />
+              <div className="text-center py-16 md:py-20">
+                {/* Celebration graphic: stars + Open M */}
+                <div className="flex items-center justify-center gap-5 mb-6">
+                  <StarAccent className="opacity-60" />
+                  <div className="w-24 h-24 rounded-full bg-blue-pale flex items-center justify-center shadow-lg shadow-blue-mein/10">
+                    <OpenMIcon size={52} />
+                  </div>
+                  <StarAccent className="opacity-60" />
                 </div>
-                <h2 className="font-sora font-extrabold text-3xl md:text-4xl text-charcoal">
+
+                <h2 className="font-sora font-extrabold text-3xl md:text-5xl text-charcoal">
                   Your move has landed.
                 </h2>
-                <HandwrittenAccent text="We've got it." className="text-2xl block mt-3" />
+                <HandwrittenAccent text="The Mein team has got it." className="text-2xl block mt-3" />
+
                 <p className="mt-5 text-gray-dark font-sora max-w-md mx-auto leading-relaxed">
-                  Your submission is now under review. We'll be in touch at the email you provided.
+                  The Mein team will review it and get back to you at the email you provided.
                   {form.age && parseInt(form.age) < 18 && (
                     <> A consent request has been sent to your guardian's email.</>
                   )}
                 </p>
-                <div className="mt-8 flex flex-wrap gap-4 justify-center">
+
+                <div className="mt-9 flex flex-wrap gap-4 justify-center">
                   <button
                     onClick={() => { setStep('select'); setForm(defaultForm); setSelected('') }}
                     className="btn-primary"
