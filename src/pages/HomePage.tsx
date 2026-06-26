@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Pen, Hammer, Megaphone, Play, Star, HelpCircle } from 'lucide-react'
+import { ArrowRight, Pen, Mic, Lightbulb, Megaphone, HelpCircle } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
 import {
   OpenMIcon,
@@ -9,7 +9,6 @@ import {
   StarAccent,
   ConsentBadge,
   StickerNote,
-  MovementFragment,
 } from '../components/BrandElements'
 import PortalZone from '../components/PortalZone'
 import MeinEnergyTexture from '../components/MeinEnergyTexture'
@@ -23,27 +22,27 @@ const moveCards = [
     description: 'Submit art, writing, ideas, designs, photography, or poetry. This is your canvas.',
     href: '/make-your-move?type=create',
     accent: '#2F6BFF',
-    bg: '#EBF0FF',
+    bg: '#dce8ff',
   },
   {
     number: '02',
-    icon: Play,
+    icon: Mic,
     label: 'Speak',
     tagline: 'Say it.',
     description: 'Upload a video, share a story, or send a future-self message. Your voice belongs here.',
     href: '/make-your-move?type=speak',
     accent: '#111111',
-    bg: '#F5F5F5',
+    bg: '#efefef',
   },
   {
     number: '03',
-    icon: Hammer,
+    icon: Lightbulb,
     label: 'Build',
     tagline: 'Start it.',
     description: 'Explore the youth entrepreneur route and start shaping an idea into something real.',
     href: '/make-your-move?type=build',
-    accent: '#F4B400',
-    bg: '#FFF8E1',
+    accent: '#b88000',
+    bg: '#fff3c4',
   },
   {
     number: '04',
@@ -52,8 +51,8 @@ const moveCards = [
     tagline: 'Own it.',
     description: 'Apply as a Mein content creator or youth voice and shape this movement from the inside.',
     href: '/make-your-move?type=represent',
-    accent: '#2F6BFF',
-    bg: '#EBF0FF',
+    accent: '#1a4fdb',
+    bg: '#e6eeff',
   },
 ]
 
@@ -76,24 +75,48 @@ const belongingBadges = [
 ] as const
 
 const cardDoodles = [
-  <svg key="d0" width="60" height="60" viewBox="0 0 60 60" fill="none" aria-hidden="true">
-    <line x1="12" y1="50" x2="50" y2="12" stroke="#2F6BFF" strokeWidth="2.5" strokeLinecap="round" />
-    <line x1="18" y1="55" x2="55" y2="18" stroke="#2F6BFF" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="5 6" />
+  /* Create — pencil + star + wavy paint stroke */
+  <svg key="d0" width="96" height="96" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+    <path d="M50 10L58 10L58 62L54 70L50 62L50 10Z" stroke="#2F6BFF" strokeWidth="2.5" strokeLinejoin="round" />
+    <path d="M50 62L54 72L58 62" stroke="#2F6BFF" strokeWidth="2" fill="none" />
+    <line x1="50" y1="18" x2="58" y2="18" stroke="#2F6BFF" strokeWidth="3" strokeLinecap="round" />
+    <path d="M20 20L22.5 27H30L24 31.5L26 38.5L20 34L14 38.5L16 31.5L10 27H17.5Z" stroke="#2F6BFF" strokeWidth="2" strokeLinejoin="round" />
+    <path d="M10 80Q22 70 34 80Q44 88 56 80Q66 72 76 80" stroke="#2F6BFF" strokeWidth="2.5" strokeLinecap="round" fill="none" />
   </svg>,
-  <svg key="d1" width="60" height="60" viewBox="0 0 60 60" fill="none" aria-hidden="true">
-    <path d="M6 30Q16 18 26 30Q36 42 46 30Q52 24 56 30" stroke="#111111" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-    <path d="M10 40Q20 28 30 40Q40 50 50 40" stroke="#111111" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+  /* Speak — mic body + stand + outward waves */
+  <svg key="d1" width="96" height="96" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+    <rect x="36" y="8" width="24" height="40" rx="12" stroke="#111111" strokeWidth="2.5" />
+    <path d="M22 42C22 58 34 68 48 68C62 68 74 58 74 42" stroke="#111111" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+    <line x1="48" y1="68" x2="48" y2="82" stroke="#111111" strokeWidth="2.5" strokeLinecap="round" />
+    <line x1="36" y1="82" x2="60" y2="82" stroke="#111111" strokeWidth="2.5" strokeLinecap="round" />
+    <path d="M14 24Q8 32 14 40" stroke="#111111" strokeWidth="2" strokeLinecap="round" fill="none" />
+    <path d="M82 24Q88 32 82 40" stroke="#111111" strokeWidth="2" strokeLinecap="round" fill="none" />
   </svg>,
-  <svg key="d2" width="60" height="60" viewBox="0 0 60 60" fill="none" aria-hidden="true">
-    <rect x="8" y="26" width="14" height="26" rx="2" stroke="#F4B400" strokeWidth="2.5" />
-    <rect x="30" y="12" width="14" height="40" rx="2" stroke="#F4B400" strokeWidth="2.5" />
+  /* Build — lightbulb + filament arc + spark rays */
+  <svg key="d2" width="96" height="96" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+    <path d="M48 10C34 10 22 22 22 36C22 46 28 54 36 58V68H60V58C68 54 74 46 74 36C74 22 62 10 48 10Z" stroke="#b88000" strokeWidth="2.5" strokeLinejoin="round" />
+    <line x1="36" y1="64" x2="60" y2="64" stroke="#b88000" strokeWidth="2.5" strokeLinecap="round" />
+    <line x1="38" y1="70" x2="58" y2="70" stroke="#b88000" strokeWidth="2" strokeLinecap="round" />
+    <path d="M38 36Q48 28 58 36" stroke="#b88000" strokeWidth="2" strokeLinecap="round" fill="none" />
+    <line x1="76" y1="12" x2="82" y2="6" stroke="#b88000" strokeWidth="2" strokeLinecap="round" />
+    <line x1="82" y1="20" x2="90" y2="18" stroke="#b88000" strokeWidth="2" strokeLinecap="round" />
+    <line x1="72" y1="6" x2="76" y2="0" stroke="#b88000" strokeWidth="1.5" strokeLinecap="round" />
   </svg>,
-  <svg key="d3" width="60" height="60" viewBox="0 0 60 60" fill="none" aria-hidden="true">
-    <path d="M30 8L35.5 23.5H52L38.5 32.5L43 48L30 39L17 48L21.5 32.5L8 23.5H24.5L30 8Z" stroke="#2F6BFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+  /* Represent — shield with star inside */
+  <svg key="d3" width="96" height="96" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+    <path d="M48 8L76 20V44C76 62 64 76 48 84C32 76 20 62 20 44V20Z" stroke="#1a4fdb" strokeWidth="2.5" strokeLinejoin="round" />
+    <path d="M48 28L51.5 38H62L53.5 44L56.5 54L48 48L39.5 54L42.5 44L34 38H44.5Z" stroke="#1a4fdb" strokeWidth="2" strokeLinejoin="round" fill="#1a4fdb" fillOpacity="0.12" />
   </svg>,
-  <svg key="d4" width="60" height="60" viewBox="0 0 60 60" fill="none" aria-hidden="true">
-    <path d="M22 20C22 14.477 26.477 10 32 10C37.523 10 42 14.477 42 20C42 24.5 39 27.5 34.5 30C33 30.9 32 32.3 32 34" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round" />
-    <circle cx="32" cy="42" r="2.5" fill="#9CA3AF" />
+  /* Not sure yet — compass rose */
+  <svg key="d4" width="96" height="96" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+    <circle cx="48" cy="48" r="34" stroke="#9CA3AF" strokeWidth="2.5" />
+    <path d="M48 18L54 48L48 54L42 48Z" stroke="#9CA3AF" strokeWidth="2" fill="#9CA3AF" fillOpacity="0.3" />
+    <path d="M48 78L42 48L48 54L54 48Z" stroke="#9CA3AF" strokeWidth="2" />
+    <circle cx="48" cy="48" r="4" fill="#9CA3AF" />
+    <line x1="48" y1="14" x2="48" y2="18" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" />
+    <line x1="48" y1="78" x2="48" y2="82" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" />
+    <line x1="14" y1="48" x2="18" y2="48" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" />
+    <line x1="78" y1="48" x2="82" y2="48" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" />
   </svg>,
 ]
 
@@ -135,13 +158,10 @@ export default function HomePage() {
 
               <FadeUp delay={130}>
                 <h1 className="font-sora font-extrabold text-5xl md:text-6xl lg:text-7xl text-charcoal leading-[1.1] tracking-tight">
-                  Building the right{' '}
-                  <span className="relative inline-block">
-                    <span className="text-blue-mein">Mein</span>
-                    <HandwrittenAccent
-                      text="Set."
-                      className="block text-4xl md:text-5xl lg:text-6xl mt-1"
-                    />
+                  <span className="block">Building the right</span>
+                  <span className="block mt-1">
+                    <span className="text-blue-mein">Mein</span>{' '}
+                    <HandwrittenAccent text="Set." className="text-5xl md:text-6xl lg:text-7xl" />
                   </span>
                 </h1>
               </FadeUp>
@@ -187,13 +207,12 @@ export default function HomePage() {
                       <div className="absolute inset-0 flex items-center justify-center">
                         <OpenMIcon size={32} />
                       </div>
-                      {/* Small gold dot on orbit */}
                       <div className="absolute top-0.5 right-2 w-2 h-2 rounded-full bg-gold-mein" />
                     </div>
-                    {/* One sticker + fragment */}
-                    <div className="flex flex-col gap-1.5">
-                      <StickerNote text="Future me." rotate={-2} color="blue" />
-                      <MovementFragment text="Step in. Pick your move." className="text-sm text-gray-mid" />
+                    {/* Two readable sticker labels */}
+                    <div className="flex flex-col gap-2">
+                      <StickerNote text="Future me." rotate={-2} color="blue" className="text-base px-4 py-2 font-semibold shadow-md" />
+                      <StickerNote text="My move." rotate={1.5} color="gold" className="text-base px-4 py-2 font-semibold shadow-md" />
                     </div>
                   </div>
                 </div>
@@ -240,13 +259,13 @@ export default function HomePage() {
                   <Link
                     to={card.href}
                     className="move-card flex flex-col h-full group"
-                    style={{ '--accent': card.accent } as React.CSSProperties}
+                    style={{ '--accent': card.accent, background: card.bg } as React.CSSProperties}
                   >
                     <div className="flex items-start justify-between mb-4">
-                      <span className="font-sora font-black text-4xl leading-none tracking-tight" style={{ color: card.bg }}>
+                      <span className="font-sora font-black text-5xl leading-none tracking-tight" style={{ color: card.accent, opacity: 0.12 }}>
                         {card.number}
                       </span>
-                      <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: card.bg }}>
+                      <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-white/60">
                         <card.icon size={20} style={{ color: card.accent }} strokeWidth={2} />
                       </div>
                     </div>
@@ -259,7 +278,7 @@ export default function HomePage() {
                       Make this move.
                       <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1" />
                     </div>
-                    <div className="absolute bottom-4 right-4 opacity-[0.07] pointer-events-none select-none">
+                    <div className="absolute bottom-3 right-3 opacity-[0.15] pointer-events-none select-none">
                       {cardDoodles[i]}
                     </div>
                   </Link>
@@ -286,7 +305,7 @@ export default function HomePage() {
                     Help me start
                     <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1" />
                   </div>
-                  <div className="absolute bottom-4 right-4 opacity-[0.07] pointer-events-none select-none">
+                  <div className="absolute bottom-3 right-3 opacity-[0.15] pointer-events-none select-none">
                     {cardDoodles[4]}
                   </div>
                 </Link>
@@ -316,6 +335,7 @@ export default function HomePage() {
                   className="move-card flex flex-col h-full group"
                   style={{
                     '--accent': card.accent,
+                    background: card.bg,
                     transform: `rotate(${i % 2 === 0 ? '-0.5' : '0.5'}deg)`,
                     transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
                   } as React.CSSProperties}
@@ -327,10 +347,10 @@ export default function HomePage() {
                   }}
                 >
                   <div className="flex items-start justify-between mb-4">
-                    <span className="font-sora font-black text-4xl leading-none tracking-tight" style={{ color: card.bg }}>
+                    <span className="font-sora font-black text-5xl leading-none tracking-tight" style={{ color: card.accent, opacity: 0.12 }}>
                       {card.number}
                     </span>
-                    <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: card.bg }}>
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-white/60">
                       <card.icon size={20} style={{ color: card.accent }} strokeWidth={2} />
                     </div>
                   </div>
@@ -343,7 +363,7 @@ export default function HomePage() {
                     Make this move.
                     <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1" />
                   </div>
-                  <div className="absolute bottom-4 right-4 opacity-[0.07] pointer-events-none select-none">
+                  <div className="absolute bottom-3 right-3 opacity-[0.15] pointer-events-none select-none">
                     {cardDoodles[i]}
                   </div>
                 </Link>

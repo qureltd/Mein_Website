@@ -1,9 +1,9 @@
-import { OpenMIcon, StickerNote, MovementFragment } from './BrandElements'
+import { OpenMIcon, StickerNote } from './BrandElements'
 
 export default function PortalZone() {
   return (
     <div
-      className="relative w-full max-w-[360px] mx-auto select-none"
+      className="relative w-full max-w-[380px] mx-auto select-none"
       style={{ aspectRatio: '1' }}
       aria-hidden="true"
     >
@@ -23,25 +23,27 @@ export default function PortalZone() {
         </div>
       </div>
 
-      {/* Sticker notes positioned around the orbit */}
-      <div className="absolute -top-3 left-4">
-        <StickerNote text="Creating it." rotate={-3} color="blue" />
+      {/* Sticker notes — larger, readable pill labels */}
+      <div className="absolute -top-5 left-6">
+        <StickerNote text="Creating it." rotate={-3} color="blue" className="text-base px-4 py-2 font-semibold shadow-lg" />
       </div>
-      <div className="absolute bottom-10 -left-1">
-        <StickerNote text="My move." rotate={2} color="gold" />
+      <div className="absolute bottom-8 -left-4">
+        <StickerNote text="My move." rotate={2} color="gold" className="text-base px-4 py-2 font-semibold shadow-lg" />
       </div>
-      <div className="absolute bottom-4 right-2">
-        <StickerNote text="Future me." rotate={-1.5} color="white" />
+      <div className="absolute bottom-0 right-0">
+        <StickerNote text="Future me." rotate={-1.5} color="white" className="text-base px-4 py-2 font-semibold shadow-lg" />
       </div>
 
-      {/* Movement fragment */}
-      <div className="absolute top-[16%] -right-6">
-        <MovementFragment text="Building it." className="text-sm text-gray-mid" />
+      {/* Movement fragment — larger, higher contrast */}
+      <div className="absolute top-[14%] -right-8">
+        <span className="font-caveat text-base font-semibold text-charcoal leading-none">
+          Building it.
+        </span>
       </div>
 
       {/* Small orbit accent dots */}
-      <div className="absolute top-[9%] right-[22%] w-2 h-2 rounded-full bg-gold-mein" />
-      <div className="absolute bottom-[18%] left-[9%] w-1.5 h-1.5 rounded-full bg-blue-mein/50" />
+      <div className="absolute top-[9%] right-[22%] w-2.5 h-2.5 rounded-full bg-gold-mein" />
+      <div className="absolute bottom-[18%] left-[9%] w-2 h-2 rounded-full bg-blue-mein/50" />
     </div>
   )
 }
