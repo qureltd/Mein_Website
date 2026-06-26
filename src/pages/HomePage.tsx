@@ -482,75 +482,77 @@ export default function HomePage() {
       </section>
 
       {/* ─── BELONGING MANIFESTO WALL ─────────────────────────────────── */}
-      <section className="relative pt-16 pb-0 md:pt-24 bg-blue-mein overflow-hidden">
+      <section className="relative py-16 md:py-20 bg-blue-mein overflow-hidden">
         {/* Watermark */}
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none select-none flex items-center justify-center">
           <OpenMIcon size={560} />
         </div>
 
-        <div className="container-wide section-padding relative z-10">
-          <div className="max-w-4xl mx-auto">
-            <FadeUp>
-              <div className="text-center mb-10 md:mb-12">
-                <p className="font-caveat text-white/80 text-2xl mb-3">This space is yours.</p>
-                <h2 className="font-sora font-extrabold text-4xl md:text-5xl text-white leading-tight">
+        <div className="relative z-10 max-w-7xl mx-auto px-5 md:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+
+            {/* Left — text, badges, CTA */}
+            <div>
+              <FadeUp>
+                <p className="font-caveat text-white/80 text-2xl mb-3 text-center lg:text-left">This space is yours.</p>
+                <h2 className="font-sora font-extrabold text-4xl md:text-5xl text-white leading-tight text-center lg:text-left">
                   You belong here.
                 </h2>
-                <p className="mt-3 font-sora text-white/70 text-lg">
+                <p className="mt-3 font-sora text-white/70 text-lg text-center lg:text-left">
                   Not when you have it all figured out. Right now.
                 </p>
-              </div>
-            </FadeUp>
+              </FadeUp>
 
-            {/* Sticker badges — natural wrap, small rotations */}
-            <div className="flex flex-wrap gap-3 md:gap-4 justify-center">
-              {belongingBadges.map((badge, i) => {
-                const styles = {
-                  blue: 'bg-white text-blue-mein',
-                  gold: 'bg-gold-mein text-charcoal',
-                  light: 'bg-white/18 text-white',
-                }
-                return (
-                  <FadeUp key={badge.text} delay={i * 70}>
-                    <span
-                      className={`inline-block ${styles[badge.color]} font-sora font-bold text-sm md:text-base px-5 py-3 rounded-2xl shadow-md`}
-                      style={{ transform: `rotate(${badge.rotate})` }}
-                    >
-                      {badge.text}
-                    </span>
-                  </FadeUp>
-                )
-              })}
+              {/* Sticker badges */}
+              <div className="flex flex-wrap gap-3 md:gap-4 justify-center lg:justify-start mt-8">
+                {belongingBadges.map((badge, i) => {
+                  const styles = {
+                    blue: 'bg-white text-blue-mein',
+                    gold: 'bg-gold-mein text-charcoal',
+                    light: 'bg-white/18 text-white',
+                  }
+                  return (
+                    <FadeUp key={badge.text} delay={i * 70}>
+                      <span
+                        className={`inline-block ${styles[badge.color]} font-sora font-bold text-sm md:text-base px-5 py-3 rounded-2xl shadow-md`}
+                        style={{ transform: `rotate(${badge.rotate})` }}
+                      >
+                        {badge.text}
+                      </span>
+                    </FadeUp>
+                  )
+                })}
+              </div>
+
+              <FadeUp delay={500}>
+                <p className="mt-8 font-caveat text-white/75 text-2xl text-center lg:text-left">
+                  No perfect story needed. Start with one move.
+                </p>
+              </FadeUp>
+
+              <FadeUp delay={580}>
+                <div className="mt-6 text-center lg:text-left">
+                  <Link to="/join" className="btn-gold text-base py-4 px-9 inline-flex">
+                    Become a Mein Mover
+                    <ArrowRight size={16} />
+                  </Link>
+                </div>
+              </FadeUp>
             </div>
 
-            <FadeUp delay={500}>
-              <p className="text-center mt-10 font-caveat text-white/75 text-2xl">
-                No perfect story needed. Start with one move.
-              </p>
-            </FadeUp>
-
-            <FadeUp delay={580}>
-              <div className="text-center mt-6">
-                <Link to="/join" className="btn-gold text-base py-4 px-9 inline-flex">
-                  Become a Mein Mover
-                  <ArrowRight size={16} />
-                </Link>
+            {/* Right — youth group image */}
+            <FadeUp delay={300}>
+              <div className="flex justify-center lg:justify-end">
+                <img
+                  src={meinYouthCrew}
+                  alt="Diverse young Mein Movers wearing Mein gear and celebrating together"
+                  className="w-[115%] max-w-none sm:w-full lg:max-w-2xl object-contain drop-shadow-2xl pointer-events-none select-none"
+                />
               </div>
             </FadeUp>
+
           </div>
         </div>
-
-        {/* Youth crew image — sits close below CTA, anchored to section bottom */}
-        <FadeUp delay={640}>
-          <div className="relative z-10 mt-10 md:mt-12 flex justify-center overflow-hidden">
-            <img
-              src={meinYouthCrew}
-              alt="Diverse young Mein Movers wearing Mein gear and celebrating together"
-              className="w-[115%] max-w-none md:w-full md:max-w-5xl object-contain object-top pointer-events-none select-none mix-blend-multiply -mb-2"
-              style={{ maxHeight: '420px' }}
-            />
-          </div>
-        </FadeUp>
       </section>
 
       {/* ─── THE WALL — STORIES PREVIEW ───────────────────────────────── */}
