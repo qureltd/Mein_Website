@@ -1,34 +1,34 @@
 import { useState } from 'react'
 import { ArrowRight, Check, AlertCircle } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
-import { OpenMIcon, HandwrittenAccent, SectionDivider } from '../components/BrandElements'
+import { OpenMIcon, HandwrittenAccent, SectionDivider, StarAccent, StickerNote } from '../components/BrandElements'
 import { supabase } from '../lib/supabase'
 
 const steps = [
   {
     number: '01',
-    title: 'Imagine your future self',
-    body: 'Close your eyes. Fast forward 10 years. Who are you? What have you built? What do you know now that you wish you knew today?',
+    title: 'See yourself',
+    body: 'Imagine the person you are becoming. Fast forward 10 years. Who are you?',
   },
   {
     number: '02',
-    title: 'Step into that version of you',
-    body: 'Speak as your future self. Not who you are today — who you are becoming. Use "I am," not "I want to be."',
+    title: 'Step in',
+    body: 'Answer as your future self. Not who you are today — who you are becoming.',
   },
   {
     number: '03',
-    title: 'Record the message',
-    body: 'Write it, record it, or film it. A message from your future self to your present self.',
+    title: 'Say it',
+    body: 'Write your message. Speak directly to the person you are right now.',
   },
   {
     number: '04',
-    title: 'Listen to your own belief',
-    body: "Read it back. Watch it back. Hear yourself. This message is built from your own clarity, not someone else's expectations.",
+    title: 'Keep the proof',
+    body: 'Read it back. Hear yourself. Use it when you need belief.',
   },
   {
     number: '05',
-    title: 'Make your next move',
-    body: "Your future self just told you what to do. Now take one small step toward that version of you.",
+    title: 'Make one move',
+    body: 'Turn the future into action today. One step toward that version of you.',
   },
 ]
 
@@ -77,11 +77,14 @@ export default function FutureMePage() {
 
   return (
     <div className="with-mobile-cta">
+
       {/* ─── HERO ─────────────────────────────────────────────────────── */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-white">
-        <div className="absolute right-0 top-0 translate-x-1/3 opacity-[0.04] pointer-events-none">
+      <section className="relative pt-32 pb-0 md:pt-40 overflow-hidden bg-white">
+        {/* Faint background M */}
+        <div className="absolute right-0 top-0 translate-x-1/3 opacity-[0.04] pointer-events-none select-none">
           <OpenMIcon size={600} />
         </div>
+
         <div className="container-wide section-padding relative z-10 max-w-3xl">
           <FadeUp>
             <p className="font-caveat text-blue-mein text-xl mb-4">Meet Future Me</p>
@@ -94,59 +97,169 @@ export default function FutureMePage() {
             <p className="mt-5 font-caveat text-2xl md:text-3xl text-charcoal">
               Future you has something to say.
             </p>
-            <p className="mt-4 text-xl text-gray-dark font-sora leading-relaxed max-w-xl">
-              A guided experience where you imagine who you are becoming, speak as your future self, and use that message to build confidence, clarity, and action today.
-            </p>
           </FadeUp>
-          <FadeUp delay={250}>
-            <div className="mt-8 bg-blue-pale rounded-2xl px-6 py-5 border-l-4 border-blue-mein inline-block">
-              <HandwrittenAccent
-                text={'"Sometimes the voice you need to hear is your own."'}
-                className="text-xl md:text-2xl"
-              />
+        </div>
+
+        {/* ── Portal graphic ── */}
+        <div className="flex justify-center mt-10 mb-0 relative">
+          {/* Outer dashed ring — slow spin */}
+          <div
+            className="absolute w-56 h-56 md:w-64 md:h-64 rounded-full border-2 border-dashed border-gold-mein/50 animate-spin-slow"
+            style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
+          />
+          {/* Inner solid ring */}
+          <div className="relative w-44 h-44 md:w-52 md:h-52 rounded-full bg-blue-pale border-4 border-blue-mein/20 shadow-xl shadow-blue-mein/10 flex items-center justify-center animate-float">
+            {/* Gold accent dot top-right */}
+            <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gold-mein shadow-md" />
+            <OpenMIcon size={80} />
+          </div>
+        </div>
+
+        {/* Quote anchor */}
+        <FadeUp delay={200}>
+          <div className="text-center mt-8 pb-16 md:pb-20 px-6">
+            <p className="font-caveat text-3xl md:text-4xl text-charcoal max-w-xl mx-auto leading-snug">
+              "Sometimes the voice you need to hear is your own."
+            </p>
+          </div>
+        </FadeUp>
+      </section>
+
+      {/* ─── SAMPLE MESSAGE CARD ──────────────────────────────────────── */}
+      <section className="py-16 md:py-20 bg-gray-support/20">
+        <div className="container-wide section-padding max-w-2xl mx-auto">
+          <FadeUp>
+            <div className="text-center mb-8">
+              <SectionDivider className="mx-auto" />
+              <p className="mt-4 font-sora text-sm font-semibold uppercase tracking-widest text-gray-mid">
+                What it looks like
+              </p>
             </div>
+          </FadeUp>
+          <FadeUp delay={100}>
+            <div className="relative">
+              {/* Star accent */}
+              <div className="absolute -top-3 -right-3 md:-right-5">
+                <StarAccent className="w-7 h-7 md:w-8 md:h-8" />
+              </div>
+              {/* Note card */}
+              <div className="bg-white border border-gray-support rounded-3xl p-8 md:p-10 shadow-lg shadow-blue-mein/5">
+                {/* Sticker label */}
+                <div className="mb-5">
+                  <StickerNote text="Future Me · 10 years from now" color="gold" rotate={-1} />
+                </div>
+                <p className="font-caveat text-2xl md:text-3xl text-charcoal leading-relaxed">
+                  Dear [your name],
+                </p>
+                <p className="mt-3 font-caveat text-xl md:text-2xl text-gray-dark leading-relaxed">
+                  In 10 years you will have built something real. You will know your worth. You won't need anyone's permission to take up space.
+                </p>
+                <p className="mt-4 font-caveat text-xl md:text-2xl text-gray-dark leading-relaxed">
+                  The thing you're scared to start? Start it. I did. And it changed everything.
+                </p>
+                <p className="mt-5 font-caveat text-lg text-blue-mein">— Future You</p>
+              </div>
+            </div>
+          </FadeUp>
+          <FadeUp delay={180}>
+            <p className="mt-6 text-center text-sm text-gray-mid font-sora">
+              Your message will look different. That's the point.
+            </p>
           </FadeUp>
         </div>
       </section>
 
-      {/* ─── HOW IT WORKS ─────────────────────────────────────────────── */}
-      <section className="py-20 md:py-28 bg-gray-support/30">
+      {/* ─── THE EXPERIENCE ───────────────────────────────────────────── */}
+      <section className="py-20 md:py-28 bg-white">
         <div className="container-wide section-padding">
           <FadeUp>
             <div className="text-center mb-14">
-              <SectionDivider />
+              <SectionDivider className="mx-auto" />
               <h2 className="mt-5 font-sora font-extrabold text-3xl md:text-4xl text-charcoal">
-                How it works
+                The experience.
               </h2>
+              <p className="mt-2 text-gray-mid font-sora text-sm">Five steps. Your own voice.</p>
             </div>
           </FadeUp>
-          <div className="max-w-3xl mx-auto space-y-5">
-            {steps.map((step, i) => (
-              <FadeUp key={step.number} delay={i * 80}>
-                <div className="bg-white rounded-2xl p-7 border-2 border-gray-support hover:border-blue-mein transition-all duration-300 flex gap-5 items-start group">
-                  <div className="w-12 h-12 rounded-xl bg-blue-pale flex items-center justify-center flex-shrink-0 group-hover:bg-blue-mein transition-colors">
-                    <span className="font-sora font-bold text-blue-mein group-hover:text-white text-sm transition-colors">
-                      {step.number}
-                    </span>
+
+          {/* Mobile: vertical path. Desktop: alternating. */}
+          <div className="max-w-3xl mx-auto">
+
+            {/* Mobile layout — simple vertical cards with dashed connector */}
+            <div className="md:hidden space-y-0">
+              {steps.map((step, i) => (
+                <FadeUp key={step.number} delay={i * 80}>
+                  <div className="flex gap-4">
+                    {/* Connector column */}
+                    <div className="flex flex-col items-center flex-shrink-0 w-10">
+                      <div className="w-10 h-10 rounded-xl bg-blue-pale flex items-center justify-center flex-shrink-0">
+                        <span className="font-sora font-bold text-blue-mein text-xs">{step.number}</span>
+                      </div>
+                      {i < steps.length - 1 && (
+                        <div className="flex-1 mt-1 mb-1" style={{ width: 1, borderLeft: '2px dashed rgba(47,107,255,0.2)', minHeight: 28 }} />
+                      )}
+                    </div>
+                    {/* Card */}
+                    <div className="flex-1 pb-5">
+                      <div className="bg-gray-support/20 rounded-2xl p-5 border border-gray-support hover:border-blue-mein transition-colors duration-300">
+                        <HandwrittenAccent text={step.title} className="text-xl block mb-1" />
+                        <p className="text-sm text-gray-dark font-sora leading-relaxed">{step.body}</p>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-sora font-bold text-charcoal text-lg">{step.title}</h3>
-                    <p className="mt-2 text-gray-dark text-sm leading-relaxed font-sora">{step.body}</p>
-                  </div>
-                </div>
-              </FadeUp>
-            ))}
+                </FadeUp>
+              ))}
+            </div>
+
+            {/* Desktop layout — alternating left/right with dashed centre line */}
+            <div className="hidden md:block relative">
+              {/* Dashed centre line */}
+              <div
+                className="absolute left-1/2 top-6 bottom-6 -translate-x-1/2 pointer-events-none"
+                style={{ width: 1, borderLeft: '2px dashed rgba(47,107,255,0.2)' }}
+              />
+
+              <div className="space-y-8">
+                {steps.map((step, i) => {
+                  const isLeft = i % 2 === 0
+                  return (
+                    <FadeUp key={step.number} delay={i * 80}>
+                      <div className={`flex items-center gap-6 ${isLeft ? 'flex-row' : 'flex-row-reverse'}`}>
+                        {/* Card */}
+                        <div className="flex-1">
+                          <div className="bg-gray-support/20 rounded-2xl p-6 border border-gray-support hover:border-blue-mein hover:shadow-md transition-all duration-300">
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className="w-9 h-9 rounded-xl bg-blue-pale flex items-center justify-center flex-shrink-0">
+                                <span className="font-sora font-bold text-blue-mein text-xs">{step.number}</span>
+                              </div>
+                              <HandwrittenAccent text={step.title} className="text-xl" />
+                            </div>
+                            <p className="text-sm text-gray-dark font-sora leading-relaxed">{step.body}</p>
+                          </div>
+                        </div>
+                        {/* Centre dot */}
+                        <div className="flex-shrink-0 w-4 flex justify-center">
+                          <div className="w-3 h-3 rounded-full bg-blue-mein ring-4 ring-blue-pale" />
+                        </div>
+                        {/* Spacer */}
+                        <div className="flex-1" />
+                      </div>
+                    </FadeUp>
+                  )
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ─── SUBMIT YOUR FUTURE ME ────────────────────────────────────── */}
-      <section className="py-20 md:py-28 bg-white">
+      {/* ─── TAKE THE CHALLENGE (form) ────────────────────────────────── */}
+      <section className="py-20 md:py-28 bg-gray-support/20">
         <div className="container-wide section-padding max-w-2xl mx-auto pb-6 md:pb-0">
           <FadeUp>
             <SectionDivider />
             <h2 className="mt-5 font-sora font-extrabold text-3xl text-charcoal">
-              Write your Future Me message
+              Take the challenge.
             </h2>
             <p className="mt-3 text-gray-dark font-sora">
               Speak as your future self. Share what you know, what you've built, and what you want your present self to hear.
@@ -155,7 +268,7 @@ export default function FutureMePage() {
 
           {submitted ? (
             <FadeUp>
-              <div className="mt-10 text-center py-12 bg-blue-pale rounded-3xl">
+              <div className="mt-10 text-center py-12 bg-blue-pale rounded-3xl px-6">
                 <div className="w-16 h-16 rounded-full bg-blue-mein flex items-center justify-center mx-auto mb-5">
                   <Check size={28} className="text-white" strokeWidth={2.5} />
                 </div>
