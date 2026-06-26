@@ -144,7 +144,7 @@ export default function HomePage() {
               <FadeUp>
                 <div className="flex items-center gap-2 mb-4">
                   <StarAccent />
-                  <span className="font-caveat text-gray-mid text-base ml-1">
+                  <span className="font-caveat text-gray-dark text-lg md:text-xl ml-1">
                     Create. Express. Build. Become.
                   </span>
                 </div>
@@ -414,7 +414,7 @@ export default function HomePage() {
                 <h2 className="font-sora font-extrabold text-2xl text-charcoal leading-tight">
                   Why join Mein?
                 </h2>
-                <p className="mt-1 font-caveat text-lg text-blue-mein">
+                <p className="mt-1 font-caveat text-xl text-blue-mein">
                   One move can open a door.
                 </p>
               </div>
@@ -424,7 +424,7 @@ export default function HomePage() {
               {benefitStrip.map((item) => (
                 <span
                   key={item.label}
-                  className="inline-flex items-center gap-1.5 bg-white border border-gray-support rounded-full px-4 py-2 font-sora font-semibold text-charcoal text-xs"
+                  className="inline-flex items-center gap-1.5 bg-white border border-gray-support rounded-full px-4 py-2 font-sora font-semibold text-charcoal text-sm"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-gold-mein flex-shrink-0" />
                   {item.label}
@@ -434,10 +434,10 @@ export default function HomePage() {
               <span className="w-px h-6 bg-gray-support mx-1 flex-shrink-0" />
               <Link
                 to="/join"
-                className="inline-flex items-center gap-1.5 bg-blue-mein text-white font-sora font-bold text-xs rounded-full px-5 py-2 hover:bg-blue-dark transition-colors"
+                className="inline-flex items-center gap-1.5 bg-blue-mein text-white font-sora font-bold text-sm rounded-full px-5 py-2 hover:bg-blue-dark transition-colors"
               >
                 Join the Movement
-                <ArrowRight size={11} />
+                <ArrowRight size={12} />
               </Link>
             </div>
           </div>
@@ -460,7 +460,7 @@ export default function HomePage() {
               {benefitStrip.map((item) => (
                 <span
                   key={item.label}
-                  className="inline-flex items-center gap-1.5 bg-white border border-gray-support rounded-full px-4 py-2 font-sora font-semibold text-charcoal text-xs"
+                  className="inline-flex items-center gap-1.5 bg-white border border-gray-support rounded-full px-4 py-2 font-sora font-semibold text-charcoal text-sm"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-gold-mein flex-shrink-0" />
                   {item.label}
@@ -491,7 +491,7 @@ export default function HomePage() {
           <div className="max-w-4xl mx-auto">
             <FadeUp>
               <div className="text-center mb-12 md:mb-16">
-                <p className="font-caveat text-white/65 text-xl mb-3">This space is yours.</p>
+                <p className="font-caveat text-white/80 text-2xl mb-3">This space is yours.</p>
                 <h2 className="font-sora font-extrabold text-4xl md:text-5xl text-white leading-tight">
                   You belong here.
                 </h2>
@@ -523,7 +523,7 @@ export default function HomePage() {
             </div>
 
             <FadeUp delay={500}>
-              <p className="text-center mt-12 font-caveat text-white/55 text-xl">
+              <p className="text-center mt-12 font-caveat text-white/75 text-2xl">
                 No perfect story needed. Start with one move.
               </p>
             </FadeUp>
@@ -565,7 +565,7 @@ export default function HomePage() {
                 </h2>
                 <HandwrittenAccent
                   text="Every move on this wall started with one person going first."
-                  className="block text-lg mt-2 text-white/60"
+                  className="block text-xl md:text-2xl mt-2 text-white/80"
                 />
               </div>
               <Link
@@ -587,7 +587,7 @@ export default function HomePage() {
                   className="flex-shrink-0 flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-2"
                 >
                   <span className={`w-2 h-2 rounded-full flex-shrink-0 animate-pulse ${item.dot}`} />
-                  <span className="font-sora text-white/90 text-xs font-medium whitespace-nowrap">
+                  <span className="font-sora text-white/90 text-sm font-medium whitespace-nowrap">
                     {item.text}
                   </span>
                 </div>
@@ -605,12 +605,12 @@ export default function HomePage() {
               >
                 <div className="flex items-start justify-between mb-6">
                   <span
-                    className="inline-block bg-blue-mein/20 text-blue-light font-caveat text-sm px-3 py-1 rounded-md"
+                    className="inline-block bg-blue-mein/20 text-blue-light font-caveat text-base px-3 py-1 rounded-md"
                     style={{ transform: 'rotate(-1.5deg)' }}
                   >
                     Future-Self Letter
                   </span>
-                  <span className="font-caveat text-white/30 text-base">First drop coming</span>
+                  <span className="font-caveat text-white/60 text-base">First drop coming</span>
                 </div>
                 <HandwrittenAccent
                   text="The first Mein stories are coming soon."
@@ -636,19 +636,19 @@ export default function HomePage() {
                   className="flex flex-col bg-white/5 border border-white/10 rounded-2xl p-7 hover:bg-white/10 transition-all duration-200 group cursor-pointer"
                 >
                   <span
-                    className="inline-block bg-gold-mein/15 text-gold-light font-caveat text-sm px-3 py-1 rounded-md mb-4 self-start"
+                    className="inline-block bg-gold-mein/15 text-gold-light font-caveat text-base px-3 py-1 rounded-md mb-4 self-start"
                     style={{ transform: 'rotate(1.5deg)' }}
                   >
                     Youth Story
                   </span>
-                  <h3 className="font-sora font-bold text-white text-base leading-snug">
+                  <h3 className="font-sora font-bold text-white text-lg leading-snug">
                     Your voice deserves to be heard.
                   </h3>
                   <p className="mt-2 font-caveat text-gold-mein text-lg">
                     Submit your story today.
                   </p>
-                  <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-white/50 group-hover:text-white transition-colors">
-                    Make this move <ArrowRight size={12} className="transition-transform group-hover:translate-x-1" />
+                  <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-white/60 group-hover:text-white transition-colors">
+                    Make this move <ArrowRight size={13} className="transition-transform group-hover:translate-x-1" />
                   </div>
                 </Link>
               </FadeUp>
@@ -659,19 +659,19 @@ export default function HomePage() {
                   className="flex flex-col bg-white/5 border border-white/10 rounded-2xl p-7 hover:bg-white/10 transition-all duration-200 group cursor-pointer"
                 >
                   <span
-                    className="inline-block bg-white/10 text-white/70 font-caveat text-sm px-3 py-1 rounded-md mb-4 self-start"
+                    className="inline-block bg-white/10 text-white/80 font-caveat text-base px-3 py-1 rounded-md mb-4 self-start"
                     style={{ transform: 'rotate(-1deg)' }}
                   >
                     Creative Work
                   </span>
-                  <h3 className="font-sora font-bold text-white text-base leading-snug">
+                  <h3 className="font-sora font-bold text-white text-lg leading-snug">
                     Your art belongs on this wall.
                   </h3>
                   <p className="mt-2 font-caveat text-gold-mein text-lg">
                     Make your creative move.
                   </p>
-                  <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-white/50 group-hover:text-white transition-colors">
-                    Make this move <ArrowRight size={12} className="transition-transform group-hover:translate-x-1" />
+                  <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-white/60 group-hover:text-white transition-colors">
+                    Make this move <ArrowRight size={13} className="transition-transform group-hover:translate-x-1" />
                   </div>
                 </Link>
               </FadeUp>
