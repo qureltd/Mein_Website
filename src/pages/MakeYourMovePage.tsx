@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ArrowRight, Pen, Play, Hammer, Megaphone, Star, HelpCircle, Check, AlertCircle } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
@@ -97,6 +97,14 @@ export default function MakeYourMovePage() {
   const [notSureForm, setNotSureForm] = useState({ name: '', email: '', interests: '' })
   const [notSureDone, setNotSureDone] = useState(false)
   const [notSureLoading, setNotSureLoading] = useState(false)
+  const notSurePanelRef = useRef<HTMLDivElement>(null)
+
+  function handleNotSureOpen() {
+    setNotSureOpen(true)
+    requestAnimationFrame(() => {
+      notSurePanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }
 
   const isUnder18 = parseInt(form.age) < 18 && form.age !== ''
   const selectedMove = moveTypes.find((m) => m.id === selected)
@@ -250,7 +258,7 @@ export default function MakeYourMovePage() {
                 {/* Not sure yet? — 6th card */}
                 <FadeUp delay={moveTypes.length * 60} className="snap-start flex-shrink-0 w-[82vw] md:w-auto">
                   <button
-                    onClick={() => setNotSureOpen((v) => !v)}
+                    onClick={() => handleNotSureOpen()}
                     className="w-full h-full flex flex-col text-left rounded-2xl border-2 border-dashed border-gray-support bg-white p-6 hover:border-blue-mein hover:bg-blue-pale/30 transition-all duration-200 group"
                   >
                     <div className="w-11 h-11 rounded-xl bg-gray-support/50 flex items-center justify-center mb-4 group-hover:bg-blue-pale transition-colors">
@@ -272,7 +280,10 @@ export default function MakeYourMovePage() {
               {/* Not Sure expandable panel */}
               {notSureOpen && (
                 <FadeUp>
-                  <div className="mt-6 bg-white border-2 border-dashed border-blue-mein/30 rounded-2xl overflow-hidden">
+                  <div
+                    ref={notSurePanelRef}
+                    className="mt-6 scroll-mt-28 md:scroll-mt-32 bg-white border-2 border-dashed border-blue-mein/30 rounded-2xl overflow-hidden"
+                  >
                     {/* Gold top accent strip */}
                     <div className="h-1 w-full bg-gold-mein" />
                     <div className="p-6 md:p-8">
