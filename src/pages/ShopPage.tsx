@@ -276,7 +276,7 @@ export default function ShopPage() {
                     <img
                       src={product.img}
                       alt={product.name}
-                      className="absolute inset-0 w-full h-full object-contain p-4"
+                      className="absolute inset-0 w-full h-full object-contain"
                       loading="lazy"
                     />
 
