@@ -12,8 +12,7 @@ import { supabase } from '../lib/supabase'
 import futureMePortal   from '../assets/Portal_Icon.png'
 import futureMeNoteCard from '../assets/Future_Me_Letter.png'
 
-// Individual doodle accents (max 4 on the page)
-import doodleStar4    from '../assets/4_star.png'
+// Individual doodle accents (3 on the page)
 import doodleStar7    from '../assets/7_Star.png'
 import doodleSquiqqle from '../assets/Squiqqle.png'
 import doodleArrow    from '../assets/Arrow.png'
@@ -165,13 +164,7 @@ export default function FutureMePage() {
     <div className="with-mobile-cta">
 
       {/* ─── HERO ──────────────────────────────────────────────────────────── */}
-      <section className="relative pt-28 pb-14 md:pt-32 md:pb-20 overflow-hidden bg-white">
-        {/* Doodle: 4-point spark — desktop only, tucked near the portal */}
-        <img
-          src={doodleStar4} alt="" aria-hidden="true"
-          className="pointer-events-none select-none absolute top-24 right-[44%] w-14 hidden lg:block"
-        />
-
+      <section className="relative pt-12 pb-8 md:pt-16 md:pb-12 overflow-hidden bg-white">
         <div className="relative z-10 max-w-7xl mx-auto px-5 md:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
 
@@ -217,9 +210,9 @@ export default function FutureMePage() {
       </section>
 
       {/* ─── NOTE CARD ─────────────────────────────────────────────────────── */}
-      <section className="py-10 md:py-14 bg-[#FAFAF8]">
+      <section className="py-8 md:py-10 bg-[#FAFAF8]">
         <div className="max-w-7xl mx-auto px-5 md:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-14 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 items-center">
 
             {/* Note card — white-space cropped via overflow-hidden + scale */}
             <FadeUp>
@@ -265,7 +258,7 @@ export default function FutureMePage() {
       </section>
 
       {/* ─── FIVE MOVE CARDS ───────────────────────────────────────────────── */}
-      <section id="how-it-works" className="relative py-10 md:py-14 bg-white overflow-visible">
+      <section id="how-it-works" className="relative py-8 md:py-12 bg-white overflow-visible">
         {/* Doodle: starburst near section heading — desktop only */}
         <img
           src={doodleStar7} alt="" aria-hidden="true"
@@ -275,7 +268,7 @@ export default function FutureMePage() {
         <div className="relative z-10 max-w-7xl mx-auto px-5 md:px-8">
 
           <FadeUp>
-            <div className="text-center mb-8">
+            <div className="text-center mb-6">
               <SectionDivider className="mx-auto mb-4" />
               <h2 className="font-sora font-extrabold text-3xl md:text-4xl text-charcoal">
                 Your message from future you.
@@ -355,11 +348,11 @@ export default function FutureMePage() {
       </section>
 
       {/* ─── TAKE THE CHALLENGE (form) ─────────────────────────────────────── */}
-      <section id="take-the-challenge" className="py-10 md:py-14 bg-[#FAFAF8]">
+      <section id="take-the-challenge" className="py-8 md:py-12 bg-[#FAFAF8]">
         <div className="max-w-2xl mx-auto px-5 md:px-8 pb-6 md:pb-0">
 
           <FadeUp>
-            <div className="text-center mb-8">
+            <div className="text-center mb-6">
               <SectionDivider className="mx-auto mb-4" />
               <h2 className="font-sora font-extrabold text-3xl md:text-4xl text-charcoal">
                 Take the challenge.
