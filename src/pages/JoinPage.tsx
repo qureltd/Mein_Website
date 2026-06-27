@@ -429,8 +429,8 @@ export default function JoinPage() {
               Mein is a space for young people to be seen, supported, and encouraged as they take one step toward who they are becoming.
             </p>
             <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center">
-              <Link to="/make-your-move" className="btn-gold inline-flex justify-center">
-                Join the Movement
+              <Link to="/make-your-move?move=unsure" className="btn-gold inline-flex justify-center">
+                Make Your First Move
                 <ArrowRight size={16} />
               </Link>
               <Link to="/community-rules" className="btn-outline-blue inline-flex justify-center border-white/20 text-white/80 hover:text-white hover:border-white/50">
@@ -478,7 +478,7 @@ export default function JoinPage() {
             </p>
             <div className="mt-7 flex flex-col sm:flex-row gap-3 justify-center">
               <Link to="/make-your-move" className="btn-primary inline-flex justify-center">
-                Join Mein
+                Make Your Move
                 <ArrowRight size={16} />
               </Link>
               <Link to="/future-me" className="btn-secondary inline-flex justify-center">

@@ -164,7 +164,7 @@ export default function FutureMePage() {
     <div className="with-mobile-cta">
 
       {/* ─── HERO ──────────────────────────────────────────────────────────── */}
-      <section className="relative pt-12 pb-8 md:pt-16 md:pb-12 overflow-hidden bg-white">
+      <section className="relative pt-28 pb-8 md:pt-36 md:pb-12 overflow-hidden bg-white">
         <div className="relative z-10 max-w-7xl mx-auto px-5 md:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
 

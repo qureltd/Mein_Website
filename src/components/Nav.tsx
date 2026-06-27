@@ -4,11 +4,10 @@ import { Menu, X, ArrowRight } from 'lucide-react'
 
 const navLinks = [
   { label: 'Start Here', href: '/' },
-  { label: "What's Mein?", href: '/about' },
-  { label: 'Join Mein', href: '/join' },
   { label: 'Make Your Move', href: '/make-your-move' },
-  { label: 'Stories', href: '/stories' },
   { label: 'Future Me', href: '/future-me' },
+  { label: 'The Wall', href: '/stories' },
+  { label: 'Join Mein', href: '/join' },
   { label: 'Shop', href: '/shop' },
 ]
 
@@ -138,6 +137,7 @@ export default function Nav() {
 
             <div className="mt-8 flex flex-wrap gap-x-4 gap-y-2">
               {[
+                { label: "What's Mein?", href: '/about' },
                 { label: 'Why This Matters', href: '/why-this-matters' },
                 { label: 'Parents & Consent', href: '/parents' },
                 { label: 'Schools & Partners', href: '/schools' },
