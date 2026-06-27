@@ -268,43 +268,40 @@ export default function ShopPage() {
             {products.map((product, i) => (
               <FadeUp key={product.name} delay={i * 60}>
                 <div
-                  className="group relative rounded-3xl overflow-hidden flex flex-col"
+                  className="group rounded-3xl overflow-hidden flex flex-col"
                   style={{ aspectRatio: '3/4', backgroundColor: product.imgBg }}
                 >
-                  {/* Status label */}
-                  <div className="absolute top-3 left-3 z-10">
-                    <span
-                      className={`inline-flex items-center text-[10px] font-sora font-bold px-2.5 py-1 rounded-full uppercase tracking-[0.15em] ${labelStyle[product.label] ?? 'bg-white/10 text-white'}`}
-                    >
-                      {product.label}
-                    </span>
-                  </div>
-
-                  {/* Category — top right */}
-                  <div className="absolute top-3 right-3 z-10">
-                    <span className={`font-sora text-[10px] font-semibold uppercase tracking-widest ${product.darkText ? 'text-gray-mid' : 'text-white/30'}`}>
-                      {product.category}
-                    </span>
-                  </div>
-
-                  {/* Product image */}
-                  <div className="absolute inset-0 flex items-center justify-center px-3 pt-8 pb-28">
+                  {/* Image area — grows to fill space above text block */}
+                  <div className="relative flex-1 min-h-0">
                     <img
                       src={product.img}
                       alt={product.name}
-                      className="w-full h-full object-contain object-center"
+                      className="absolute inset-0 w-full h-full object-contain p-4"
                       loading="lazy"
                     />
+
+                    {/* Status label */}
+                    <div className="absolute top-3 left-3 z-10">
+                      <span className={`inline-flex items-center text-[10px] font-sora font-bold px-2.5 py-1 rounded-full uppercase tracking-[0.15em] ${labelStyle[product.label] ?? 'bg-white/10 text-white'}`}>
+                        {product.label}
+                      </span>
+                    </div>
+
+                    {/* Category — top right */}
+                    <div className="absolute top-3 right-3 z-10">
+                      <span className={`font-sora text-[10px] font-semibold uppercase tracking-widest ${product.darkText ? 'text-gray-mid' : 'text-white/30'}`}>
+                        {product.category}
+                      </span>
+                    </div>
+
+                    {/* Hover shimmer */}
+                    <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors duration-300 pointer-events-none" />
                   </div>
 
-                  {/* Bottom gradient + text */}
+                  {/* Text block — sits in normal flow at bottom */}
                   <div
-                    className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-4 pt-10"
-                    style={{
-                      background: product.darkText
-                        ? 'linear-gradient(to top, rgba(240,239,237,0.97) 60%, transparent)'
-                        : 'linear-gradient(to top, rgba(0,0,0,0.90) 60%, transparent)',
-                    }}
+                    className="px-4 pb-4 pt-3"
+                    style={{ backgroundColor: product.imgBg }}
                   >
                     <h3 className={`font-caveat text-xl md:text-2xl leading-snug ${product.darkText ? 'text-charcoal' : 'text-white'}`}>
                       {product.name}
@@ -314,7 +311,7 @@ export default function ShopPage() {
                     </p>
                     <button
                       onClick={() => openNotify(product.name)}
-                      className={`mt-2.5 inline-flex items-center gap-1.5 text-xs font-sora font-semibold transition-all duration-200 ${
+                      className={`mt-2 inline-flex items-center gap-1.5 text-xs font-sora font-semibold transition-all duration-200 ${
                         product.darkText ? 'text-blue-mein hover:text-blue-dark' : 'text-gold-mein hover:text-gold-light'
                       }`}
                     >
@@ -323,9 +320,6 @@ export default function ShopPage() {
                       <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
                     </button>
                   </div>
-
-                  {/* Hover shimmer */}
-                  <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors duration-300 rounded-3xl pointer-events-none" />
                 </div>
               </FadeUp>
             ))}
