@@ -1,96 +1,99 @@
 import { useState } from 'react'
 import { ArrowRight, X, Check, Bell } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
-import { OpenMIcon, HandwrittenAccent, SectionDivider, StickerNote, StarAccent } from '../components/BrandElements'
+import { OpenMIcon, HandwrittenAccent, SectionDivider, StickerNote } from '../components/BrandElements'
 import { supabase } from '../lib/supabase'
 
-// ─── Drop data ────────────────────────────────────────────────────────────────
+import hoodieImg       from '../assets/shop/Hoodie_Art.png'
+import liveFutureImg   from '../assets/shop/Live_your_future_T.png'
+import itsAllMeinImg   from '../assets/shop/it_all_mein_black_tee.png'
+import coreTeeImg      from '../assets/shop/Mein_WorkMark_T.png'
+import chestLogoImg    from '../assets/shop/Basic_T_with_M_left_pocket.png'
+import capImg          from '../assets/shop/Mein_Black_Cap.png'
+
+// ─── Product data — displayed in this exact order ─────────────────────────────
 
 const products = [
   {
-    name: 'MEIN Core Tee',
-    sub: 'Electric blue Open M on white. The essential.',
-    category: 'T-Shirt',
-    label: 'First run',
-    bg: 'bg-white',
-    tileAccent: 'blue' as const,
-    featured: true,
-  },
-  {
     name: 'Open M Hoodie',
-    sub: "Oversized Open M across the back. Wear what you're building.",
+    sub: 'Big back graphic. Full movement energy.',
+    note: 'Built to stand out from behind.',
     category: 'Hoodie',
     label: 'Drop preview',
-    bg: 'bg-charcoal',
-    tileAccent: 'dark' as const,
-    featured: false,
+    img: hoodieImg,
+    imgBg: '#EBEBEB',
+    darkText: false,
   },
   {
     name: 'Live Your Future Today Tee',
-    sub: 'The mission. On your chest.',
+    sub: 'Future energy in full colour.',
+    note: 'A reminder you can wear now.',
     category: 'T-Shirt',
     label: 'Coming soon',
-    bg: 'bg-[#F5F0E8]',
-    tileAccent: 'gold' as const,
-    featured: false,
-  },
-  {
-    name: 'Future Me Crewneck',
-    sub: 'Heavy fleece. "Future Me" arch on front.',
-    category: 'Crewneck',
-    label: 'Early access',
-    bg: 'bg-blue-pale',
-    tileAccent: 'blue' as const,
-    featured: false,
+    img: liveFutureImg,
+    imgBg: '#111111',
+    darkText: false,
   },
   {
     name: "It's All Mein Tee",
-    sub: 'Statement print. Limited colourway.',
+    sub: 'Loud, direct, confident.',
+    note: 'For when the tee does the talking.',
     category: 'T-Shirt',
     label: 'Limited run',
-    bg: 'bg-[#111111]',
-    tileAccent: 'dark' as const,
-    featured: false,
+    img: itsAllMeinImg,
+    imgBg: '#111111',
+    darkText: false,
+  },
+  {
+    name: 'MEIN Core Tee',
+    sub: 'The core statement piece.',
+    note: 'Clean. Bold. Everyday essential.',
+    category: 'T-Shirt',
+    label: 'First run',
+    img: coreTeeImg,
+    imgBg: '#F0EFED',
+    darkText: true,
+  },
+  {
+    name: 'MEIN Chest Logo Tee',
+    sub: 'Minimal front mark.',
+    note: 'A quiet essential for the movement.',
+    category: 'T-Shirt',
+    label: 'Early access',
+    img: chestLogoImg,
+    imgBg: '#1A1A1A',
+    darkText: false,
   },
   {
     name: 'Mein Mover Cap',
-    sub: 'Structured fit. Open M patch. Built for Movers.',
+    sub: 'Small mark. Big movement.',
+    note: 'Low-key but part of the set.',
     category: 'Cap',
     label: 'Drop preview',
-    bg: 'bg-[#F5F0E8]',
-    tileAccent: 'gold' as const,
-    featured: false,
+    img: capImg,
+    imgBg: '#0D0D0D',
+    darkText: false,
   },
 ]
 
-const tileLabelColors: Record<string, string> = {
-  'First run':    'bg-blue-mein text-white',
+const labelStyle: Record<string, string> = {
   'Drop preview': 'bg-gold-mein text-charcoal',
-  'Coming soon':  'bg-charcoal/80 text-white',
-  'Early access': 'bg-blue-pale text-blue-mein border border-blue-mein/30',
-  'Limited run':  'bg-white text-charcoal border border-white/20',
-}
-
-const tileMarkColor: Record<string, string> = {
-  'bg-white':       'text-blue-mein',
-  'bg-charcoal':    'text-white',
-  'bg-[#F5F0E8]':   'text-gold-dark',
-  'bg-blue-pale':   'text-blue-mein',
-  'bg-[#111111]':   'text-white',
+  'Coming soon':  'bg-white/10 text-white border border-white/20 backdrop-blur-sm',
+  'Limited run':  'bg-white text-charcoal',
+  'First run':    'bg-blue-mein text-white',
+  'Early access': 'bg-white/10 text-white border border-white/20 backdrop-blur-sm',
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ShopPage() {
-  // Per-product notify modal
   const [notifyProduct, setNotifyProduct] = useState<string | null>(null)
-  const [notifyForm, setNotifyForm] = useState({ name: '', email: '' })
-  const [notifyDone, setNotifyDone] = useState(false)
+  const [notifyForm, setNotifyForm]       = useState({ name: '', email: '' })
+  const [notifyDone, setNotifyDone]       = useState(false)
   const [notifyLoading, setNotifyLoading] = useState(false)
 
-  // Page-level early access capture
-  const [accessForm, setAccessForm] = useState({ name: '', email: '' })
-  const [accessDone, setAccessDone] = useState(false)
+  const [accessForm, setAccessForm]       = useState({ name: '', email: '' })
+  const [accessDone, setAccessDone]       = useState(false)
   const [accessLoading, setAccessLoading] = useState(false)
 
   function openNotify(productName: string) {
@@ -128,7 +131,7 @@ export default function ShopPage() {
       email: accessForm.email,
       type: 'contact',
       title: 'Drop 001 — early access request',
-      content: `Early access signup for Drop 001.`,
+      content: 'Early access signup for Drop 001.',
       status: 'received',
       is_under_18: false,
     })
@@ -139,9 +142,9 @@ export default function ShopPage() {
   return (
     <div className="with-mobile-cta">
 
-      {/* ─── HERO — Drop 001 ─────────────────────────────────────────────────── */}
-      <section className="relative pt-28 pb-16 md:pt-36 md:pb-20 bg-charcoal overflow-hidden">
-        {/* Large "001" watermark */}
+      {/* ─── HERO ────────────────────────────────────────────────────────────── */}
+      <section className="relative pt-28 pb-14 md:pt-36 md:pb-20 bg-charcoal overflow-hidden">
+        {/* Faint "001" watermark */}
         <div
           className="absolute right-0 top-0 bottom-0 flex items-center pointer-events-none select-none"
           aria-hidden="true"
@@ -154,102 +157,83 @@ export default function ShopPage() {
           </span>
         </div>
 
-        {/* Open M — subtle right anchor */}
-        <div className="absolute right-10 md:right-20 top-1/2 -translate-y-1/2 opacity-[0.07] pointer-events-none select-none">
-          <OpenMIcon size={340} />
-        </div>
-
-        {/* Gold top strip */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gold-mein/40" />
 
-        <div className="container-wide section-padding relative z-10 max-w-4xl">
-          <FadeUp>
-            {/* Eyebrow */}
-            <div className="inline-flex items-center gap-2.5 mb-6">
-              <span className="w-2 h-2 rounded-full bg-gold-mein flex-shrink-0" />
-              <span className="font-sora text-xs font-bold text-white/60 uppercase tracking-[0.22em]">
-                Drop 001
-              </span>
-            </div>
+        <div className="container-wide section-padding relative z-10">
+          <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
 
-            {/* H1 */}
-            <h1 className="font-sora font-extrabold text-5xl md:text-6xl lg:text-7xl text-white leading-[1.0] tracking-tight max-w-2xl">
-              Wear the{' '}
-              <span className="font-caveat text-gold-mein">reminder.</span>
-            </h1>
+            {/* Left — copy */}
+            <div>
+              <FadeUp>
+                <div className="inline-flex items-center gap-2.5 mb-6">
+                  <span className="w-2 h-2 rounded-full bg-gold-mein flex-shrink-0" />
+                  <span className="font-sora text-xs font-bold text-white/60 uppercase tracking-[0.22em]">
+                    Drop 001
+                  </span>
+                </div>
 
-            {/* Sub-headline */}
-            <p className="mt-5 font-sora font-semibold text-xl md:text-2xl text-white/80 max-w-xl">
-              Built for Mein Movers.
-            </p>
+                <h1 className="font-sora font-extrabold text-5xl md:text-6xl lg:text-7xl text-white leading-[1.0] tracking-tight">
+                  Wear the{' '}
+                  <span className="font-caveat text-gold-mein">reminder.</span>
+                </h1>
 
-            {/* Supporting copy */}
-            <p className="mt-3 font-sora text-base text-white/50 max-w-lg leading-relaxed">
-              This is not just merch. It is a reminder of who you're becoming.
-            </p>
-          </FadeUp>
-
-          <FadeUp delay={160}>
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              {/* Sticker note */}
-              <StickerNote
-                text="Limited run. First drop."
-                rotate={-2}
-                color="gold"
-                className="text-base px-5 py-2.5 font-semibold"
-              />
-
-              <button
-                onClick={() => {
-                  document.getElementById('early-access')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                }}
-                className="inline-flex items-center gap-2 bg-gold-mein text-charcoal font-sora font-bold text-sm rounded-full px-6 py-3 hover:bg-gold-light transition-colors"
-              >
-                Get early access
-                <ArrowRight size={14} />
-              </button>
-            </div>
-          </FadeUp>
-
-          {/* Editorial tile — drop hero visual */}
-          <FadeUp delay={260}>
-            <div className="mt-10 relative rounded-3xl overflow-hidden bg-white/5 border border-white/10 h-56 md:h-72 flex items-center justify-center">
-              {/* Faint texture */}
-              <div
-                className="absolute inset-0 opacity-[0.03]"
-                style={{ backgroundImage: 'radial-gradient(circle at 30% 60%, #F4B400 0%, transparent 50%), radial-gradient(circle at 80% 30%, #2F6BFF 0%, transparent 50%)' }}
-              />
-              {/* Open M large centred */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-[0.08] pointer-events-none">
-                <OpenMIcon size={200} />
-              </div>
-              {/* Text layer */}
-              <div className="relative z-10 text-center px-8">
-                <p className="font-caveat text-4xl md:text-5xl text-white/70 leading-tight">
-                  Drop 001 — loading.
+                <p className="mt-5 font-sora font-semibold text-xl text-white/80">
+                  Built for Mein Movers.
                 </p>
-                <p className="mt-2 font-sora text-xs text-white/30 uppercase tracking-[0.2em]">
-                  Preview coming soon
+
+                <p className="mt-2 font-sora text-base text-white/50 leading-relaxed max-w-sm">
+                  This is not just merch. It is a reminder of who you're becoming.
                 </p>
-              </div>
-              {/* Star accent */}
-              <div className="absolute top-5 right-6 opacity-60">
-                <StarAccent />
-              </div>
-              <div className="absolute bottom-5 left-6 opacity-40">
-                <StarAccent />
-              </div>
+              </FadeUp>
+
+              <FadeUp delay={160}>
+                <div className="mt-8 flex flex-wrap items-center gap-4">
+                  <StickerNote
+                    text="Limited run. First drop."
+                    rotate={-2}
+                    color="gold"
+                    className="text-base px-5 py-2.5 font-semibold"
+                  />
+                  <button
+                    onClick={() =>
+                      document.getElementById('early-access')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    }
+                    className="inline-flex items-center gap-2 bg-gold-mein text-charcoal font-sora font-bold text-sm rounded-full px-6 py-3 hover:bg-gold-light transition-colors"
+                  >
+                    Get early access
+                    <ArrowRight size={14} />
+                  </button>
+                </div>
+              </FadeUp>
             </div>
-          </FadeUp>
+
+            {/* Right — hoodie hero image */}
+            <FadeUp delay={220}>
+              <div className="relative rounded-3xl overflow-hidden bg-[#EBEBEB]" style={{ aspectRatio: '4/5' }}>
+                <img
+                  src={hoodieImg}
+                  alt="Open M Hoodie — Drop 001"
+                  className="w-full h-full object-contain object-center p-4"
+                />
+                {/* Drop label */}
+                <div className="absolute top-4 left-4">
+                  <span className="inline-flex items-center gap-1.5 bg-gold-mein text-charcoal text-[10px] font-sora font-bold px-3 py-1.5 rounded-full uppercase tracking-[0.15em]">
+                    Drop 001 — Hero piece
+                  </span>
+                </div>
+              </div>
+            </FadeUp>
+
+          </div>
         </div>
       </section>
 
       {/* ─── DROP INTRO ──────────────────────────────────────────────────────── */}
-      <section className="py-10 md:py-14 bg-[#0D0D0D] border-b border-white/5">
+      <section className="py-9 md:py-12 bg-[#0D0D0D] border-b border-white/5">
         <div className="container-wide section-padding">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <p className="font-sora text-xs font-bold text-white/40 uppercase tracking-[0.22em] mb-2">
+              <p className="font-sora text-xs font-bold text-white/40 uppercase tracking-[0.22em] mb-1.5">
                 Drop 001 — Coming soon.
               </p>
               <HandwrittenAccent
@@ -257,11 +241,9 @@ export default function ShopPage() {
                 className="text-2xl md:text-3xl text-white"
               />
             </div>
-            <div className="flex-shrink-0 flex items-center gap-3">
+            <div className="flex-shrink-0 flex items-center gap-2.5">
               <span className="w-2 h-2 rounded-full bg-gold-mein animate-pulse" />
-              <span className="font-sora text-sm text-white/50">
-                Limited first run
-              </span>
+              <span className="font-sora text-sm text-white/50">Limited first run</span>
             </div>
           </div>
         </div>
@@ -283,73 +265,79 @@ export default function ShopPage() {
           </FadeUp>
 
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5">
-            {products.map((product, i) => {
-              const markColorClass = tileMarkColor[product.bg] ?? 'text-white'
-              const isLightTile = product.bg === 'bg-white' || product.bg === 'bg-blue-pale' || product.bg === 'bg-[#F5F0E8]'
-              const titleColor = isLightTile ? 'text-charcoal' : 'text-white'
-              const subColor   = isLightTile ? 'text-gray-dark' : 'text-white/50'
-
-              return (
-                <FadeUp key={product.name} delay={i * 60}>
-                  <div className={`group relative ${product.bg} rounded-3xl overflow-hidden flex flex-col`} style={{ aspectRatio: '3/4' }}>
-
-                    {/* Status label */}
-                    <div className="absolute top-3 left-3 z-10">
-                      <span className={`inline-flex items-center text-[10px] font-sora font-bold px-2.5 py-1 rounded-full uppercase tracking-[0.15em] ${tileLabelColors[product.label] ?? 'bg-white/10 text-white'}`}>
-                        {product.label}
-                      </span>
-                    </div>
-
-                    {/* Open M watermark */}
-                    <div className={`absolute inset-0 flex items-center justify-center pointer-events-none select-none opacity-[0.10] ${markColorClass}`}>
-                      <OpenMIcon size={110} />
-                    </div>
-
-                    {/* Category stamp — top right */}
-                    <div className="absolute top-3 right-3 z-10">
-                      <span className={`font-sora text-[10px] font-semibold uppercase tracking-widest ${isLightTile ? 'text-gray-mid' : 'text-white/30'}`}>
-                        {product.category}
-                      </span>
-                    </div>
-
-                    {/* Content — bottom */}
-                    <div className="absolute bottom-0 left-0 right-0 p-4 md:p-5 z-10">
-                      <h3 className={`font-caveat text-xl md:text-2xl leading-snug ${titleColor}`}>
-                        {product.name}
-                      </h3>
-                      <p className={`mt-1 font-sora text-xs leading-snug hidden sm:block ${subColor}`}>
-                        {product.sub}
-                      </p>
-                      <button
-                        onClick={() => openNotify(product.name)}
-                        className={`mt-3 inline-flex items-center gap-1.5 text-xs font-sora font-semibold transition-all duration-200 ${
-                          isLightTile
-                            ? 'text-blue-mein hover:text-blue-dark'
-                            : 'text-gold-mein hover:text-gold-light'
-                        }`}
-                      >
-                        <Bell size={11} />
-                        Notify me
-                        <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
-                      </button>
-                    </div>
-
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 rounded-3xl" />
+            {products.map((product, i) => (
+              <FadeUp key={product.name} delay={i * 60}>
+                <div
+                  className="group relative rounded-3xl overflow-hidden flex flex-col"
+                  style={{ aspectRatio: '3/4', backgroundColor: product.imgBg }}
+                >
+                  {/* Status label */}
+                  <div className="absolute top-3 left-3 z-10">
+                    <span
+                      className={`inline-flex items-center text-[10px] font-sora font-bold px-2.5 py-1 rounded-full uppercase tracking-[0.15em] ${labelStyle[product.label] ?? 'bg-white/10 text-white'}`}
+                    >
+                      {product.label}
+                    </span>
                   </div>
-                </FadeUp>
-              )
-            })}
+
+                  {/* Category — top right */}
+                  <div className="absolute top-3 right-3 z-10">
+                    <span className={`font-sora text-[10px] font-semibold uppercase tracking-widest ${product.darkText ? 'text-gray-mid' : 'text-white/30'}`}>
+                      {product.category}
+                    </span>
+                  </div>
+
+                  {/* Product image */}
+                  <div className="absolute inset-0 flex items-center justify-center px-3 pt-8 pb-28">
+                    <img
+                      src={product.img}
+                      alt={product.name}
+                      className="w-full h-full object-contain object-center"
+                      loading="lazy"
+                    />
+                  </div>
+
+                  {/* Bottom gradient + text */}
+                  <div
+                    className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-4 pt-10"
+                    style={{
+                      background: product.darkText
+                        ? 'linear-gradient(to top, rgba(240,239,237,0.97) 60%, transparent)'
+                        : 'linear-gradient(to top, rgba(0,0,0,0.90) 60%, transparent)',
+                    }}
+                  >
+                    <h3 className={`font-caveat text-xl md:text-2xl leading-snug ${product.darkText ? 'text-charcoal' : 'text-white'}`}>
+                      {product.name}
+                    </h3>
+                    <p className={`mt-0.5 font-sora text-xs leading-snug hidden sm:block ${product.darkText ? 'text-gray-dark' : 'text-white/60'}`}>
+                      {product.note}
+                    </p>
+                    <button
+                      onClick={() => openNotify(product.name)}
+                      className={`mt-2.5 inline-flex items-center gap-1.5 text-xs font-sora font-semibold transition-all duration-200 ${
+                        product.darkText ? 'text-blue-mein hover:text-blue-dark' : 'text-gold-mein hover:text-gold-light'
+                      }`}
+                    >
+                      <Bell size={11} />
+                      Notify me
+                      <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
+                    </button>
+                  </div>
+
+                  {/* Hover shimmer */}
+                  <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors duration-300 rounded-3xl pointer-events-none" />
+                </div>
+              </FadeUp>
+            ))}
           </div>
         </div>
       </section>
 
       {/* ─── BRAND PROMISE ───────────────────────────────────────────────────── */}
       <section className="py-14 md:py-20 bg-charcoal relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none select-none opacity-[0.05]">
-          <OpenMIcon size={480} className="absolute right-0 bottom-0 translate-x-1/4 translate-y-1/4" />
+        <div className="absolute right-0 bottom-0 translate-x-1/4 translate-y-1/4 opacity-[0.05] pointer-events-none select-none">
+          <OpenMIcon size={480} />
         </div>
-
         <div className="container-wide section-padding relative z-10 max-w-3xl mx-auto text-center">
           <FadeUp>
             <SectionDivider className="mx-auto bg-gold-mein mb-6" />
@@ -369,7 +357,7 @@ export default function ShopPage() {
         </div>
       </section>
 
-      {/* ─── EARLY ACCESS CAPTURE ────────────────────────────────────────────── */}
+      {/* ─── EARLY ACCESS ────────────────────────────────────────────────────── */}
       <section id="early-access" className="py-16 md:py-24 bg-[#0D0D0D] scroll-mt-20">
         <div className="container-wide section-padding">
           <div className="max-w-xl mx-auto">
@@ -385,7 +373,7 @@ export default function ShopPage() {
                   Get early access.
                 </h2>
                 <p className="mt-3 font-sora text-base text-white/50">
-                  Be first to know when Drop 001 lands.
+                  Be first to know when Drop 001 goes live.
                 </p>
               </div>
             </FadeUp>
@@ -405,41 +393,26 @@ export default function ShopPage() {
               ) : (
                 <div className="bg-white/5 border border-white/10 rounded-3xl p-7 md:p-9">
                   <form onSubmit={handleAccessSubmit} className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-sora font-semibold text-white/70 mb-1.5">
-                          Your Name *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={accessForm.name}
-                          onChange={(e) => setAccessForm((f) => ({ ...f, name: e.target.value }))}
-                          placeholder="Your name"
-                          className="w-full bg-white/10 border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 font-sora focus:outline-none focus:ring-2 focus:ring-gold-mein/50 focus:border-gold-mein/50 transition-colors"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-sora font-semibold text-white/70 mb-1.5">
-                          Email *
-                        </label>
-                        <input
-                          type="email"
-                          required
-                          value={accessForm.email}
-                          onChange={(e) => setAccessForm((f) => ({ ...f, email: e.target.value }))}
-                          placeholder="your@email.com"
-                          className="w-full bg-white/10 border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 font-sora focus:outline-none focus:ring-2 focus:ring-gold-mein/50 focus:border-gold-mein/50 transition-colors"
-                        />
-                      </div>
+                    <div>
+                      <label className="block text-sm font-sora font-semibold text-white/70 mb-1.5">
+                        Email *
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={accessForm.email}
+                        onChange={(e) => setAccessForm((f) => ({ ...f, email: e.target.value }))}
+                        placeholder="your@email.com"
+                        className="w-full bg-white/10 border border-white/15 rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-white/30 font-sora focus:outline-none focus:ring-2 focus:ring-gold-mein/50 focus:border-gold-mein/50 transition-colors"
+                      />
                     </div>
                     <button
                       type="submit"
                       disabled={accessLoading}
                       className="w-full inline-flex items-center justify-center gap-2 bg-gold-mein text-charcoal font-sora font-bold text-sm rounded-xl px-6 py-4 hover:bg-gold-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {accessLoading ? 'Saving your spot...' : 'Get early access'}
-                      {!accessLoading && <ArrowRight size={14} />}
+                      {accessLoading ? 'Saving your spot...' : 'Notify me'}
+                      {!accessLoading && <Bell size={14} />}
                     </button>
                   </form>
                   <p className="mt-4 text-center font-sora text-xs text-white/30">
