@@ -1,3 +1,5 @@
+import { Shield } from 'lucide-react'
+
 interface OpenMIconProps {
   className?: string
   size?: number
@@ -52,8 +54,8 @@ export function HandwrittenAccent({ text, className = '' }: { text: string; clas
   )
 }
 
-export function SectionDivider() {
-  return <div className="w-10 h-1 bg-blue-mein rounded-full" />
+export function SectionDivider({ className = '' }: { className?: string }) {
+  return <div className={`w-10 h-1 bg-blue-mein rounded-full ${className}`} />
 }
 
 export function StarAccent({ className = '' }: { className?: string }) {
@@ -81,6 +83,94 @@ export function ArrowAccent({ className = '' }: { className?: string }) {
         d="M25 7L30 12L25 17"
         stroke="#2F6BFF"
         strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+export function StickerNote({
+  text,
+  rotate = -2,
+  color = 'white',
+  fold = false,
+  className = '',
+}: {
+  text: string
+  rotate?: number
+  color?: 'white' | 'gold' | 'blue' | 'white-blue' | 'white-dark' | 'offwhite' | 'gold-bold'
+  fold?: boolean
+  className?: string
+}) {
+  const styles: Record<string, string> = {
+    white: 'bg-white border border-gray-support shadow-md',
+    gold: 'bg-gold-pale border border-yellow-200 shadow-md',
+    blue: 'bg-blue-pale border border-blue-mein/20 shadow-md',
+    'white-blue': 'bg-white border-2 border-blue-mein shadow-[0_5px_20px_rgba(0,0,0,0.13)]',
+    'white-dark': 'bg-white border-2 border-charcoal/60 shadow-[0_5px_20px_rgba(0,0,0,0.13)]',
+    offwhite: 'bg-[#F8F6F1] border-2 border-[#9CA3AF]/65 shadow-[0_5px_18px_rgba(0,0,0,0.11)]',
+    'gold-bold': 'bg-gold-pale border-2 border-[#C8930A] shadow-[0_5px_20px_rgba(0,0,0,0.13)]',
+  }
+  return (
+    <div
+      className={`relative inline-block px-3 py-1.5 rounded-lg font-caveat text-sm text-charcoal leading-tight select-none overflow-hidden ${styles[color]} ${className}`}
+      style={{ transform: `rotate(${rotate}deg)` }}
+    >
+      {text}
+      {fold && (
+        <svg
+          className="absolute bottom-0 right-0 pointer-events-none"
+          width="14" height="14" viewBox="0 0 14 14"
+          aria-hidden="true"
+        >
+          <path d="M14 0 L14 14 L0 14 Z" fill="rgba(0,0,0,0.09)" />
+        </svg>
+      )}
+    </div>
+  )
+}
+
+export function ConsentBadge({ className = '' }: { className?: string }) {
+  return (
+    <div className={`inline-flex items-center gap-1.5 bg-gray-support/80 rounded-full px-3 py-1.5 ${className}`}>
+      <Shield size={10} className="text-gray-mid flex-shrink-0" />
+      <span className="text-xs font-sora font-medium text-gray-dark tracking-wide">
+        Staff reviewed · Consent-aware · Youth-safe
+      </span>
+    </div>
+  )
+}
+
+export function MovementFragment({
+  text,
+  className = '',
+}: {
+  text: string
+  className?: string
+}) {
+  return (
+    <span className={`font-caveat leading-none ${className}`}>
+      {text}
+    </span>
+  )
+}
+
+export function DoodleArrow({ className = '', color = '#2F6BFF' }: { className?: string; color?: string }) {
+  return (
+    <svg width="44" height="32" viewBox="0 0 44 32" fill="none" className={className}>
+      <path
+        d="M2 26C7 14 19 6 30 12C36 15.5 40 13 42 10"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        fill="none"
+        strokeDasharray="5 3"
+      />
+      <path
+        d="M38 5L42 10L37 14"
+        stroke={color}
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

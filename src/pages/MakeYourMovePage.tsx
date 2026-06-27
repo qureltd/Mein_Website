@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ArrowRight, Pen, Play, Hammer, Megaphone, Star, Upload, Check, AlertCircle } from 'lucide-react'
+import { ArrowRight, Pen, Play, Hammer, Megaphone, Star, HelpCircle, Check, AlertCircle } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
-import { OpenMIcon, HandwrittenAccent, SectionDivider } from '../components/BrandElements'
+import { OpenMIcon, HandwrittenAccent, SectionDivider, StarAccent } from '../components/BrandElements'
 import { supabase } from '../lib/supabase'
 
 const moveTypes = [
@@ -93,6 +93,18 @@ export default function MakeYourMovePage() {
   const [form, setForm] = useState<FormData>({ ...defaultForm, moveType: searchParams.get('type') || '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [notSureOpen, setNotSureOpen] = useState(false)
+  const [notSureForm, setNotSureForm] = useState({ name: '', email: '', interests: '' })
+  const [notSureDone, setNotSureDone] = useState(false)
+  const [notSureLoading, setNotSureLoading] = useState(false)
+  const notSurePanelRef = useRef<HTMLDivElement>(null)
+
+  function handleNotSureOpen() {
+    setNotSureOpen(true)
+    requestAnimationFrame(() => {
+      notSurePanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }
 
   const isUnder18 = parseInt(form.age) < 18 && form.age !== ''
   const selectedMove = moveTypes.find((m) => m.id === selected)
@@ -140,23 +152,42 @@ export default function MakeYourMovePage() {
     }
   }
 
+  async function handleNotSureSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setNotSureLoading(true)
+    await supabase.from('submissions').insert({
+      name: notSureForm.name,
+      email: notSureForm.email,
+      type: 'contact',
+      title: 'Not sure yet — help me find my move',
+      content: notSureForm.interests || 'No details provided.',
+      status: 'received',
+      is_under_18: false,
+    })
+    setNotSureLoading(false)
+    setNotSureDone(true)
+  }
+
   return (
     <div className="with-mobile-cta">
       {/* ─── HERO ─── */}
       <section className="relative pt-32 pb-14 md:pt-40 md:pb-20 bg-white overflow-hidden">
-        <div className="absolute right-0 top-0 translate-x-1/3 opacity-[0.04] pointer-events-none">
+        <div className="absolute right-0 top-0 translate-x-1/3 opacity-[0.04] pointer-events-none select-none">
           <OpenMIcon size={500} />
         </div>
         <div className="container-wide section-padding relative z-10 max-w-3xl">
           <FadeUp>
+            <p className="font-caveat text-blue-mein text-xl mb-3">
+              How do you want to make your move?
+            </p>
             <h1 className="font-sora font-extrabold text-5xl md:text-6xl text-charcoal leading-tight">
-              Your next move{' '}
+              Your move{' '}
               <HandwrittenAccent text="starts here." className="text-5xl md:text-6xl" />
             </h1>
           </FadeUp>
           <FadeUp delay={150}>
             <p className="mt-5 text-lg text-gray-dark font-sora">
-              You do not need to know every step. Choose one move and start there.
+              Choose one move. Start there. One move is enough.
             </p>
           </FadeUp>
         </div>
@@ -172,34 +203,168 @@ export default function MakeYourMovePage() {
               <FadeUp>
                 <div className="mb-10">
                   <SectionDivider />
-                  <h2 className="mt-4 font-sora font-bold text-2xl text-charcoal">What move are you making?</h2>
+                  <h2 className="mt-4 font-sora font-bold text-2xl text-charcoal">Choose your move.</h2>
+                  <p className="mt-1 font-caveat text-gray-mid text-lg md:hidden">Swipe to see all options →</p>
                 </div>
               </FadeUp>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+              {/* Mobile: horizontal swipeable scroll. md+: grid. */}
+              <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-5 px-5 no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:overflow-visible md:pb-0 md:mx-0 md:px-0 items-stretch">
                 {moveTypes.map((move, i) => (
-                  <FadeUp key={move.id} delay={i * 70}>
+                  <FadeUp
+                    key={move.id}
+                    delay={i * 60}
+                    className="snap-start flex-shrink-0 w-[82vw] md:w-auto"
+                  >
                     <button
                       onClick={() => handleSelect(move.id)}
-                      className="move-card text-left w-full flex flex-col group"
+                      className="move-card text-left w-full h-full flex flex-col group"
+                      style={{ '--accent': move.accent } as React.CSSProperties}
                     >
-                      <div
-                        className="w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110"
-                        style={{ backgroundColor: move.bg }}
-                      >
-                        <move.icon size={20} style={{ color: move.accent }} strokeWidth={2} />
+                      {/* Number + icon */}
+                      <div className="flex items-start justify-between mb-4">
+                        <span
+                          className="font-sora font-black text-4xl leading-none tracking-tight"
+                          style={{ color: move.bg }}
+                        >
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <div
+                          className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110"
+                          style={{ backgroundColor: move.bg }}
+                        >
+                          <move.icon size={20} style={{ color: move.accent }} strokeWidth={2} />
+                        </div>
                       </div>
-                      <span className="tag-badge mb-3 self-start text-xs" style={{ color: move.accent, backgroundColor: move.bg }}>
-                        {move.label}
-                      </span>
+                      <p
+                        className="text-[10px] font-sora font-semibold uppercase tracking-[0.18em] mb-1"
+                        style={{ color: move.accent }}
+                      >
+                        Move {String(i + 1).padStart(2, '0')} — {move.label}
+                      </p>
                       <HandwrittenAccent text={move.tagline} className="text-xl mb-2" />
-                      <p className="text-sm text-gray-dark font-sora">{move.description}</p>
-                      <div className="mt-5 flex items-center gap-1.5 text-sm font-semibold font-sora text-blue-mein">
-                        Make this move <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                      <p className="text-sm text-gray-dark font-sora flex-1">{move.description}</p>
+                      <div
+                        className="mt-5 flex items-center gap-1.5 text-sm font-semibold font-sora group-hover:gap-3 transition-all duration-200"
+                        style={{ color: move.accent }}
+                      >
+                        Make this move
+                        <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
                       </div>
                     </button>
                   </FadeUp>
                 ))}
+
+                {/* Not sure yet? — 6th card */}
+                <FadeUp delay={moveTypes.length * 60} className="snap-start flex-shrink-0 w-[82vw] md:w-auto">
+                  <button
+                    onClick={() => handleNotSureOpen()}
+                    className="w-full h-full flex flex-col text-left rounded-2xl border-2 border-dashed border-gray-support bg-white p-6 hover:border-blue-mein hover:bg-blue-pale/30 transition-all duration-200 group"
+                  >
+                    <div className="w-11 h-11 rounded-xl bg-gray-support/50 flex items-center justify-center mb-4 group-hover:bg-blue-pale transition-colors">
+                      <HelpCircle size={20} className="text-gray-mid group-hover:text-blue-mein transition-colors" strokeWidth={1.8} />
+                    </div>
+                    <p className="text-[10px] font-sora font-semibold uppercase tracking-[0.18em] text-gray-mid mb-1">Not sure yet?</p>
+                    <HandwrittenAccent text="That's okay." className="text-xl mb-2" />
+                    <p className="text-sm text-gray-dark font-sora flex-1">
+                      You do not need to know your move yet. Tell us what you're into and we'll help you find your first move.
+                    </p>
+                    <div className="mt-5 flex items-center gap-1.5 text-sm font-semibold font-sora text-gray-mid group-hover:text-blue-mein group-hover:gap-3 transition-all duration-200">
+                      Help me start
+                      <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </button>
+                </FadeUp>
               </div>
+
+              {/* Not Sure expandable panel */}
+              {notSureOpen && (
+                <FadeUp>
+                  <div
+                    ref={notSurePanelRef}
+                    className="mt-6 scroll-mt-28 md:scroll-mt-32 bg-white border-2 border-dashed border-blue-mein/30 rounded-2xl overflow-hidden"
+                  >
+                    {/* Gold top accent strip */}
+                    <div className="h-1 w-full bg-gold-mein" />
+                    <div className="p-6 md:p-8">
+                    {notSureDone ? (
+                      <div className="text-center py-4">
+                        <div className="w-16 h-16 rounded-full bg-gold-pale border-2 border-gold-mein/40 flex items-center justify-center mx-auto mb-4">
+                          <Check size={24} className="text-gold-dark" strokeWidth={2.5} />
+                        </div>
+                        <h3 className="font-sora font-bold text-xl text-charcoal">Your first step landed.</h3>
+                        <HandwrittenAccent text="We'll help you find your move." className="text-lg block mt-1" />
+                        <p className="mt-3 text-sm text-gray-dark font-sora max-w-sm mx-auto">
+                          The Mein team will reach out to help you figure out your first move.
+                        </p>
+                        <button
+                          onClick={() => { setNotSureOpen(false); setNotSureDone(false); setNotSureForm({ name: '', email: '', interests: '' }) }}
+                          className="mt-5 btn-outline-blue inline-flex text-sm"
+                        >
+                          Done
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-3 mb-1">
+                          <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+                            <HelpCircle size={18} className="text-gray-400" strokeWidth={1.8} />
+                          </div>
+                          <h3 className="font-sora font-bold text-xl text-charcoal">Not sure yet? Start here.</h3>
+                        </div>
+                        <p className="text-sm text-gray-dark font-sora mb-5 ml-12">
+                          You do not need to know your move yet. Tell us what you're into and we'll help you find your first move.
+                        </p>
+                        <form onSubmit={handleNotSureSubmit} className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Your Name *</label>
+                              <input
+                                type="text"
+                                required
+                                value={notSureForm.name}
+                                onChange={(e) => setNotSureForm((f) => ({ ...f, name: e.target.value }))}
+                                placeholder="Your name"
+                                className="input-field"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Email *</label>
+                              <input
+                                type="email"
+                                required
+                                value={notSureForm.email}
+                                onChange={(e) => setNotSureForm((f) => ({ ...f, email: e.target.value }))}
+                                placeholder="your@email.com"
+                                className="input-field"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">What are you into? <span className="font-normal text-gray-mid">(optional)</span></label>
+                            <textarea
+                              rows={3}
+                              value={notSureForm.interests}
+                              onChange={(e) => setNotSureForm((f) => ({ ...f, interests: e.target.value }))}
+                              placeholder="e.g. I love drawing but also want to start a business..."
+                              className="textarea-field"
+                            />
+                          </div>
+                          <button
+                            type="submit"
+                            disabled={notSureLoading}
+                            className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {notSureLoading ? 'Sending...' : 'Help me start.'}
+                            {!notSureLoading && <ArrowRight size={14} />}
+                          </button>
+                        </form>
+                      </>
+                    )}
+                    </div>
+                  </div>
+                </FadeUp>
+              )}
             </>
           )}
 
@@ -217,6 +382,15 @@ export default function MakeYourMovePage() {
                 <span className="tag-badge">{selectedMove.label}</span>
               </div>
 
+              {/* Path connector — visual bridge from selection to form */}
+              <div className="flex justify-center mb-6">
+                <div className="flex flex-col items-center">
+                  <div className="w-2 h-2 rounded-full bg-blue-mein" />
+                  <div className="mt-0.5 h-10" style={{ width: 1, borderLeft: '2px dashed rgba(47,107,255,0.3)' }} />
+                  <div className="w-2 h-2 rounded-full bg-blue-mein/30" />
+                </div>
+              </div>
+
               <div className="bg-gray-support/20 rounded-3xl p-7 md:p-10 border-2 border-gray-support">
                 <div
                   className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5"
@@ -225,8 +399,9 @@ export default function MakeYourMovePage() {
                   <selectedMove.icon size={24} style={{ color: selectedMove.accent }} strokeWidth={2} />
                 </div>
                 <h2 className="font-sora font-extrabold text-2xl md:text-3xl text-charcoal">
-                  {selectedMove.tagline}
+                  Your move starts here.
                 </h2>
+                <HandwrittenAccent text={selectedMove.tagline} className="text-xl mt-1 block" />
                 <p className="mt-2 text-gray-dark font-sora">{selectedMove.description}</p>
 
                 <form onSubmit={handleSubmit} className="mt-8 space-y-5">
@@ -319,9 +494,9 @@ export default function MakeYourMovePage() {
                       <div className="flex items-start gap-3 mb-4">
                         <AlertCircle size={18} className="text-gold-dark mt-0.5 flex-shrink-0" />
                         <div>
-                          <p className="font-sora font-bold text-sm text-charcoal">Parent or Guardian Required</p>
+                          <p className="font-sora font-bold text-sm text-charcoal">We keep it safe. We need your guardian's details.</p>
                           <p className="text-xs text-gray-dark mt-0.5 font-sora">
-                            Because you are under 18, we need parent or guardian details before your work can be published publicly.
+                            Your submission is safe with us. We'll contact your guardian and get their consent before anything goes live.
                           </p>
                         </div>
                       </div>
@@ -394,21 +569,29 @@ export default function MakeYourMovePage() {
           {/* Step: Success */}
           {step === 'success' && (
             <FadeUp>
-              <div className="text-center py-12">
-                <div className="w-20 h-20 rounded-full bg-blue-pale flex items-center justify-center mx-auto mb-6">
-                  <Check size={32} className="text-blue-mein" strokeWidth={2.5} />
+              <div className="text-center py-14 md:py-20 bg-blue-pale/30 rounded-3xl px-6 md:px-12">
+                {/* Celebration graphic: stars + Open M */}
+                <div className="flex items-center justify-center gap-5 mb-7">
+                  <StarAccent className="opacity-80" />
+                  <div className="w-28 h-28 rounded-full bg-blue-pale ring-4 ring-blue-mein/10 flex items-center justify-center shadow-lg shadow-blue-mein/10">
+                    <OpenMIcon size={60} />
+                  </div>
+                  <StarAccent className="opacity-80" />
                 </div>
-                <h2 className="font-sora font-extrabold text-3xl md:text-4xl text-charcoal">
+
+                <h2 className="font-caveat text-4xl md:text-6xl text-charcoal leading-tight">
                   Your move has landed.
                 </h2>
-                <HandwrittenAccent text="We've got it." className="text-2xl block mt-3" />
+                <HandwrittenAccent text="The Mein team has got it." className="text-2xl block mt-3" />
+
                 <p className="mt-5 text-gray-dark font-sora max-w-md mx-auto leading-relaxed">
-                  Your submission is now under review. We'll be in touch at the email you provided.
+                  The Mein team will review it and get back to you.
                   {form.age && parseInt(form.age) < 18 && (
                     <> A consent request has been sent to your guardian's email.</>
                   )}
                 </p>
-                <div className="mt-8 flex flex-wrap gap-4 justify-center">
+
+                <div className="mt-9 flex flex-wrap gap-4 justify-center">
                   <button
                     onClick={() => { setStep('select'); setForm(defaultForm); setSelected('') }}
                     className="btn-primary"

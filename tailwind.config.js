@@ -35,6 +35,8 @@ export default {
         'fade-in': 'fadeIn 0.5s ease-out forwards',
         'slide-right': 'slideRight 0.5s ease-out forwards',
         'float': 'float 3s ease-in-out infinite',
+        'spin-slow': 'orbit 28s linear infinite',
+        'spin-slow-reverse': 'orbitReverse 18s linear infinite',
       },
       keyframes: {
         fadeUp: {
@@ -52,6 +54,14 @@ export default {
         float: {
           '0%, 100%': { transform: 'translateY(0px)' },
           '50%': { transform: 'translateY(-8px)' },
+        },
+        orbit: {
+          from: { transform: 'rotate(0deg)' },
+          to: { transform: 'rotate(360deg)' },
+        },
+        orbitReverse: {
+          from: { transform: 'rotate(360deg)' },
+          to: { transform: 'rotate(0deg)' },
         },
       },
     },

@@ -16,7 +16,7 @@ export default function PrivacyPage() {
           <FadeUp delay={100}>
             <div className="mt-10 prose prose-sm max-w-none font-sora text-gray-dark leading-relaxed space-y-6">
               {[
-                { heading: 'Who we are', body: 'Mein is a youth empowerment movement. Our website address is mein.co. When we refer to "Mein," "we," "us," or "our," we mean the Mein organisation.' },
+                { heading: 'Who we are', body: 'Mein is a youth empowerment movement operated by Mein Today LLC (thereafter referred to as "Mein"). Our website address is www.meintoday.com. Our registered address is 1021 E Lincolnway, 10493, Cheyenne, WY 82001, Laramie, US. When we refer to "Mein," "we," "us," or "our," we mean Mein Today LLC.' },
                 { heading: 'What data we collect', body: 'We collect data you voluntarily provide: name, email address, age, creative submissions, and (for under-18s) parent or guardian details. We also collect basic usage analytics to understand how our site is used.' },
                 { heading: 'How we use your data', body: 'We use your data to process and review your submission, to contact you about your submission, to send consent requests to parent or guardians of under-18 submitters, and to publish approved content on our platform.' },
                 { heading: 'Under-18 protection', body: 'Any submission from a person under 18 years of age requires parent or guardian consent before it can be published publicly. We store guardian contact details securely and only use them for consent purposes.' },
@@ -53,6 +53,7 @@ export function TermsPage() {
           <FadeUp delay={100}>
             <div className="mt-10 font-sora text-gray-dark leading-relaxed space-y-6">
               {[
+                { heading: 'About Mein', body: 'These Terms of Use govern your use of the Mein platform, operated by Mein Today LLC (thereafter referred to as "Mein"), registered at 1021 E Lincolnway, 10493, Cheyenne, WY 82001, Laramie, US. Our website address is www.meintoday.com.' },
                 { heading: 'Acceptance of terms', body: 'By using the Mein website and submitting content, you agree to these terms and our Community Rules.' },
                 { heading: 'Content ownership', body: 'You retain ownership of any original content you submit. By submitting, you grant Mein a non-exclusive licence to display your content on the platform for the purposes of the movement.' },
                 { heading: 'Content standards', body: 'All submissions must comply with our Community Rules. Content that violates these rules will not be published and may result in removal from the platform.' },

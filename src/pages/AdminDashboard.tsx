@@ -30,6 +30,7 @@ const typeLabels: Record<string, string> = {
   build: 'Build',
   represent: 'Represent',
   feature: 'Feature',
+  future_me: 'Future Me',
   school: 'School',
   partner: 'Partner',
   contact: 'Contact',
@@ -73,7 +74,7 @@ export default function AdminDashboard() {
     const categoryMap: Record<string, string> = {
       create: 'creative_submissions', speak: 'mein_mover_videos',
       build: 'youth_stories', represent: 'youth_stories',
-      feature: 'youth_stories',
+      feature: 'youth_stories', future_me: 'future_self_letters',
     }
     await supabase.from('stories').insert({
       submission_id: sub.id,
