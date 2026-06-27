@@ -11,9 +11,25 @@ import coreTeeImg      from '../assets/shop/Mein_WorkMark_T.png'
 import chestLogoImg    from '../assets/shop/Basic_T_with_M_left_pocket.png'
 import capImg          from '../assets/shop/Mein_Black_Cap.png'
 
+// Product images are treated as finished mockup compositions.
+// Default behavior must show the full uploaded image using object-contain.
+// Do not switch to object-cover unless an admin-controlled crop mode is added.
+
+type ShopProduct = {
+  name: string;
+  sub: string;
+  note: string;
+  category: string;
+  label: string;
+  img: string;
+  imgBg: string;
+  darkText: boolean;
+  imageFit?: 'contain' | 'cover';
+}
+
 // ─── Product data — displayed in this exact order ─────────────────────────────
 
-const products = [
+const products: ShopProduct[] = [
   {
     name: 'Open M Hoodie',
     sub: 'Big back graphic. Full movement energy.',
@@ -82,6 +98,72 @@ const labelStyle: Record<string, string> = {
   'Limited run':  'bg-white text-charcoal',
   'First run':    'bg-blue-mein text-white',
   'Early access': 'bg-white/10 text-white border border-white/20 backdrop-blur-sm',
+}
+
+// ─── ProductCard ──────────────────────────────────────────────────────────────
+// Image tile owns its own aspect ratio. Text is a sibling below the tile.
+// This ensures the full mockup image is always visible regardless of text length.
+
+function ProductCard({
+  product,
+  onNotify,
+}: {
+  product: ShopProduct
+  onNotify: (name: string) => void
+}) {
+  return (
+    <article className="group">
+      {/* Image tile — self-contained, aspect ratio lives here not on outer card */}
+      <div
+        className="relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded-3xl shadow-md"
+        style={{ backgroundColor: product.imgBg }}
+      >
+        <img
+          src={product.img}
+          alt={product.name}
+          className="max-h-full max-w-full object-contain"
+          loading="lazy"
+        />
+
+        {/* Status label */}
+        <div className="absolute left-3 top-3 z-10">
+          <span className={`inline-flex items-center text-[10px] font-sora font-bold px-2.5 py-1 rounded-full uppercase tracking-[0.15em] ${labelStyle[product.label] ?? 'bg-white/10 text-white'}`}>
+            {product.label}
+          </span>
+        </div>
+
+        {/* Category — top right */}
+        <div className="absolute right-3 top-3 z-10">
+          <span className={`font-sora text-[10px] font-semibold uppercase tracking-widest ${product.darkText ? 'text-gray-mid' : 'text-white/30'}`}>
+            {product.category}
+          </span>
+        </div>
+
+        {/* Hover shimmer */}
+        <div className="pointer-events-none absolute inset-0 bg-white/0 transition-colors duration-300 group-hover:bg-white/5" />
+      </div>
+
+      {/* Text — below the image tile, never inside it */}
+      <div className="mt-3 px-1">
+        <h3 className={`font-caveat text-xl md:text-2xl leading-snug ${product.darkText ? 'text-charcoal' : 'text-white'}`}>
+          {product.name}
+        </h3>
+        <p className={`mt-0.5 font-sora text-xs leading-snug hidden sm:block ${product.darkText ? 'text-gray-dark' : 'text-white/60'}`}>
+          {product.note}
+        </p>
+        <button
+          onClick={() => onNotify(product.name)}
+          className={`mt-2 inline-flex items-center gap-1.5 text-xs font-sora font-semibold transition-all duration-200 ${
+            product.darkText ? 'text-blue-mein hover:text-blue-dark' : 'text-gold-mein hover:text-gold-light'
+          }`}
+        >
+          <Bell size={11} />
+          Notify me
+          <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
+        </button>
+      </div>
+    </article>
+  )
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -209,11 +291,14 @@ export default function ShopPage() {
 
             {/* Right — hoodie hero image */}
             <FadeUp delay={220}>
-              <div className="relative rounded-3xl overflow-hidden bg-[#EBEBEB]" style={{ aspectRatio: '4/5' }}>
+              <div
+                className="relative flex aspect-[4/5] items-center justify-center overflow-hidden rounded-3xl"
+                style={{ backgroundColor: '#EBEBEB' }}
+              >
                 <img
                   src={hoodieImg}
                   alt="Open M Hoodie — Drop 001"
-                  className="w-full h-full object-contain object-center p-4"
+                  className="max-h-full max-w-full object-contain"
                 />
                 {/* Drop label */}
                 <div className="absolute top-4 left-4">
@@ -267,60 +352,7 @@ export default function ShopPage() {
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5">
             {products.map((product, i) => (
               <FadeUp key={product.name} delay={i * 60}>
-                <div
-                  className="group rounded-3xl overflow-hidden flex flex-col"
-                  style={{ aspectRatio: '3/4', backgroundColor: product.imgBg }}
-                >
-                  {/* Image area — grows to fill space above text block */}
-                  <div className="relative flex-1 min-h-0">
-                    <img
-                      src={product.img}
-                      alt={product.name}
-                      className="absolute inset-0 w-full h-full object-contain"
-                      loading="lazy"
-                    />
-
-                    {/* Status label */}
-                    <div className="absolute top-3 left-3 z-10">
-                      <span className={`inline-flex items-center text-[10px] font-sora font-bold px-2.5 py-1 rounded-full uppercase tracking-[0.15em] ${labelStyle[product.label] ?? 'bg-white/10 text-white'}`}>
-                        {product.label}
-                      </span>
-                    </div>
-
-                    {/* Category — top right */}
-                    <div className="absolute top-3 right-3 z-10">
-                      <span className={`font-sora text-[10px] font-semibold uppercase tracking-widest ${product.darkText ? 'text-gray-mid' : 'text-white/30'}`}>
-                        {product.category}
-                      </span>
-                    </div>
-
-                    {/* Hover shimmer */}
-                    <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors duration-300 pointer-events-none" />
-                  </div>
-
-                  {/* Text block — sits in normal flow at bottom */}
-                  <div
-                    className="px-4 pb-4 pt-3"
-                    style={{ backgroundColor: product.imgBg }}
-                  >
-                    <h3 className={`font-caveat text-xl md:text-2xl leading-snug ${product.darkText ? 'text-charcoal' : 'text-white'}`}>
-                      {product.name}
-                    </h3>
-                    <p className={`mt-0.5 font-sora text-xs leading-snug hidden sm:block ${product.darkText ? 'text-gray-dark' : 'text-white/60'}`}>
-                      {product.note}
-                    </p>
-                    <button
-                      onClick={() => openNotify(product.name)}
-                      className={`mt-2 inline-flex items-center gap-1.5 text-xs font-sora font-semibold transition-all duration-200 ${
-                        product.darkText ? 'text-blue-mein hover:text-blue-dark' : 'text-gold-mein hover:text-gold-light'
-                      }`}
-                    >
-                      <Bell size={11} />
-                      Notify me
-                      <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
-                    </button>
-                  </div>
-                </div>
+                <ProductCard product={product} onNotify={openNotify} />
               </FadeUp>
             ))}
           </div>
