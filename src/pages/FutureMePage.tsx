@@ -12,8 +12,8 @@ import { supabase } from '../lib/supabase'
 import futureMePortal   from '../assets/Portal_Icon.png'
 import futureMeNoteCard from '../assets/Future_Me_Letter.png'
 
-// Individual doodle accents (3 on the page)
-import doodleStar7    from '../assets/7_Star.png'
+// Individual doodle accents (2 on the page)
+import futureMessageBackground from '../assets/Minamalist_Background.png'
 import doodleSquiqqle from '../assets/Squiqqle.png'
 import doodleArrow    from '../assets/Arrow.png'
 
@@ -258,12 +258,15 @@ export default function FutureMePage() {
       </section>
 
       {/* ─── FIVE MOVE CARDS ───────────────────────────────────────────────── */}
-      <section id="how-it-works" className="relative py-8 md:py-12 bg-white overflow-visible">
-        {/* Doodle: starburst near section heading — desktop only */}
+      <section id="how-it-works" className="relative py-8 md:py-12 overflow-hidden">
+        {/* Section background */}
         <img
-          src={doodleStar7} alt="" aria-hidden="true"
-          className="pointer-events-none select-none absolute top-8 right-8 w-14 hidden md:block"
+          src={futureMessageBackground}
+          alt="" aria-hidden="true"
+          className="pointer-events-none select-none absolute inset-0 h-full w-full object-cover"
         />
+        {/* Subtle white wash to keep cards readable */}
+        <div className="absolute inset-0 bg-white/40" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-5 md:px-8">
 
