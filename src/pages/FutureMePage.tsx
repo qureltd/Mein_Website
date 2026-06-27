@@ -4,29 +4,36 @@ import { FadeUp } from '../hooks/useInView'
 import { HandwrittenAccent, SectionDivider, OpenMIcon } from '../components/BrandElements'
 import { supabase } from '../lib/supabase'
 
-import futureMePortal from '../assets/Portal_Icon.png'
-import futureMeNoteCard from '../assets/Future_Me_Letter.png'
-import futureCardSeeYourself from '../assets/See_Yourself.png'
-import futureCardStepIn from '../assets/Step_In.png'
-import futureCardSayIt from '../assets/Say_It.png'
-import futureCardKeepProof from '../assets/Keep_the_Proof.png'
-import futureCardMakeMove from '../assets/Make_One_Move.png'
+import futureMePortal    from '../assets/Portal_Icon.png'
+import futureMeNoteCard  from '../assets/Future_Me_Letter.png'
+import cardSeeYourself   from '../assets/See_Yourself.png'
+import cardStepIn        from '../assets/Step_In.png'
+import cardSayIt         from '../assets/Say_It.png'
+import cardKeepProof     from '../assets/Keep_the_Proof.png'
+import cardMakeMove      from '../assets/Make_One_Move.png'
+
+// individual doodle accents
+import doodleStar4       from '../assets/4_star.png'
+import doodleStar7       from '../assets/7_Star.png'
+import doodleArrow       from '../assets/Arrow.png'
+import doodleSquiqqle    from '../assets/Squiqqle.png'
+import doodleDots        from '../assets/Dots.png'
 
 const moveCards = [
-  { img: futureCardSeeYourself, alt: 'See yourself message card', rotate: '-1deg', translateY: '0px' },
-  { img: futureCardStepIn,      alt: 'Step in message card',       rotate: '1deg',  translateY: '24px' },
-  { img: futureCardSayIt,       alt: 'Say it message card',        rotate: '-0.8deg', translateY: '0px' },
-  { img: futureCardKeepProof,   alt: 'Keep the proof message card', rotate: '1.2deg', translateY: '-8px' },
-  { img: futureCardMakeMove,    alt: 'Make one move message card', rotate: '-0.8deg', translateY: '16px' },
+  { img: cardSeeYourself, alt: 'See yourself message card',    rotate: '-1deg',   ty: '0px'  },
+  { img: cardStepIn,      alt: 'Step in message card',         rotate: '1.2deg',  ty: '24px' },
+  { img: cardSayIt,       alt: 'Say it message card',          rotate: '-0.8deg', ty: '0px'  },
+  { img: cardKeepProof,   alt: 'Keep the proof message card',  rotate: '1deg',    ty: '-8px' },
+  { img: cardMakeMove,    alt: 'Make one move message card',   rotate: '-0.8deg', ty: '16px' },
 ]
 
 const defaultForm = { name: '', email: '', age: '', guardianName: '', guardianEmail: '', message: '' }
 
 export default function FutureMePage() {
-  const [form, setForm] = useState(defaultForm)
+  const [form, setForm]           = useState(defaultForm)
   const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading]     = useState(false)
+  const [error, setError]         = useState<string | null>(null)
 
   const isUnder18 = form.age !== '' && parseInt(form.age) < 18
 
@@ -39,18 +46,13 @@ export default function FutureMePage() {
     setLoading(true)
     setError(null)
     try {
-      const age = parseInt(form.age) || null
+      const age    = parseInt(form.age) || null
       const under18 = age !== null && age < 18
       const { error: dbError } = await supabase.from('submissions').insert({
-        name: form.name,
-        email: form.email,
-        age,
-        type: 'future_me',
-        title: 'Future Me Message',
-        content: form.message,
-        status: 'received',
+        name: form.name, email: form.email, age, type: 'future_me',
+        title: 'Future Me Message', content: form.message, status: 'received',
         is_under_18: under18,
-        guardian_name: under18 ? form.guardianName : null,
+        guardian_name:  under18 ? form.guardianName  : null,
         guardian_email: under18 ? form.guardianEmail : null,
       })
       if (dbError) throw dbError
@@ -68,6 +70,12 @@ export default function FutureMePage() {
 
       {/* ─── HERO ─────────────────────────────────────────────────────── */}
       <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden bg-white">
+        {/* Doodle: speed-lines near portal — desktop only */}
+        <img
+          src={doodleStar4} alt="" aria-hidden="true"
+          className="pointer-events-none select-none absolute top-28 right-[46%] w-12 hidden lg:block"
+        />
+
         <div className="relative z-10 max-w-7xl mx-auto px-5 md:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
@@ -93,8 +101,7 @@ export default function FutureMePage() {
               <FadeUp delay={350}>
                 <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
                   <a href="#take-the-challenge" className="btn-primary inline-flex justify-center">
-                    Take the challenge
-                    <ArrowRight size={16} />
+                    Take the challenge <ArrowRight size={16} />
                   </a>
                   <a href="#how-it-works" className="btn-outline-blue inline-flex justify-center">
                     See how it works
@@ -123,15 +130,20 @@ export default function FutureMePage() {
         <div className="max-w-7xl mx-auto px-5 md:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
 
-            {/* Note card — large and prominent */}
+            {/* Note card — large, white-space cropped */}
             <FadeUp>
               <div className="flex justify-center md:justify-end">
-                <img
-                  src={futureMeNoteCard}
-                  alt="Future Me message card beginning with Dear your name, in 10 years you will have"
-                  className="w-full max-w-md md:max-w-xl lg:max-w-2xl object-contain drop-shadow-xl pointer-events-none select-none"
+                {/* overflow-hidden + scale crops the white padding in the PNG */}
+                <div
+                  className="overflow-hidden w-full max-w-md md:max-w-xl lg:max-w-2xl"
                   style={{ transform: 'rotate(-2deg)' }}
-                />
+                >
+                  <img
+                    src={futureMeNoteCard}
+                    alt="Future Me message card beginning with Dear your name, in 10 years you will have"
+                    className="w-full object-contain drop-shadow-xl pointer-events-none select-none scale-[1.18]"
+                  />
+                </div>
               </div>
             </FadeUp>
 
@@ -145,11 +157,15 @@ export default function FutureMePage() {
                 <p className="mt-5 font-sora text-gray-dark text-lg leading-relaxed">
                   Write as the person you are becoming — then use that message when you need belief, direction, or one small move forward.
                 </p>
-                <div className="mt-8">
+                <div className="mt-8 flex items-center gap-4 justify-center md:justify-start">
                   <a href="#take-the-challenge" className="btn-primary inline-flex">
-                    Take the challenge
-                    <ArrowRight size={16} />
+                    Take the challenge <ArrowRight size={16} />
                   </a>
+                  {/* Doodle: arrow pointing forward — desktop only */}
+                  <img
+                    src={doodleArrow} alt="" aria-hidden="true"
+                    className="pointer-events-none select-none w-10 hidden md:block -rotate-12"
+                  />
                 </div>
               </div>
             </FadeUp>
@@ -158,12 +174,27 @@ export default function FutureMePage() {
         </div>
       </section>
 
+      {/* Doodle row separator between sections */}
+      <div className="flex justify-center py-2 bg-white">
+        <img
+          src={doodleDots} alt="" aria-hidden="true"
+          className="pointer-events-none select-none w-28 md:w-36 opacity-90"
+        />
+      </div>
+
       {/* ─── FUTURE MESSAGE CARDS ─────────────────────────────────────── */}
-      <section id="how-it-works" className="relative py-20 md:py-28 bg-white overflow-hidden">
+      <section id="how-it-works" className="relative py-16 md:py-24 bg-white overflow-hidden">
+
+        {/* Doodle: starburst near heading — desktop only */}
+        <img
+          src={doodleStar7} alt="" aria-hidden="true"
+          className="pointer-events-none select-none absolute top-12 right-10 w-14 hidden md:block"
+        />
+
         <div className="relative z-10 max-w-7xl mx-auto px-5 md:px-8">
 
           <FadeUp>
-            <div className="text-center mb-14">
+            <div className="text-center mb-12">
               <SectionDivider className="mx-auto" />
               <h2 className="mt-5 font-sora font-extrabold text-3xl md:text-4xl text-charcoal">
                 Your message from future you.
@@ -180,11 +211,14 @@ export default function FutureMePage() {
             <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 no-scrollbar">
               {moveCards.map((card, i) => (
                 <div key={i} className="min-w-[86vw] snap-start flex-shrink-0">
-                  <img
-                    src={card.img}
-                    alt={card.alt}
-                    className="w-full object-contain drop-shadow-lg"
-                  />
+                  {/* overflow-hidden + scale crops baked-in white padding */}
+                  <div className="overflow-hidden rounded-2xl">
+                    <img
+                      src={card.img}
+                      alt={card.alt}
+                      className="w-full object-contain drop-shadow-md scale-[1.2]"
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -193,35 +227,40 @@ export default function FutureMePage() {
           {/* Desktop: staggered 3+2 card layout */}
           <div className="hidden md:block">
             {/* Row 1 — three cards */}
-            <div className="grid grid-cols-3 gap-8 lg:gap-10 items-start max-w-5xl mx-auto">
+            <div className="grid grid-cols-3 gap-6 lg:gap-8 items-start max-w-5xl mx-auto">
               {moveCards.slice(0, 3).map((card, i) => (
                 <FadeUp key={i} delay={i * 80}>
                   <div
-                    className="transition-transform duration-300 hover:scale-[1.03] hover:drop-shadow-xl"
-                    style={{ transform: `rotate(${card.rotate}) translateY(${card.translateY})` }}
+                    className="transition-all duration-300 hover:scale-[1.03] group"
+                    style={{ transform: `rotate(${card.rotate}) translateY(${card.ty})` }}
                   >
-                    <img
-                      src={card.img}
-                      alt={card.alt}
-                      className="w-full object-contain drop-shadow-md"
-                    />
+                    {/* overflow-hidden + scale crops baked-in white padding */}
+                    <div className="overflow-hidden rounded-2xl shadow-md group-hover:shadow-xl transition-shadow duration-300">
+                      <img
+                        src={card.img}
+                        alt={card.alt}
+                        className="w-full object-contain scale-[1.18]"
+                      />
+                    </div>
                   </div>
                 </FadeUp>
               ))}
             </div>
             {/* Row 2 — two cards centred */}
-            <div className="grid grid-cols-2 gap-8 lg:gap-10 mt-8 max-w-[66%] mx-auto items-start">
+            <div className="grid grid-cols-2 gap-6 lg:gap-8 mt-6 max-w-[66%] mx-auto items-start">
               {moveCards.slice(3).map((card, i) => (
                 <FadeUp key={i} delay={(i + 3) * 80}>
                   <div
-                    className="transition-transform duration-300 hover:scale-[1.03] hover:drop-shadow-xl"
-                    style={{ transform: `rotate(${card.rotate}) translateY(${card.translateY})` }}
+                    className="transition-all duration-300 hover:scale-[1.03] group"
+                    style={{ transform: `rotate(${card.rotate}) translateY(${card.ty})` }}
                   >
-                    <img
-                      src={card.img}
-                      alt={card.alt}
-                      className="w-full object-contain drop-shadow-md"
-                    />
+                    <div className="overflow-hidden rounded-2xl shadow-md group-hover:shadow-xl transition-shadow duration-300">
+                      <img
+                        src={card.img}
+                        alt={card.alt}
+                        className="w-full object-contain scale-[1.18]"
+                      />
+                    </div>
                   </div>
                 </FadeUp>
               ))}
@@ -270,7 +309,7 @@ export default function FutureMePage() {
             <FadeUp delay={100}>
               {/* Premium form card */}
               <div className="relative bg-white rounded-3xl border border-blue-mein/20 shadow-xl overflow-hidden">
-                {/* Gold accent strip at top */}
+                {/* Gold accent strip */}
                 <div className="h-1.5 bg-gradient-to-r from-gold-mein via-gold-light to-gold-mein" />
 
                 {/* Faint Open M watermark */}
@@ -278,63 +317,38 @@ export default function FutureMePage() {
                   <OpenMIcon size={320} />
                 </div>
 
+                {/* Doodle: squiqqle near submit CTA — desktop only */}
+                <img
+                  src={doodleSquiqqle} alt="" aria-hidden="true"
+                  className="pointer-events-none select-none absolute -bottom-2 -left-4 w-16 hidden md:block rotate-12"
+                />
+
                 <div className="relative z-10 p-6 md:p-10">
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Your Name *</label>
-                        <input
-                          type="text"
-                          name="name"
-                          required
-                          value={form.name}
-                          onChange={handleChange}
-                          placeholder="Your name"
-                          className="input-field"
-                        />
+                        <input type="text" name="name" required value={form.name} onChange={handleChange}
+                          placeholder="Your name" className="input-field" />
                       </div>
                       <div>
                         <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Email *</label>
-                        <input
-                          type="email"
-                          name="email"
-                          required
-                          value={form.email}
-                          onChange={handleChange}
-                          placeholder="your@email.com"
-                          className="input-field"
-                        />
+                        <input type="email" name="email" required value={form.email} onChange={handleChange}
+                          placeholder="your@email.com" className="input-field" />
                       </div>
                     </div>
 
                     <div>
                       <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Age *</label>
-                      <input
-                        type="number"
-                        name="age"
-                        required
-                        min={10}
-                        max={25}
-                        value={form.age}
-                        onChange={handleChange}
-                        placeholder="Your age"
-                        className="input-field"
-                      />
+                      <input type="number" name="age" required min={10} max={25} value={form.age} onChange={handleChange}
+                        placeholder="Your age" className="input-field" />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">
-                        Your Future Me Message *
-                      </label>
-                      <textarea
-                        name="message"
-                        required
-                        value={form.message}
-                        onChange={handleChange}
-                        rows={7}
+                      <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Your Future Me Message *</label>
+                      <textarea name="message" required value={form.message} onChange={handleChange} rows={7}
                         placeholder={"Dear [your name],\n\nIn 10 years, you will have..."}
-                        className="textarea-field"
-                      />
+                        className="textarea-field" />
                     </div>
 
                     {isUnder18 && (
@@ -343,35 +357,19 @@ export default function FutureMePage() {
                           <AlertCircle size={18} className="text-gold-dark mt-0.5 flex-shrink-0" />
                           <div>
                             <p className="font-sora font-bold text-sm text-charcoal">We keep it safe. We need your guardian's details.</p>
-                            <p className="text-xs text-gray-dark mt-0.5 font-sora">
-                              Your message is safe with us. We'll contact your guardian before anything goes live.
-                            </p>
+                            <p className="text-xs text-gray-dark mt-0.5 font-sora">Your message is safe with us. We'll contact your guardian before anything goes live.</p>
                           </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Guardian's Name *</label>
-                            <input
-                              type="text"
-                              name="guardianName"
-                              required={isUnder18}
-                              value={form.guardianName}
-                              onChange={handleChange}
-                              placeholder="Parent / guardian name"
-                              className="input-field"
-                            />
+                            <input type="text" name="guardianName" required={isUnder18} value={form.guardianName} onChange={handleChange}
+                              placeholder="Parent / guardian name" className="input-field" />
                           </div>
                           <div>
                             <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Guardian's Email *</label>
-                            <input
-                              type="email"
-                              name="guardianEmail"
-                              required={isUnder18}
-                              value={form.guardianEmail}
-                              onChange={handleChange}
-                              placeholder="guardian@email.com"
-                              className="input-field"
-                            />
+                            <input type="email" name="guardianEmail" required={isUnder18} value={form.guardianEmail} onChange={handleChange}
+                              placeholder="guardian@email.com" className="input-field" />
                           </div>
                         </div>
                       </div>
@@ -384,11 +382,8 @@ export default function FutureMePage() {
                       </div>
                     )}
 
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="btn-primary w-full justify-center py-4 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
+                    <button type="submit" disabled={loading}
+                      className="btn-primary w-full justify-center py-4 disabled:opacity-50 disabled:cursor-not-allowed">
                       {loading ? 'Sending...' : 'Send My Future Me Message'}
                       {!loading && <ArrowRight size={16} />}
                     </button>
