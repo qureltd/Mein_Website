@@ -18,7 +18,10 @@ export default function Nav() {
   const location = useLocation()
 
   // Dark hero pages need white nav text before scroll
-  const isDarkHero = location.pathname === '/stories' || location.pathname.startsWith('/stories/')
+  const isDarkHero =
+    location.pathname === '/stories' ||
+    location.pathname.startsWith('/stories/') ||
+    location.pathname === '/join'
   const useLightNav = isDarkHero && !scrolled && !menuOpen
 
   useEffect(() => {
