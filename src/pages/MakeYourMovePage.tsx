@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ArrowRight, Pen, Play, Hammer, Megaphone, Star, HelpCircle, Check, AlertCircle } from 'lucide-react'
+import { ArrowRight, Pen, Play, Hammer, Megaphone, HelpCircle, Check, AlertCircle, Shield } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
-import { OpenMIcon, HandwrittenAccent, SectionDivider, StarAccent } from '../components/BrandElements'
+import { OpenMIcon, HandwrittenAccent, SectionDivider, MeinTagBadge } from '../components/BrandElements'
 import { supabase } from '../lib/supabase'
 
-// ─── Move config ────────────────────────────────────────────────────────────
+// ─── Move config ─────────────────────────────────────────────────────────────
 
 const VALID_KEYS = ['create', 'speak', 'build', 'represent', 'unsure'] as const
 type MoveKey = typeof VALID_KEYS[number]
@@ -13,50 +13,80 @@ type MoveKey = typeof VALID_KEYS[number]
 const MOVE_OPTIONS: Record<MoveKey, {
   key: MoveKey
   label: string
+  headline: string
   description: string
-  badgeClass: string
+  placeholder: string
+  icon: React.ElementType
+  iconBg: string
+  iconColor: string
   activeBg: string
   activeText: string
+  badgeClass: string
 }> = {
   create: {
     key: 'create',
     label: 'Create',
+    headline: "You're starting with Create.",
     description: 'Share art, music, writing, design, video, or something you made.',
-    badgeClass: 'bg-blue-pale text-blue-mein',
+    placeholder: 'Tell us about your creative work — what is it, what inspired it, and what you want to share.',
+    icon: Pen,
+    iconBg: '#EBF0FF',
+    iconColor: '#2F6BFF',
     activeBg: '#2F6BFF',
     activeText: '#ffffff',
+    badgeClass: 'bg-blue-pale text-blue-mein',
   },
   speak: {
     key: 'speak',
     label: 'Speak',
+    headline: "You're starting with Speak.",
     description: 'Share your voice, your story, your message, or something you believe.',
-    badgeClass: 'bg-[#F0F0F0] text-charcoal',
+    placeholder: 'Share your story, what you want to say, or paste a link to your video.',
+    icon: Play,
+    iconBg: '#F5F5F5',
+    iconColor: '#111111',
     activeBg: '#111111',
     activeText: '#ffffff',
+    badgeClass: 'bg-[#F0F0F0] text-charcoal',
   },
   build: {
     key: 'build',
     label: 'Build',
+    headline: "You're starting with Build.",
     description: 'Start an idea, project, product, business, group, or solution.',
-    badgeClass: 'bg-gold-pale text-gold-dark',
+    placeholder: 'Tell us about the idea or project you are building. What is it? What problem does it solve?',
+    icon: Hammer,
+    iconBg: '#FFF8E1',
+    iconColor: '#F4B400',
     activeBg: '#F4B400',
     activeText: '#111111',
+    badgeClass: 'bg-gold-pale text-gold-dark',
   },
   represent: {
     key: 'represent',
     label: 'Represent',
+    headline: "You're starting with Represent.",
     description: 'Show up for the movement, the merch, the culture, or your community.',
-    badgeClass: 'bg-blue-pale text-blue-mein',
+    placeholder: 'Tell us why you want to represent Mein — your voice, your story, why this movement matters to you.',
+    icon: Megaphone,
+    iconBg: '#EBF0FF',
+    iconColor: '#2F6BFF',
     activeBg: '#2F6BFF',
     activeText: '#ffffff',
+    badgeClass: 'bg-blue-pale text-blue-mein',
   },
   unsure: {
     key: 'unsure',
     label: 'Not sure yet',
+    headline: 'Not sure yet? Start there.',
     description: "Tell us what you're into. We'll help you find a first move.",
-    badgeClass: 'bg-white text-charcoal border border-gray-support',
+    placeholder: "e.g. I love drawing but also want to start a business...",
+    icon: HelpCircle,
+    iconBg: '#F5F5F5',
+    iconColor: '#888888',
     activeBg: '#111111',
     activeText: '#ffffff',
+    badgeClass: 'bg-white text-charcoal border border-gray-support',
   },
 }
 
@@ -68,60 +98,7 @@ function normalizeMoveParam(raw: string | null): MoveKey | null {
   return null
 }
 
-// ─── Card data ───────────────────────────────────────────────────────────────
-
-const moveTypes = [
-  {
-    id: 'create',
-    icon: Pen,
-    label: 'Create',
-    tagline: 'Express it.',
-    description: 'Submit art, writing, poetry, photos, designs, ideas, or any creative work.',
-    placeholder: 'Tell us about your creative work — what is it, what inspired it, and what you want to share.',
-    bg: '#EBF0FF',
-    accent: '#2F6BFF',
-  },
-  {
-    id: 'speak',
-    icon: Play,
-    label: 'Speak',
-    tagline: 'Say it.',
-    description: 'Share a story, video, future-self message, or Mein Mover clip.',
-    placeholder: 'Share your story, what you want to say, or paste a link to your video.',
-    bg: '#F5F5F5',
-    accent: '#111111',
-  },
-  {
-    id: 'build',
-    icon: Hammer,
-    label: 'Build',
-    tagline: 'Start it.',
-    description: 'Business idea, creative project, product, or hustle you want to grow.',
-    placeholder: 'Tell us about the idea or project you are building. What is it? What problem does it solve?',
-    bg: '#FFF8E1',
-    accent: '#F4B400',
-  },
-  {
-    id: 'represent',
-    icon: Megaphone,
-    label: 'Represent',
-    tagline: 'Own it.',
-    description: 'Apply to become a Mein content creator or youth voice.',
-    placeholder: 'Tell us why you want to represent Mein — your voice, your story, why this movement matters to you.',
-    bg: '#EBF0FF',
-    accent: '#2F6BFF',
-  },
-  {
-    id: 'feature',
-    icon: Star,
-    label: 'Be Featured',
-    tagline: 'Stand out.',
-    description: 'Submit for possible feature on The Wall after review.',
-    placeholder: 'What would you like to be featured for? Tell us about what you want to share.',
-    bg: '#FFF8E1',
-    accent: '#F4B400',
-  },
-]
+// ─── Form types ───────────────────────────────────────────────────────────────
 
 interface FormData {
   moveType: string
@@ -149,69 +126,77 @@ const defaultForm: FormData = {
   consentGiven: false,
 }
 
+// ─── What happens next steps ──────────────────────────────────────────────────
+
+const NEXT_STEPS = [
+  {
+    num: '01',
+    title: 'You send your move',
+    body: 'Tell us what you want to try or share.',
+  },
+  {
+    num: '02',
+    title: 'We review it',
+    body: 'The Mein team checks submissions before anything goes public.',
+  },
+  {
+    num: '03',
+    title: 'Your move can grow',
+    body: 'You may get support, be invited to share more, or be featured on The Wall with consent.',
+  },
+]
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function MakeYourMovePage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const normalizedMove = normalizeMoveParam(searchParams.get('move'))
 
-  const [selected, setSelected] = useState<string>(() =>
-    normalizedMove && normalizedMove !== 'unsure' ? normalizedMove : ''
-  )
-  const [step, setStep] = useState<'select' | 'form' | 'success'>(() =>
-    normalizedMove && normalizedMove !== 'unsure' ? 'form' : 'select'
-  )
   const [form, setForm] = useState<FormData>(() => ({
     ...defaultForm,
     moveType: normalizedMove && normalizedMove !== 'unsure' ? normalizedMove : '',
   }))
+  const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [notSureOpen, setNotSureOpen] = useState(() => normalizedMove === 'unsure')
+
+  // Not sure yet form state
   const [notSureForm, setNotSureForm] = useState({ name: '', email: '', interests: '' })
   const [notSureDone, setNotSureDone] = useState(false)
   const [notSureLoading, setNotSureLoading] = useState(false)
-  const notSurePanelRef = useRef<HTMLDivElement>(null)
+
+  const formRef = useRef<HTMLDivElement | null>(null)
   const isFirstMount = useRef(true)
 
-  // Respond to URL param changes from the compact chip switcher (skip first mount)
+  // On chip click: URL param changes → update form.moveType, scroll to form
   useEffect(() => {
     if (isFirstMount.current) {
       isFirstMount.current = false
       return
     }
-    if (!normalizedMove) return
-    if (normalizedMove === 'unsure') {
-      setStep('select')
-      setSelected('')
-      setNotSureOpen(true)
-      requestAnimationFrame(() => {
-        notSurePanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      })
-    } else {
-      setSelected(normalizedMove)
+    if (normalizedMove && normalizedMove !== 'unsure') {
       setForm((f) => ({ ...f, moveType: normalizedMove }))
-      setStep('form')
-      setNotSureOpen(false)
     }
+    requestAnimationFrame(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
   }, [normalizedMove]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const isUnder18 = parseInt(form.age) < 18 && form.age !== ''
-  const selectedMove = moveTypes.find((m) => m.id === selected)
+  const isUnder18 = form.age !== '' && parseInt(form.age) < 18
+  const activeMove = normalizedMove ? MOVE_OPTIONS[normalizedMove] : null
 
-  function handleSelect(id: string) {
-    setSelected(id)
-    setForm((f) => ({ ...f, moveType: id }))
-    setStep('form')
+  function handleChipClick(key: MoveKey) {
+    setSearchParams({ move: key })
   }
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
   }
 
   function handleReset() {
-    setStep('select')
-    setSelected('')
     setForm(defaultForm)
-    setNotSureOpen(false)
+    setSubmitted(false)
+    setError(null)
     setSearchParams({})
   }
 
@@ -219,11 +204,9 @@ export default function MakeYourMovePage() {
     e.preventDefault()
     setLoading(true)
     setError(null)
-
     try {
       const age = parseInt(form.age) || null
       const under18 = age !== null && age < 18
-
       const { error: dbError } = await supabase.from('submissions').insert({
         name: form.name,
         display_name: form.displayName || null,
@@ -237,9 +220,8 @@ export default function MakeYourMovePage() {
         guardian_name: under18 ? form.guardianName : null,
         status: 'received',
       })
-
       if (dbError) throw dbError
-      setStep('success')
+      setSubmitted(true)
     } catch (err) {
       setError('Something went wrong. Please try again.')
       console.error(err)
@@ -266,14 +248,15 @@ export default function MakeYourMovePage() {
 
   return (
     <div className="with-mobile-cta">
-      {/* ─── HERO ─── */}
-      <section className="relative pt-32 pb-14 md:pt-40 md:pb-20 bg-white overflow-hidden">
+
+      {/* ─── HERO ──────────────────────────────────────────────────────────── */}
+      <section className="relative pt-28 pb-10 md:pt-36 md:pb-14 bg-white overflow-hidden">
         <div className="absolute right-0 top-0 translate-x-1/3 opacity-[0.04] pointer-events-none select-none">
           <OpenMIcon size={500} />
         </div>
-        <div className="container-wide section-padding relative z-10 max-w-3xl">
+        <div className="relative z-10 max-w-7xl mx-auto px-5 md:px-8 max-w-3xl">
           <FadeUp>
-            {normalizedMove ? (
+            {activeMove ? (
               <>
                 {/* Selected move badge */}
                 <div className="flex items-center gap-2 flex-wrap mb-4">
@@ -281,10 +264,11 @@ export default function MakeYourMovePage() {
                     Selected move
                   </span>
                   <span
-                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-sora font-semibold ${MOVE_OPTIONS[normalizedMove].badgeClass}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-sora font-semibold"
+                    style={{ backgroundColor: activeMove.activeBg, color: activeMove.activeText }}
                   >
                     <Check size={11} strokeWidth={3} />
-                    {MOVE_OPTIONS[normalizedMove].label}
+                    {activeMove.label}
                   </span>
                 </div>
                 <h1 className="font-sora font-extrabold text-5xl md:text-6xl text-charcoal leading-tight">
@@ -294,8 +278,8 @@ export default function MakeYourMovePage() {
                     <>Your move{' '}<HandwrittenAccent text="starts here." className="text-5xl md:text-6xl" /></>
                   )}
                 </h1>
-                <p className="mt-4 text-lg text-gray-dark font-sora">
-                  {MOVE_OPTIONS[normalizedMove].description}
+                <p className="mt-4 text-lg text-gray-dark font-sora max-w-xl">
+                  {activeMove.description}
                 </p>
               </>
             ) : (
@@ -306,18 +290,18 @@ export default function MakeYourMovePage() {
                 <h1 className="font-sora font-extrabold text-5xl md:text-6xl text-charcoal leading-tight">
                   Make Your Move.
                 </h1>
-                <p className="mt-5 text-lg text-gray-dark font-sora">
-                  Choose one move to start.
+                <p className="mt-5 text-lg text-gray-dark font-sora max-w-xl">
+                  Choose one move to start. One move is enough. You do not need a perfect plan to begin.
                 </p>
               </>
             )}
           </FadeUp>
 
-          {/* Compact chip switcher — always visible in hero */}
-          <FadeUp delay={150}>
+          {/* Compact chip switcher */}
+          <FadeUp delay={120}>
             <div className="mt-6">
               <p className="text-xs font-sora font-semibold text-gray-mid uppercase tracking-widest mb-3">
-                {normalizedMove ? 'Change move' : 'Pick your move'}
+                {activeMove ? 'Change move' : 'Pick your move'}
               </p>
               <div className="flex flex-wrap gap-2">
                 {VALID_KEYS.map((key) => {
@@ -326,7 +310,7 @@ export default function MakeYourMovePage() {
                   return (
                     <button
                       key={key}
-                      onClick={() => setSearchParams({ move: key })}
+                      onClick={() => handleChipClick(key)}
                       className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-sora font-semibold border transition-all duration-150 ${
                         isActive
                           ? 'border-transparent'
@@ -345,427 +329,416 @@ export default function MakeYourMovePage() {
         </div>
       </section>
 
-      {/* ─── CONTENT ─── */}
-      <section className="pb-24 bg-white">
-        <div className="container-wide section-padding max-w-4xl">
+      {/* ─── FORM SECTION ──────────────────────────────────────────────────── */}
+      <section className="pb-16 bg-white">
+        <div className="max-w-7xl mx-auto px-5 md:px-8 max-w-3xl">
 
-          {/* Step: Select — card grid */}
-          {step === 'select' && (
-            <>
-              <FadeUp>
-                <div className="mb-10">
-                  <SectionDivider />
-                  <h2 className="mt-4 font-sora font-bold text-2xl text-charcoal">
-                    {normalizedMove === 'unsure' ? 'Or pick a specific move.' : 'Explore all moves.'}
-                  </h2>
-                  <p className="mt-1 font-caveat text-gray-mid text-lg md:hidden">Swipe to see all options →</p>
-                </div>
-              </FadeUp>
+          {/* Anchor for scroll-to */}
+          <div ref={formRef} className="scroll-mt-28 md:scroll-mt-32" />
 
-              <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-5 px-5 no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:overflow-visible md:pb-0 md:mx-0 md:px-0 items-stretch">
-                {moveTypes.map((move, i) => (
-                  <FadeUp
-                    key={move.id}
-                    delay={i * 60}
-                    className="snap-start flex-shrink-0 w-[82vw] md:w-auto"
-                  >
-                    <button
-                      onClick={() => {
-                        if ((VALID_KEYS as readonly string[]).includes(move.id)) {
-                          setSearchParams({ move: move.id })
-                        } else {
-                          handleSelect(move.id)
-                        }
-                      }}
-                      className="move-card text-left w-full h-full flex flex-col group"
-                      style={{ '--accent': move.accent } as React.CSSProperties}
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <span
-                          className="font-sora font-black text-4xl leading-none tracking-tight"
-                          style={{ color: move.bg }}
-                        >
-                          {String(i + 1).padStart(2, '0')}
-                        </span>
-                        <div
-                          className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110"
-                          style={{ backgroundColor: move.bg }}
-                        >
-                          <move.icon size={20} style={{ color: move.accent }} strokeWidth={2} />
-                        </div>
-                      </div>
-                      <p
-                        className="text-[10px] font-sora font-semibold uppercase tracking-[0.18em] mb-1"
-                        style={{ color: move.accent }}
-                      >
-                        Move {String(i + 1).padStart(2, '0')} — {move.label}
-                      </p>
-                      <HandwrittenAccent text={move.tagline} className="text-xl mb-2" />
-                      <p className="text-sm text-gray-dark font-sora flex-1">{move.description}</p>
-                      <div
-                        className="mt-5 flex items-center gap-1.5 text-sm font-semibold font-sora group-hover:gap-3 transition-all duration-200"
-                        style={{ color: move.accent }}
-                      >
-                        Make this move
-                        <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </button>
-                  </FadeUp>
-                ))}
-
-                {/* Not sure yet card */}
-                <FadeUp delay={moveTypes.length * 60} className="snap-start flex-shrink-0 w-[82vw] md:w-auto">
-                  <button
-                    onClick={() => setSearchParams({ move: 'unsure' })}
-                    className="w-full h-full flex flex-col text-left rounded-2xl border-2 border-dashed border-gray-support bg-white p-6 hover:border-blue-mein hover:bg-blue-pale/30 transition-all duration-200 group"
-                  >
-                    <div className="w-11 h-11 rounded-xl bg-gray-support/50 flex items-center justify-center mb-4 group-hover:bg-blue-pale transition-colors">
-                      <HelpCircle size={20} className="text-gray-mid group-hover:text-blue-mein transition-colors" strokeWidth={1.8} />
-                    </div>
-                    <p className="text-[10px] font-sora font-semibold uppercase tracking-[0.18em] text-gray-mid mb-1">Not sure yet?</p>
-                    <HandwrittenAccent text="That's okay." className="text-xl mb-2" />
-                    <p className="text-sm text-gray-dark font-sora flex-1">
-                      You do not need to know your move yet. Tell us what you're into and we'll help you find your first move.
-                    </p>
-                    <div className="mt-5 flex items-center gap-1.5 text-sm font-semibold font-sora text-gray-mid group-hover:text-blue-mein group-hover:gap-3 transition-all duration-200">
-                      Help me start
-                      <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </button>
-                </FadeUp>
-              </div>
-
-              {/* Not Sure expandable panel */}
-              {notSureOpen && (
-                <FadeUp>
-                  <div
-                    ref={notSurePanelRef}
-                    className="mt-6 scroll-mt-28 md:scroll-mt-32 bg-white border-2 border-dashed border-blue-mein/30 rounded-2xl overflow-hidden"
-                  >
-                    <div className="h-1 w-full bg-gold-mein" />
-                    <div className="p-6 md:p-8">
-                      {notSureDone ? (
-                        <div className="text-center py-4">
-                          <div className="w-16 h-16 rounded-full bg-gold-pale border-2 border-gold-mein/40 flex items-center justify-center mx-auto mb-4">
-                            <Check size={24} className="text-gold-dark" strokeWidth={2.5} />
-                          </div>
-                          <h3 className="font-sora font-bold text-xl text-charcoal">Your first step landed.</h3>
-                          <HandwrittenAccent text="We'll help you find your move." className="text-lg block mt-1" />
-                          <p className="mt-3 text-sm text-gray-dark font-sora max-w-sm mx-auto">
-                            The Mein team will reach out to help you figure out your first move.
-                          </p>
-                          <button
-                            onClick={() => {
-                              setNotSureOpen(false)
-                              setNotSureDone(false)
-                              setNotSureForm({ name: '', email: '', interests: '' })
-                            }}
-                            className="mt-5 btn-outline-blue inline-flex text-sm"
-                          >
-                            Done
-                          </button>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="flex items-center gap-3 mb-1">
-                            <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
-                              <HelpCircle size={18} className="text-gray-400" strokeWidth={1.8} />
-                            </div>
-                            <h3 className="font-sora font-bold text-xl text-charcoal">Not sure yet? Start here.</h3>
-                          </div>
-                          <p className="text-sm text-gray-dark font-sora mb-5 ml-12">
-                            You do not need to know your move yet. Tell us what you're into and we'll help you find your first move.
-                          </p>
-                          <form onSubmit={handleNotSureSubmit} className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div>
-                                <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Your Name *</label>
-                                <input
-                                  type="text"
-                                  required
-                                  value={notSureForm.name}
-                                  onChange={(e) => setNotSureForm((f) => ({ ...f, name: e.target.value }))}
-                                  placeholder="Your name"
-                                  className="input-field"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Email *</label>
-                                <input
-                                  type="email"
-                                  required
-                                  value={notSureForm.email}
-                                  onChange={(e) => setNotSureForm((f) => ({ ...f, email: e.target.value }))}
-                                  placeholder="your@email.com"
-                                  className="input-field"
-                                />
-                              </div>
-                            </div>
-                            <div>
-                              <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">
-                                What are you into?{' '}
-                                <span className="font-normal text-gray-mid">(optional)</span>
-                              </label>
-                              <textarea
-                                rows={3}
-                                value={notSureForm.interests}
-                                onChange={(e) => setNotSureForm((f) => ({ ...f, interests: e.target.value }))}
-                                placeholder="e.g. I love drawing but also want to start a business..."
-                                className="textarea-field"
-                              />
-                            </div>
-                            <button
-                              type="submit"
-                              disabled={notSureLoading}
-                              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {notSureLoading ? 'Sending...' : 'Help me start.'}
-                              {!notSureLoading && <ArrowRight size={14} />}
-                            </button>
-                          </form>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </FadeUp>
-              )}
-            </>
-          )}
-
-          {/* Step: Form */}
-          {step === 'form' && selectedMove && (
+          {submitted ? (
+            /* ── Success state ── */
             <FadeUp>
-              <div className="mb-8 flex items-center gap-3 flex-wrap">
-                <button
-                  onClick={handleReset}
-                  className="text-sm text-gray-mid hover:text-blue-mein transition-colors font-sora"
-                >
-                  ← Back
-                </button>
-                <span className="text-gray-support">|</span>
-                <span className="tag-badge">{selectedMove.label}</span>
-              </div>
-
-              <div className="flex justify-center mb-6">
-                <div className="flex flex-col items-center">
-                  <div className="w-2 h-2 rounded-full bg-blue-mein" />
-                  <div className="mt-0.5 h-10" style={{ width: 1, borderLeft: '2px dashed rgba(47,107,255,0.3)' }} />
-                  <div className="w-2 h-2 rounded-full bg-blue-mein/30" />
+              <div className="text-center py-14 md:py-20 bg-blue-pale/40 rounded-3xl px-6 md:px-12 border border-blue-mein/10">
+                <div className="w-20 h-20 rounded-full bg-blue-pale ring-4 ring-blue-mein/10 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-mein/10">
+                  <OpenMIcon size={44} />
                 </div>
-              </div>
-
-              <div className="bg-gray-support/20 rounded-3xl p-7 md:p-10 border-2 border-gray-support">
-                <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5"
-                  style={{ backgroundColor: selectedMove.bg }}
-                >
-                  <selectedMove.icon size={24} style={{ color: selectedMove.accent }} strokeWidth={2} />
-                </div>
-                <h2 className="font-sora font-extrabold text-2xl md:text-3xl text-charcoal">
-                  Tell us your first move.
-                </h2>
-                <HandwrittenAccent text={selectedMove.tagline} className="text-xl mt-1 block" />
-                <p className="mt-2 text-gray-dark font-sora">{selectedMove.description}</p>
-                <p className="mt-1 font-caveat text-gray-mid text-lg">
-                  Short answers are okay. You do not need a perfect plan to begin.
-                </p>
-
-                <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Full Name *</label>
-                      <input
-                        type="text"
-                        name="name"
-                        required
-                        value={form.name}
-                        onChange={handleChange}
-                        placeholder="Your full name"
-                        className="input-field"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">
-                        Display Name
-                        <span className="font-normal text-gray-mid ml-1.5">(shown publicly)</span>
-                      </label>
-                      <input
-                        type="text"
-                        name="displayName"
-                        value={form.displayName}
-                        onChange={handleChange}
-                        placeholder="e.g. @username or first name"
-                        className="input-field"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Email *</label>
-                      <input
-                        type="email"
-                        name="email"
-                        required
-                        value={form.email}
-                        onChange={handleChange}
-                        placeholder="your@email.com"
-                        className="input-field"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Age *</label>
-                      <input
-                        type="number"
-                        name="age"
-                        required
-                        min={10}
-                        max={25}
-                        value={form.age}
-                        onChange={handleChange}
-                        placeholder="Your age"
-                        className="input-field"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Title / Subject</label>
-                    <input
-                      type="text"
-                      name="title"
-                      value={form.title}
-                      onChange={handleChange}
-                      placeholder="Give your submission a title (optional)"
-                      className="input-field"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Your Move *</label>
-                    <textarea
-                      name="content"
-                      required
-                      value={form.content}
-                      onChange={handleChange}
-                      rows={6}
-                      placeholder={selectedMove.placeholder}
-                      className="textarea-field"
-                    />
-                  </div>
-
-                  {isUnder18 && (
-                    <div className="bg-gold-pale border-2 border-gold-mein/30 rounded-2xl p-5">
-                      <div className="flex items-start gap-3 mb-4">
-                        <AlertCircle size={18} className="text-gold-dark mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-sora font-bold text-sm text-charcoal">We keep it safe. We need your guardian's details.</p>
-                          <p className="text-xs text-gray-dark mt-0.5 font-sora">
-                            Your submission is safe with us. We'll contact your guardian and get their consent before anything goes live.
-                          </p>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Guardian's Name *</label>
-                          <input
-                            type="text"
-                            name="guardianName"
-                            required={isUnder18}
-                            value={form.guardianName}
-                            onChange={handleChange}
-                            placeholder="Parent / guardian name"
-                            className="input-field"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Guardian's Email *</label>
-                          <input
-                            type="email"
-                            name="guardianEmail"
-                            required={isUnder18}
-                            value={form.guardianEmail}
-                            onChange={handleChange}
-                            placeholder="guardian@email.com"
-                            className="input-field"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <label className="flex items-start gap-3 cursor-pointer group">
-                    <div
-                      className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 mt-0.5 border-2 transition-colors ${
-                        form.consentGiven ? 'bg-blue-mein border-blue-mein' : 'border-gray-support group-hover:border-blue-mein'
-                      }`}
-                      onClick={() => setForm((f) => ({ ...f, consentGiven: !f.consentGiven }))}
-                    >
-                      {form.consentGiven && <Check size={12} className="text-white" strokeWidth={3} />}
-                    </div>
-                    <p className="text-sm text-gray-dark font-sora leading-relaxed">
-                      I agree to the{' '}
-                      <a href="/community-rules" className="text-blue-mein underline">Community Rules</a>{' '}
-                      and confirm this is my original work. I understand that public sharing is reviewed before it goes live.
-                    </p>
-                  </label>
-
-                  {error && (
-                    <div className="flex items-center gap-2.5 bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700 font-sora">
-                      <AlertCircle size={16} className="flex-shrink-0" />
-                      {error}
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={loading || !form.consentGiven}
-                    className="btn-primary w-full justify-center text-base py-4 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {loading ? 'Submitting your move...' : 'Submit Your Move'}
-                    {!loading && <ArrowRight size={16} />}
-                  </button>
-                </form>
-              </div>
-            </FadeUp>
-          )}
-
-          {/* Step: Success */}
-          {step === 'success' && (
-            <FadeUp>
-              <div className="text-center py-14 md:py-20 bg-blue-pale/30 rounded-3xl px-6 md:px-12">
-                <div className="flex items-center justify-center gap-5 mb-7">
-                  <StarAccent className="opacity-80" />
-                  <div className="w-28 h-28 rounded-full bg-blue-pale ring-4 ring-blue-mein/10 flex items-center justify-center shadow-lg shadow-blue-mein/10">
-                    <OpenMIcon size={60} />
-                  </div>
-                  <StarAccent className="opacity-80" />
-                </div>
-
-                <h2 className="font-caveat text-4xl md:text-6xl text-charcoal leading-tight">
+                <h2 className="font-caveat text-4xl md:text-5xl text-charcoal leading-tight">
                   Your move has landed.
                 </h2>
                 <HandwrittenAccent text="The Mein team has got it." className="text-2xl block mt-3" />
-
                 <p className="mt-5 text-gray-dark font-sora max-w-md mx-auto leading-relaxed">
-                  The Mein team will review it and get back to you.
+                  The Mein team will review your submission and get back to you.
                   {form.age && parseInt(form.age) < 18 && (
                     <> A consent request has been sent to your guardian's email.</>
                   )}
                 </p>
-
-                <div className="mt-9 flex flex-wrap gap-4 justify-center">
+                <div className="mt-8 flex flex-wrap gap-4 justify-center">
                   <button onClick={handleReset} className="btn-primary">
-                    Make Another Move
-                    <ArrowRight size={16} />
+                    Make Another Move <ArrowRight size={16} />
                   </button>
                   <a href="/stories" className="btn-secondary">See Stories</a>
+                </div>
+              </div>
+            </FadeUp>
+
+          ) : normalizedMove === 'unsure' ? (
+            /* ── Not sure yet form ── */
+            <FadeUp>
+              <div className="bg-white rounded-3xl border-2 border-dashed border-blue-mein/25 overflow-hidden shadow-lg">
+                <div className="h-1.5 bg-gradient-to-r from-gold-mein via-gold-light to-gold-mein" />
+                <div className="p-6 md:p-10">
+                  {notSureDone ? (
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 rounded-full bg-gold-pale border-2 border-gold-mein/40 flex items-center justify-center mx-auto mb-4">
+                        <Check size={24} className="text-gold-dark" strokeWidth={2.5} />
+                      </div>
+                      <h3 className="font-sora font-bold text-2xl text-charcoal">Your first step landed.</h3>
+                      <HandwrittenAccent text="We'll help you find your move." className="text-lg block mt-2" />
+                      <p className="mt-4 text-sm text-gray-dark font-sora max-w-sm mx-auto">
+                        The Mein team will reach out to help you figure out your first move.
+                      </p>
+                      <button
+                        onClick={() => {
+                          setNotSureDone(false)
+                          setNotSureForm({ name: '', email: '', interests: '' })
+                          setSearchParams({})
+                        }}
+                        className="mt-6 btn-outline-blue inline-flex text-sm"
+                      >
+                        Done
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-3 mb-1">
+                        <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+                          <HelpCircle size={20} className="text-gray-400" strokeWidth={1.8} />
+                        </div>
+                        <div>
+                          <MeinTagBadge label="Tell us your first move." color="blue" />
+                        </div>
+                      </div>
+                      <h2 className="mt-4 font-sora font-extrabold text-2xl md:text-3xl text-charcoal">
+                        Not sure yet? That's okay.
+                      </h2>
+                      <p className="mt-2 text-gray-dark font-sora">
+                        You do not need to know your move yet. Tell us what you're into and we'll help you find your first move.
+                      </p>
+                      <p className="mt-1 font-caveat text-gray-mid text-lg">
+                        Short answers are okay. You do not need a perfect plan to begin.
+                      </p>
+
+                      <form onSubmit={handleNotSureSubmit} className="mt-7 space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Your Name *</label>
+                            <input
+                              type="text"
+                              required
+                              value={notSureForm.name}
+                              onChange={(e) => setNotSureForm((f) => ({ ...f, name: e.target.value }))}
+                              placeholder="Your name"
+                              className="input-field"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Email *</label>
+                            <input
+                              type="email"
+                              required
+                              value={notSureForm.email}
+                              onChange={(e) => setNotSureForm((f) => ({ ...f, email: e.target.value }))}
+                              placeholder="your@email.com"
+                              className="input-field"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">
+                            What are you into?{' '}
+                            <span className="font-normal text-gray-mid">(optional)</span>
+                          </label>
+                          <textarea
+                            rows={4}
+                            value={notSureForm.interests}
+                            onChange={(e) => setNotSureForm((f) => ({ ...f, interests: e.target.value }))}
+                            placeholder="e.g. I love drawing but also want to start a business..."
+                            className="textarea-field"
+                          />
+                        </div>
+                        <button
+                          type="submit"
+                          disabled={notSureLoading}
+                          className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {notSureLoading ? 'Sending...' : 'Help me start.'}
+                          {!notSureLoading && <ArrowRight size={14} />}
+                        </button>
+                      </form>
+                    </>
+                  )}
+                </div>
+              </div>
+            </FadeUp>
+
+          ) : (
+            /* ── Main move form ── */
+            <FadeUp>
+              <div className="bg-white rounded-3xl border border-blue-mein/15 shadow-xl overflow-hidden">
+                {/* Accent strip — color matches active move */}
+                <div
+                  className="h-1.5"
+                  style={{
+                    background: activeMove
+                      ? `linear-gradient(to right, ${activeMove.activeBg}, ${activeMove.iconBg})`
+                      : 'linear-gradient(to right, #2F6BFF, #EBF0FF)',
+                  }}
+                />
+
+                <div className="p-6 md:p-10">
+                  {/* Form header */}
+                  <div className="flex items-start gap-4 mb-6">
+                    {activeMove && (
+                      <div
+                        className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: activeMove.iconBg }}
+                      >
+                        <activeMove.icon size={22} style={{ color: activeMove.iconColor }} strokeWidth={2} />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      {activeMove && (
+                        <p className="text-xs font-sora font-semibold uppercase tracking-widest mb-1"
+                          style={{ color: activeMove.iconColor }}>
+                          Selected move — {activeMove.label}
+                        </p>
+                      )}
+                      <h2 className="font-sora font-extrabold text-2xl md:text-3xl text-charcoal">
+                        Tell us your first move.
+                      </h2>
+                      <p className="mt-1 font-caveat text-gray-mid text-lg">
+                        Short answers are okay. You do not need a perfect plan to begin.
+                      </p>
+                    </div>
+                  </div>
+
+                  <SectionDivider className="mb-6" />
+
+                  <form onSubmit={handleSubmit} className="space-y-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Full Name *</label>
+                        <input
+                          type="text"
+                          name="name"
+                          required
+                          value={form.name}
+                          onChange={handleChange}
+                          placeholder="Your full name"
+                          className="input-field"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">
+                          Display Name
+                          <span className="font-normal text-gray-mid ml-1.5">(shown publicly)</span>
+                        </label>
+                        <input
+                          type="text"
+                          name="displayName"
+                          value={form.displayName}
+                          onChange={handleChange}
+                          placeholder="e.g. @username or first name"
+                          className="input-field"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Email *</label>
+                        <input
+                          type="email"
+                          name="email"
+                          required
+                          value={form.email}
+                          onChange={handleChange}
+                          placeholder="your@email.com"
+                          className="input-field"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Age *</label>
+                        <input
+                          type="number"
+                          name="age"
+                          required
+                          min={10}
+                          max={25}
+                          value={form.age}
+                          onChange={handleChange}
+                          placeholder="Your age"
+                          className="input-field"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Title / Subject</label>
+                      <input
+                        type="text"
+                        name="title"
+                        value={form.title}
+                        onChange={handleChange}
+                        placeholder="Give your submission a title (optional)"
+                        className="input-field"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Your Move *</label>
+                      <textarea
+                        name="content"
+                        required
+                        value={form.content}
+                        onChange={handleChange}
+                        rows={6}
+                        placeholder={
+                          activeMove
+                            ? activeMove.placeholder
+                            : 'Tell us what you want to try or share. Short answers are okay.'
+                        }
+                        className="textarea-field"
+                      />
+                    </div>
+
+                    {!activeMove && (
+                      <div>
+                        <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">
+                          Move type *
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {VALID_KEYS.filter((k) => k !== 'unsure').map((key) => {
+                            const opt = MOVE_OPTIONS[key]
+                            const isSelected = form.moveType === key
+                            return (
+                              <button
+                                key={key}
+                                type="button"
+                                onClick={() => setForm((f) => ({ ...f, moveType: key }))}
+                                className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-sora font-semibold border transition-all duration-150 ${
+                                  isSelected
+                                    ? 'border-transparent'
+                                    : 'border-gray-support bg-white text-gray-dark hover:border-blue-mein/50'
+                                }`}
+                                style={isSelected ? { backgroundColor: opt.activeBg, color: opt.activeText } : undefined}
+                              >
+                                {isSelected && <Check size={12} strokeWidth={3} />}
+                                {opt.label}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {isUnder18 && (
+                      <div className="bg-gold-pale border-2 border-gold-mein/30 rounded-2xl p-5">
+                        <div className="flex items-start gap-3 mb-4">
+                          <AlertCircle size={18} className="text-gold-dark mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-sora font-bold text-sm text-charcoal">We keep it safe. We need your guardian's details.</p>
+                            <p className="text-xs text-gray-dark mt-0.5 font-sora">
+                              Your submission is safe with us. We'll contact your guardian and get their consent before anything goes live.
+                            </p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Guardian's Name *</label>
+                            <input
+                              type="text"
+                              name="guardianName"
+                              required={isUnder18}
+                              value={form.guardianName}
+                              onChange={handleChange}
+                              placeholder="Parent / guardian name"
+                              className="input-field"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Guardian's Email *</label>
+                            <input
+                              type="email"
+                              name="guardianEmail"
+                              required={isUnder18}
+                              value={form.guardianEmail}
+                              onChange={handleChange}
+                              placeholder="guardian@email.com"
+                              className="input-field"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <label className="flex items-start gap-3 cursor-pointer group">
+                      <div
+                        className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 mt-0.5 border-2 transition-colors ${
+                          form.consentGiven ? 'bg-blue-mein border-blue-mein' : 'border-gray-support group-hover:border-blue-mein'
+                        }`}
+                        onClick={() => setForm((f) => ({ ...f, consentGiven: !f.consentGiven }))}
+                      >
+                        {form.consentGiven && <Check size={12} className="text-white" strokeWidth={3} />}
+                      </div>
+                      <p className="text-sm text-gray-dark font-sora leading-relaxed">
+                        I agree to the{' '}
+                        <a href="/community-rules" className="text-blue-mein underline">Community Rules</a>{' '}
+                        and confirm this is my original work. I understand that public sharing is reviewed before it goes live.
+                      </p>
+                    </label>
+
+                    {error && (
+                      <div className="flex items-center gap-2.5 bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700 font-sora">
+                        <AlertCircle size={16} className="flex-shrink-0" />
+                        {error}
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={loading || !form.consentGiven || (!activeMove && !form.moveType)}
+                      className="btn-primary w-full justify-center text-base py-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loading ? 'Submitting your move...' : 'Submit Your Move'}
+                      {!loading && <ArrowRight size={16} />}
+                    </button>
+                  </form>
                 </div>
               </div>
             </FadeUp>
           )}
         </div>
       </section>
+
+      {/* ─── WHAT HAPPENS NEXT ─────────────────────────────────────────────── */}
+      {!submitted && !notSureDone && (
+        <section className="py-12 md:py-16 bg-[#FAFAF8]">
+          <div className="max-w-7xl mx-auto px-5 md:px-8 max-w-3xl">
+            <FadeUp>
+              <div className="text-center mb-8">
+                <SectionDivider className="mx-auto mb-4" />
+                <h2 className="font-sora font-extrabold text-2xl md:text-3xl text-charcoal">
+                  What happens next?
+                </h2>
+              </div>
+            </FadeUp>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {NEXT_STEPS.map((step, i) => (
+                <FadeUp key={step.num} delay={i * 80}>
+                  <div className="bg-white rounded-2xl border border-blue-mein/10 p-6 shadow-sm h-full">
+                    <span className="text-xs font-sora font-bold uppercase tracking-widest text-blue-mein mb-3 block">
+                      Step {step.num}
+                    </span>
+                    <h3 className="font-sora font-bold text-lg text-charcoal mb-2">{step.title}</h3>
+                    <p className="font-sora text-gray-dark text-sm leading-relaxed">{step.body}</p>
+                  </div>
+                </FadeUp>
+              ))}
+            </div>
+
+            <FadeUp delay={240}>
+              <div className="mt-6 flex items-center justify-center gap-2 text-sm font-sora text-gray-mid">
+                <Shield size={14} className="text-blue-mein flex-shrink-0" strokeWidth={2} />
+                Staff-reviewed · Consent-aware · Youth-safe
+              </div>
+            </FadeUp>
+          </div>
+        </section>
+      )}
+
     </div>
   )
 }
