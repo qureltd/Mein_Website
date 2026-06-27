@@ -17,6 +17,10 @@ export default function Nav() {
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
 
+  // Dark hero pages need white nav text before scroll
+  const isDarkHero = location.pathname === '/stories' || location.pathname.startsWith('/stories/')
+  const useLightNav = isDarkHero && !scrolled && !menuOpen
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', handleScroll)
@@ -42,12 +46,16 @@ export default function Nav() {
         }`}
       >
         <div className="container-wide section-padding flex items-center justify-between h-16 md:h-18">
-          {/* Logo */}
+          {/* Logo — inverted on dark hero before scroll */}
           <Link to="/" className="flex items-center gap-2.5 flex-shrink-0">
             <img
-              src="/assets/logos/02_primary_lockup_no_tagline.svg"
+              src={
+                useLightNav
+                  ? '/assets/logos/mein_wordmark_inverted_for_black_bg.svg'
+                  : '/assets/logos/02_primary_lockup_no_tagline.svg'
+              }
               alt="Mein"
-              className="h-8 w-auto"
+              className="h-8 w-auto transition-opacity duration-300"
             />
           </Link>
 
@@ -59,8 +67,12 @@ export default function Nav() {
                 to={link.href}
                 className={`px-3.5 py-2 rounded-lg text-sm font-medium font-sora transition-colors duration-200 ${
                   location.pathname === link.href
-                    ? 'text-blue-mein bg-blue-pale'
-                    : 'text-charcoal hover:text-blue-mein hover:bg-blue-pale/50'
+                    ? useLightNav
+                      ? 'text-white bg-white/15'
+                      : 'text-blue-mein bg-blue-pale'
+                    : useLightNav
+                      ? 'text-white/80 hover:text-white hover:bg-white/10'
+                      : 'text-charcoal hover:text-blue-mein hover:bg-blue-pale/50'
                 }`}
               >
                 {link.label}
@@ -78,7 +90,9 @@ export default function Nav() {
 
           {/* Mobile menu toggle */}
           <button
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-support transition-colors"
+            className={`lg:hidden p-2 rounded-lg transition-colors ${
+              useLightNav ? 'text-white hover:bg-white/10' : 'hover:bg-gray-support'
+            }`}
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Toggle menu"
           >
