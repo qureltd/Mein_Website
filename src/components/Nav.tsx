@@ -20,7 +20,8 @@ export default function Nav() {
   const isDarkHero =
     location.pathname === '/stories' ||
     location.pathname.startsWith('/stories/') ||
-    location.pathname === '/join'
+    location.pathname === '/join' ||
+    location.pathname === '/shop'
   const useLightNav = isDarkHero && !scrolled && !menuOpen
 
   useEffect(() => {
