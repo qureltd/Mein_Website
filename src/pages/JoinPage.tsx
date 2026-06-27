@@ -55,15 +55,15 @@ const audiencePaths = [
 ] as const
 
 const badgeStyles = {
-  blue: 'bg-blue-pale text-blue-mein border border-blue-mein/20 shadow-sm',
-  gold: 'bg-gold-pale text-gold-dark border border-yellow-200 shadow-sm',
+  blue: 'bg-blue-pale text-blue-mein border-2 border-blue-mein/30 shadow-md',
+  gold: 'bg-gold-pale text-gold-dark border-2 border-yellow-300/60 shadow-md',
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function JoinPage() {
   return (
-    <div className="with-mobile-cta">
+    <div>
 
       {/* ─── 1. HERO ─────────────────────────────────────────────────────── */}
       <section className="relative pt-28 pb-20 md:pt-36 md:pb-24 bg-charcoal overflow-hidden">
@@ -144,11 +144,11 @@ export default function JoinPage() {
             </div>
           </FadeUp>
 
-          <div className="flex flex-wrap gap-3 justify-center max-w-3xl mx-auto">
+          <div className="flex flex-wrap gap-4 justify-center max-w-3xl mx-auto">
             {belongingBadges.map((badge, i) => (
               <FadeUp key={badge.text} delay={i * 70}>
                 <span
-                  className={`inline-block ${badgeStyles[badge.variant]} font-sora font-bold text-base md:text-lg py-3 md:py-4 px-5 md:px-7 rounded-full`}
+                  className={`inline-block ${badgeStyles[badge.variant]} font-sora font-bold text-base md:text-lg py-3.5 md:py-4 px-6 md:px-8 rounded-full tracking-tight`}
                 >
                   {badge.text}
                 </span>
@@ -182,20 +182,20 @@ export default function JoinPage() {
           {/* Vertical path list with connecting line on desktop */}
           <div className="relative">
             {/* Vertical connector — desktop only */}
-            <div className="hidden md:block absolute left-[38px] top-10 bottom-10 w-px bg-blue-mein/10" />
+            <div className="hidden md:block absolute left-[38px] top-10 bottom-10 w-0.5 bg-blue-mein/15" />
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3.5">
               {audiencePaths.map((path, i) => {
                 const isGold = path.accent === 'gold'
                 return (
                   <FadeUp key={path.number} delay={i * 80}>
                     <Link
                       to={path.href}
-                      className="group relative flex items-center gap-5 md:gap-6 bg-white rounded-2xl border border-gray-support hover:border-blue-mein/30 hover:shadow-md active:scale-[0.99] transition-all duration-200 px-5 py-5 md:px-7 md:py-6"
+                      className="group relative flex items-center gap-5 md:gap-6 bg-white rounded-2xl border border-gray-support hover:border-blue-mein/40 hover:shadow-lg active:scale-[0.99] transition-all duration-200 px-5 py-6 md:px-8 md:py-7"
                     >
                       {/* Number bubble */}
                       <div
-                        className={`relative z-10 flex-shrink-0 w-[52px] h-[52px] rounded-full flex items-center justify-center font-sora font-black text-lg transition-colors duration-200 ${
+                        className={`relative z-10 flex-shrink-0 w-[56px] h-[56px] rounded-full flex items-center justify-center font-sora font-black text-base transition-colors duration-200 ${
                           isGold
                             ? 'bg-gold-pale text-gold-dark group-hover:bg-gold-mein group-hover:text-white'
                             : 'bg-blue-pale text-blue-mein group-hover:bg-blue-mein group-hover:text-white'
