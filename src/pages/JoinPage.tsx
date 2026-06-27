@@ -59,6 +59,70 @@ const badgeStyles = {
   gold: 'bg-gold-pale text-gold-dark border-2 border-yellow-300/60 shadow-md',
 }
 
+// Inline SVG — abstract "belonging orbit" graphic. Purely decorative.
+function BelongingOrbit() {
+  return (
+    <svg
+      viewBox="0 0 260 260"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-full h-auto"
+    >
+      {/* Outer faint orbit ring */}
+      <circle cx="130" cy="130" r="114" stroke="#2F6BFF" strokeWidth="1" strokeDasharray="6 5" opacity="0.18" />
+      {/* Mid orbit ring */}
+      <circle cx="130" cy="130" r="82" stroke="#F4B400" strokeWidth="1" strokeDasharray="4 6" opacity="0.25" />
+      {/* Inner soft filled circle */}
+      <circle cx="130" cy="130" r="48" fill="#EBF0FF" opacity="0.6" />
+      {/* Open M watermark — centred, very faint */}
+      <g opacity="0.12" transform="translate(98,94) scale(0.044)">
+        <path d="M 1436 35 L 735 458 L 36 80 L 37 1542 L 284 1460 L 285 468 L 732 718 L 1185 450 L 1188 1470 L 1438 1547 Z" fill="#2F6BFF" fillRule="evenodd" />
+        <path d="M 1054 664 L 841 797 L 841 1353 L 1056 1432 L 1059 667 Z" fill="#F4B400" fillRule="evenodd" />
+      </g>
+
+      {/* Orbit path — curved arc suggesting movement toward centre */}
+      <path
+        d="M 28 148 Q 60 68 130 60 Q 200 52 228 128"
+        stroke="#2F6BFF"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        opacity="0.22"
+        fill="none"
+      />
+
+      {/* Dot marks — representing different people arriving */}
+      {/* Blue dots on outer ring */}
+      <circle cx="130" cy="16" r="5" fill="#2F6BFF" opacity="0.55" />
+      <circle cx="244" cy="130" r="5" fill="#2F6BFF" opacity="0.40" />
+      <circle cx="32"  cy="102" r="4" fill="#2F6BFF" opacity="0.35" />
+      <circle cx="68"  cy="220" r="4" fill="#2F6BFF" opacity="0.30" />
+      {/* Gold dots */}
+      <circle cx="200" cy="34"  r="5" fill="#F4B400" opacity="0.60" />
+      <circle cx="222" cy="186" r="4" fill="#F4B400" opacity="0.45" />
+      <circle cx="52"  cy="174" r="4" fill="#F4B400" opacity="0.38" />
+      {/* Mid ring dots */}
+      <circle cx="130" cy="48" r="3.5" fill="#2F6BFF" opacity="0.45" />
+      <circle cx="212" cy="130" r="3"   fill="#F4B400" opacity="0.50" />
+      <circle cx="48"  cy="130" r="3"   fill="#2F6BFF" opacity="0.40" />
+      <circle cx="130" cy="212" r="3.5" fill="#F4B400" opacity="0.40" />
+
+      {/* Spark / 4-point star accents */}
+      {/* Top-right spark */}
+      <path d="M190 52 L191.5 56 L196 57.5 L191.5 59 L190 63 L188.5 59 L184 57.5 L188.5 56 Z" fill="#F4B400" opacity="0.80" />
+      {/* Bottom-left spark */}
+      <path d="M72 188 L73.2 191.2 L76.4 192.4 L73.2 193.6 L72 196.8 L70.8 193.6 L67.6 192.4 L70.8 191.2 Z" fill="#2F6BFF" opacity="0.65" />
+      {/* Small dot-spark, top-left */}
+      <path d="M58 72 L58.9 74.7 L61.6 75.6 L58.9 76.5 L58 79.2 L57.1 76.5 L54.4 75.6 L57.1 74.7 Z" fill="#F4B400" opacity="0.55" />
+
+      {/* Connector lines from outer dots toward centre — path lines */}
+      <line x1="130" y1="16"  x2="130" y2="82"  stroke="#2F6BFF" strokeWidth="1" strokeDasharray="3 4" opacity="0.15" />
+      <line x1="200" y1="34"  x2="162" y2="80"  stroke="#F4B400" strokeWidth="1" strokeDasharray="3 4" opacity="0.18" />
+      <line x1="32"  y1="102" x2="82"  y2="118" stroke="#2F6BFF" strokeWidth="1" strokeDasharray="3 4" opacity="0.15" />
+      <line x1="244" y1="130" x2="178" y2="130" stroke="#2F6BFF" strokeWidth="1" strokeDasharray="3 4" opacity="0.15" />
+    </svg>
+  )
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function JoinPage() {
@@ -132,35 +196,49 @@ export default function JoinPage() {
       {/* ─── 2. BELONGING BADGES ─────────────────────────────────────────── */}
       <section className="py-16 md:py-20 bg-white overflow-hidden">
         <div className="container-wide section-padding">
-          <FadeUp>
-            <div className="text-center mb-10 max-w-xl mx-auto">
-              <SectionDivider className="mx-auto mb-5" />
-              <h2 className="font-sora font-extrabold text-3xl md:text-4xl text-charcoal">
-                There is room for you here.
-              </h2>
-              <p className="mt-3 text-gray-dark font-sora text-base md:text-lg">
-                You do not need to have it all figured out to belong.
-              </p>
-            </div>
-          </FadeUp>
 
-          <div className="flex flex-wrap gap-4 justify-center max-w-3xl mx-auto">
-            {belongingBadges.map((badge, i) => (
-              <FadeUp key={badge.text} delay={i * 70}>
-                <span
-                  className={`inline-block ${badgeStyles[badge.variant]} font-sora font-bold text-base md:text-lg py-3.5 md:py-4 px-6 md:px-8 rounded-full tracking-tight`}
-                >
-                  {badge.text}
-                </span>
+          {/* Desktop: left text+badges / right graphic. Mobile: stacked, graphic hidden. */}
+          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-10 lg:gap-16 max-w-5xl mx-auto">
+
+            {/* Left column — heading, badges, footer line */}
+            <div className="flex-1 min-w-0">
+              <FadeUp>
+                <div className="mb-8">
+                  <SectionDivider className="mb-5" />
+                  <h2 className="font-sora font-extrabold text-3xl md:text-4xl text-charcoal">
+                    There is room for you here.
+                  </h2>
+                  <p className="mt-3 text-gray-dark font-sora text-base md:text-lg">
+                    You do not need to have it all figured out to belong.
+                  </p>
+                </div>
               </FadeUp>
-            ))}
+
+              <div className="flex flex-wrap gap-4">
+                {belongingBadges.map((badge, i) => (
+                  <FadeUp key={badge.text} delay={i * 70}>
+                    <span
+                      className={`inline-block ${badgeStyles[badge.variant]} font-sora font-bold text-base md:text-lg py-3.5 md:py-4 px-6 md:px-8 rounded-full tracking-tight`}
+                    >
+                      {badge.text}
+                    </span>
+                  </FadeUp>
+                ))}
+              </div>
+
+              <FadeUp delay={500}>
+                <p className="mt-7 font-caveat text-2xl text-gray-mid">
+                  All of these people belong here.
+                </p>
+              </FadeUp>
+            </div>
+
+            {/* Right column — belonging orbit graphic. Hidden on mobile. */}
+            <div className="hidden lg:flex flex-shrink-0 items-center justify-center w-64 xl:w-72" aria-hidden="true">
+              <BelongingOrbit />
+            </div>
           </div>
 
-          <FadeUp delay={500}>
-            <p className="text-center mt-7 font-caveat text-2xl text-gray-mid">
-              All of these people belong here.
-            </p>
-          </FadeUp>
         </div>
       </section>
 
@@ -171,7 +249,7 @@ export default function JoinPage() {
             <div className="text-center mb-12">
               <SectionDivider className="mx-auto mb-5" />
               <h2 className="font-sora font-extrabold text-3xl md:text-4xl text-charcoal">
-                Choose how you fit.
+                Choose your way in.
               </h2>
               <p className="mt-3 text-gray-dark font-sora text-base md:text-lg">
                 There is more than one way to be part of Mein.
