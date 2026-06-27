@@ -11,7 +11,6 @@ import {
 } from '../components/BrandElements'
 import { supabase, type Story, type StoryCategory } from '../lib/supabase'
 
-// Short wall-voice labels for card stickers
 const categoryWallLabels: Record<StoryCategory, string> = {
   future_self_letters: 'Future Me',
   mein_mover_videos: 'Mover Video',
@@ -23,7 +22,6 @@ const categoryWallLabels: Record<StoryCategory, string> = {
   merch_drops: 'Merch',
 }
 
-// Full labels for filter pills
 const categoryLabels: Record<StoryCategory, string> = {
   future_self_letters: 'Future-Self Letters',
   mein_mover_videos: 'Mein Mover Videos',
@@ -64,12 +62,14 @@ const filterOptions = [
 
 function GhostCard({ label }: { label: string }) {
   return (
-    <div className="border-2 border-dashed border-blue-mein/30 rounded-2xl bg-blue-pale/20 min-h-[180px] flex flex-col items-center justify-center px-6 py-8 relative overflow-hidden select-none">
-      <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
+    <div className="border-2 border-dashed border-blue-mein/40 rounded-2xl bg-blue-pale/30 min-h-[180px] flex flex-col items-center justify-center px-6 py-8 relative overflow-hidden select-none">
+      <div className="absolute inset-0 flex items-center justify-center opacity-[0.07] pointer-events-none">
         <OpenMIcon size={120} />
       </div>
-      <span className="relative font-caveat text-xl text-blue-mein">{label}</span>
-      <span className="relative mt-1.5 font-sora text-xs text-gray-mid tracking-wide">Coming soon</span>
+      <span className="relative font-caveat text-2xl text-blue-mein">{label}</span>
+      <span className="relative mt-2 font-sora text-xs text-gray-mid tracking-wide">
+        Coming soon
+      </span>
     </div>
   )
 }
@@ -110,46 +110,63 @@ export default function StoriesPage() {
 
   const featuredStory = filtered.find((s) => s.featured) ?? filtered[0]
   const supportingStories = filtered.filter((s) => s.id !== featuredStory?.id)
+  const isEmpty = !loading && filtered.length === 0
 
   return (
     <div className="with-mobile-cta">
-      {/* ─── HERO ─── */}
-      <section className="relative pt-24 pb-12 md:pt-32 md:pb-16 bg-charcoal overflow-hidden">
+
+      {/* ─── 1. WALL HERO ─── */}
+      <section className="relative pt-24 pb-10 md:pt-32 md:pb-12 bg-charcoal overflow-hidden">
         <div className="absolute inset-0 opacity-5 pointer-events-none">
           <OpenMIcon size={600} className="absolute -right-20 -bottom-10" />
         </div>
         <div className="container-wide section-padding relative z-10">
           <FadeUp>
-            <HandwrittenAccent text="The Wall" className="text-xl md:text-2xl block mb-3" />
-            <h1 className="font-sora font-extrabold text-5xl md:text-6xl text-white leading-tight">
-              Real moves.<br />
-              <HandwrittenAccent text="Real stories." className="text-5xl md:text-6xl text-gold-mein" />
-              <br />Real futures.
+            {/* Eyebrow */}
+            <HandwrittenAccent text="The Wall." className="text-2xl md:text-3xl block mb-3 text-gold-mein" />
+            {/* Headline */}
+            <h1 className="font-sora font-extrabold text-4xl md:text-5xl lg:text-6xl text-white leading-tight max-w-2xl">
+              Your story belongs here.
             </h1>
           </FadeUp>
-          <FadeUp delay={150}>
-            <p className="mt-6 text-white/70 text-lg max-w-xl font-sora">
-              See what young people are creating, saying, building, and becoming through Mein.
+          <FadeUp delay={120}>
+            <p className="mt-5 text-white/70 text-base md:text-lg max-w-xl font-sora leading-relaxed">
+              A curated space for young people's moves, stories, ideas, art, future messages, and creative energy.
             </p>
           </FadeUp>
-          <FadeUp delay={260}>
-            <div className="mt-5">
+          {/* Safety note + CTAs */}
+          <FadeUp delay={220}>
+            <div className="mt-5 mb-1">
               <ConsentBadge />
+            </div>
+          </FadeUp>
+          <FadeUp delay={300}>
+            <div className="mt-6 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <Link to="/make-your-move" className="btn-primary text-sm py-2.5">
+                Make Your Move
+                <ArrowRight size={14} />
+              </Link>
+              <Link
+                to="/future-me"
+                className="text-sm font-sora font-semibold text-white/70 hover:text-white transition-colors"
+              >
+                Take the Future Me Challenge →
+              </Link>
             </div>
           </FadeUp>
         </div>
       </section>
 
-      {/* ─── FILTERS ─── */}
+      {/* ─── 2. FILTER / SEARCH BAR ─── */}
       <section className="bg-white border-b border-gray-support sticky top-[64px] md:top-[72px] z-20">
-        <div className="container-wide section-padding py-3">
-          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-            <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 no-scrollbar">
+        <div className="container-wide section-padding py-2.5">
+          <div className="flex flex-col sm:flex-row gap-2.5 items-start sm:items-center justify-between">
+            <div className="flex gap-2 overflow-x-auto pb-0.5 sm:pb-0 no-scrollbar">
               {filterOptions.slice(0, 6).map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => setFilter(opt.value)}
-                  className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-sora font-semibold transition-colors duration-200 ${
+                  className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-sora font-semibold transition-colors duration-200 ${
                     filter === opt.value
                       ? 'bg-blue-mein text-white'
                       : 'bg-gray-support text-gray-dark hover:bg-blue-pale hover:text-blue-mein'
@@ -159,22 +176,22 @@ export default function StoriesPage() {
                 </button>
               ))}
             </div>
-            <div className="relative w-full sm:w-56">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-mid" />
+            <div className="relative w-full sm:w-52 flex-shrink-0">
+              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-mid" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search moves..."
-                className="input-field pl-8 py-2 text-xs"
+                className="input-field pl-8 py-1.5 text-xs"
               />
             </div>
           </div>
         </div>
       </section>
 
-      {/* ─── WALL CONTENT ─── */}
-      <section className="py-12 md:py-16 bg-white">
+      {/* ─── 3. WALL CONTENT ─── */}
+      <section className="py-10 md:py-14 bg-white">
         <div className="container-wide section-padding">
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -182,27 +199,27 @@ export default function StoriesPage() {
                 <div key={n} className="rounded-2xl bg-gray-support/40 h-52 animate-pulse" />
               ))}
             </div>
-          ) : filtered.length === 0 ? (
+          ) : isEmpty ? (
             /* ── Empty state ── */
             <FadeUp>
               <div className="text-center max-w-2xl mx-auto">
-                <HandwrittenAccent text="Nothing here yet." className="text-lg block mb-1" />
-                <h3 className="font-sora font-extrabold text-3xl md:text-4xl text-charcoal">
+                <HandwrittenAccent text="Nothing here yet." className="text-lg block mb-2" />
+                <h2 className="font-sora font-extrabold text-3xl md:text-4xl text-charcoal">
                   Your move could live here.
-                </h3>
+                </h2>
                 <p className="mt-4 text-gray-dark font-sora max-w-md mx-auto leading-relaxed">
                   The Wall is where Mein Movers share what they are creating, building, saying, and becoming.
                 </p>
 
                 {/* Decorative ghost cards */}
-                <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <GhostCard label="Future message" />
                   <GhostCard label="Creative move" />
                   <GhostCard label="Story loading..." />
                 </div>
 
                 {/* Single focused CTA */}
-                <div className="mt-10 flex flex-col items-center gap-4">
+                <div className="mt-8 flex flex-col items-center gap-3">
                   <Link to="/make-your-move" className="btn-primary inline-flex">
                     Go first. Make a move.
                     <ArrowRight size={16} />
@@ -213,9 +230,6 @@ export default function StoriesPage() {
                   >
                     Take the Future Me Challenge
                   </Link>
-                  <div className="mt-1">
-                    <ConsentBadge />
-                  </div>
                 </div>
               </div>
             </FadeUp>
@@ -349,35 +363,34 @@ export default function StoriesPage() {
         </div>
       </section>
 
-      {/* ─── CTA ─── */}
-      <section className="py-14 md:py-16 bg-blue-pale">
-        <div className="container-wide section-padding text-center max-w-2xl mx-auto">
-          <FadeUp>
-            <SectionDivider className="mx-auto mb-5" />
-            <h2 className="font-sora font-extrabold text-2xl md:text-3xl text-charcoal">
-              Your story belongs on this wall.
-            </h2>
-            <p className="mt-3 text-gray-dark font-sora">
-              Show us what you're creating, saying, and building.
-            </p>
-            <div className="mt-7 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/make-your-move" className="btn-primary inline-flex">
-                Make Your Move
-                <ArrowRight size={16} />
-              </Link>
-              <Link
-                to="/future-me"
-                className="font-sora font-semibold text-sm text-blue-mein hover:underline"
-              >
-                Take the Future Me Challenge
-              </Link>
-            </div>
-            <div className="mt-5 flex justify-center">
-              <ConsentBadge />
-            </div>
-          </FadeUp>
-        </div>
-      </section>
+      {/* ─── 4. LOWER CTA — only when stories are populated ─── */}
+      {!isEmpty && (
+        <section className="py-12 md:py-14 bg-blue-pale">
+          <div className="container-wide section-padding text-center max-w-2xl mx-auto">
+            <FadeUp>
+              <SectionDivider className="mx-auto mb-4" />
+              <h2 className="font-sora font-extrabold text-xl md:text-2xl text-charcoal">
+                Your story belongs on this wall.
+              </h2>
+              <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Link to="/make-your-move" className="btn-primary inline-flex">
+                  Make Your Move
+                  <ArrowRight size={16} />
+                </Link>
+                <Link
+                  to="/future-me"
+                  className="font-sora font-semibold text-sm text-blue-mein hover:underline"
+                >
+                  Take the Future Me Challenge
+                </Link>
+              </div>
+              <div className="mt-4 flex justify-center">
+                <ConsentBadge />
+              </div>
+            </FadeUp>
+          </div>
+        </section>
+      )}
     </div>
   )
 }
