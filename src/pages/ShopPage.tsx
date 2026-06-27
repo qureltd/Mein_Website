@@ -121,7 +121,7 @@ function ProductCard({
         <img
           src={product.img}
           alt={product.name}
-          className="max-h-full max-w-full object-contain"
+          className="h-full w-full object-contain"
           loading="lazy"
         />
 
@@ -298,7 +298,7 @@ export default function ShopPage() {
                 <img
                   src={hoodieImg}
                   alt="Open M Hoodie — Drop 001"
-                  className="max-h-full max-w-full object-contain"
+                  className="h-full w-full object-contain"
                 />
                 {/* Drop label */}
                 <div className="absolute top-4 left-4">
