@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, Clock, Pen, Play, Star, Users, ShoppingBag } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
-import { OpenMIcon, HandwrittenAccent, SectionDivider, StarAccent } from '../components/BrandElements'
+import { OpenMIcon, HandwrittenAccent, SectionDivider, StarAccent, DoodleArrow } from '../components/BrandElements'
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -124,24 +124,42 @@ export default function AboutPage() {
       <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 bg-white overflow-hidden">
         {/* Open M watermark */}
         <div className="absolute right-0 top-0 translate-x-1/3 -translate-y-1/4 opacity-[0.04] pointer-events-none select-none">
-          <OpenMIcon size={600} />
+          <OpenMIcon size={620} />
+        </div>
+
+        {/* Curved path accent — desktop only */}
+        <div className="hidden md:block absolute bottom-0 left-0 pointer-events-none select-none opacity-[0.07]">
+          <svg width="420" height="200" viewBox="0 0 420 200" fill="none">
+            <path
+              d="M-20 180 C60 140 120 60 220 80 C320 100 370 20 440 10"
+              stroke="#2F6BFF"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              fill="none"
+              strokeDasharray="8 5"
+            />
+          </svg>
         </div>
 
         <div className="container-wide section-padding relative z-10">
           <FadeUp>
-            <p className="font-caveat text-blue-mein text-2xl mb-4">What's Mein?</p>
-            <h1 className="font-sora font-extrabold text-5xl md:text-6xl text-charcoal leading-tight max-w-3xl">
+            {/* Eyebrow with gold dot accent */}
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="w-2 h-2 rounded-full bg-gold-mein flex-shrink-0" />
+              <p className="font-caveat text-blue-mein text-2xl leading-none">What's Mein?</p>
+            </div>
+            <h1 className="font-sora font-extrabold text-5xl md:text-6xl lg:text-7xl text-charcoal leading-[1.05] max-w-4xl tracking-tight">
               A youth movement for becoming who you are —{' '}
-              <HandwrittenAccent text="one move at a time." className="text-5xl md:text-6xl" />
+              <HandwrittenAccent text="one move at a time." className="text-5xl md:text-6xl lg:text-7xl" />
             </h1>
           </FadeUp>
           <FadeUp delay={150}>
-            <p className="mt-6 text-lg md:text-xl text-gray-dark max-w-2xl leading-relaxed font-sora">
+            <p className="mt-7 text-lg md:text-xl text-gray-dark max-w-2xl leading-relaxed font-sora">
               Mein is a space to explore your future, express your voice, create something real, and start before you have it all figured out.
             </p>
           </FadeUp>
           <FadeUp delay={240}>
-            <div className="mt-8 flex flex-wrap gap-4">
+            <div className="mt-8 flex flex-wrap gap-4 items-center">
               <Link to="/join" className="btn-primary">
                 Join the Movement
                 <ArrowRight size={16} />
@@ -149,14 +167,20 @@ export default function AboutPage() {
               <Link to="/make-your-move" className="btn-secondary">
                 Make Your Move
               </Link>
+              <DoodleArrow className="hidden md:block opacity-50" />
             </div>
           </FadeUp>
         </div>
       </section>
 
       {/* ─── WHAT DOES MEIN MEAN ───────────────────────────────────────────── */}
-      <section className="py-20 md:py-28 bg-[#FAFAF8] overflow-hidden">
-        <div className="container-wide section-padding">
+      <section className="py-20 md:py-28 bg-[#FAFAF8] overflow-hidden relative">
+        {/* Faint Open M behind card cluster */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none opacity-[0.025]">
+          <OpenMIcon size={700} />
+        </div>
+
+        <div className="container-wide section-padding relative z-10">
           <FadeUp>
             <div className="text-center mb-12 md:mb-16">
               <SectionDivider className="mx-auto mb-4" />
@@ -169,15 +193,27 @@ export default function AboutPage() {
             </div>
           </FadeUp>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-7">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-8">
             {meanings.map((m, i) => (
               <FadeUp key={m.num} delay={i * 80}>
                 <div
-                  className={`relative bg-white rounded-3xl p-8 border-2 border-gray-support shadow-md hover:border-blue-mein hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden group md:${m.rotate} hover:rotate-0`}
+                  className={`relative bg-white rounded-3xl p-8 border-2 border-gray-support shadow-lg hover:border-blue-mein hover:shadow-2xl hover:shadow-blue-mein/10 hover:-translate-y-1 transition-all duration-300 overflow-hidden group md:${m.rotate} hover:rotate-0`}
                 >
-                  {/* Faint number watermark */}
+                  {/* Stamp circle — top right corner */}
+                  <div
+                    className={`absolute top-5 right-5 w-9 h-9 rounded-full flex items-center justify-center text-xs font-sora font-black leading-none select-none ${
+                      m.tagColor === 'blue'
+                        ? 'bg-blue-pale text-blue-mein'
+                        : 'bg-gold-pale text-gold-dark'
+                    }`}
+                    aria-hidden="true"
+                  >
+                    {m.num}
+                  </div>
+
+                  {/* Faint big number watermark */}
                   <span
-                    className="absolute bottom-4 right-5 font-sora font-black text-8xl leading-none select-none pointer-events-none text-charcoal opacity-[0.04]"
+                    className="absolute bottom-4 right-5 font-sora font-black text-[7rem] leading-none select-none pointer-events-none text-charcoal opacity-[0.04]"
                     aria-hidden="true"
                   >
                     {m.num}
@@ -185,7 +221,7 @@ export default function AboutPage() {
 
                   {/* Tag */}
                   <span
-                    className={`inline-flex items-center text-xs font-sora font-semibold px-3 py-1.5 rounded-full uppercase tracking-widest mb-5 ${
+                    className={`inline-flex items-center text-[10px] font-sora font-bold px-3 py-1.5 rounded-full uppercase tracking-[0.18em] mb-5 ${
                       m.tagColor === 'blue'
                         ? 'bg-blue-pale text-blue-mein'
                         : 'bg-gold-pale text-gold-dark'
@@ -194,7 +230,7 @@ export default function AboutPage() {
                     {m.tag}
                   </span>
 
-                  <h3 className="font-sora font-bold text-xl text-charcoal leading-snug group-hover:text-blue-mein transition-colors duration-200">
+                  <h3 className="font-sora font-bold text-xl text-charcoal leading-snug group-hover:text-blue-mein transition-colors duration-200 pr-8">
                     {m.headline}
                   </h3>
                   <p className="mt-3 text-gray-dark text-sm leading-relaxed font-sora">{m.body}</p>
@@ -215,14 +251,18 @@ export default function AboutPage() {
                 Because young people need more than advice.
               </h2>
 
-              {/* Pull quote */}
-              <div className="mt-7 border-l-4 border-gold-mein pl-5 py-1">
-                <p className="font-caveat text-2xl text-charcoal leading-snug">
-                  You do not need a plan. You need a start.
-                </p>
+              {/* Brand pull quote */}
+              <div className="mt-8 relative">
+                <div className="absolute -left-1 top-0 bottom-0 w-1 bg-gradient-to-b from-gold-mein to-gold-light rounded-full" />
+                <blockquote className="pl-6">
+                  <p className="font-caveat text-3xl md:text-4xl text-charcoal leading-tight">
+                    You do not need a plan.{' '}
+                    <span className="text-blue-mein">You need a start.</span>
+                  </p>
+                </blockquote>
               </div>
 
-              <p className="mt-6 text-gray-dark text-base leading-relaxed font-sora">
+              <p className="mt-7 text-gray-dark text-base leading-relaxed font-sora">
                 Young people need space to be seen, heard, guided, and supported. They need real ways to express who they are, explore what they care about, and take steps toward the life they want.
               </p>
               <p className="mt-4 text-gray-dark text-base leading-relaxed font-sora">
@@ -232,19 +272,19 @@ export default function AboutPage() {
 
             <FadeUp delay={160}>
               <div className="bg-blue-pale/50 rounded-3xl p-7 md:p-9 border border-blue-mein/10">
-                <p className="font-sora font-bold text-xs uppercase tracking-widest text-blue-mein mb-5">
+                <p className="font-sora font-bold text-xs uppercase tracking-widest text-blue-mein mb-6">
                   What young people gain
                 </p>
-                <div className="flex flex-wrap gap-2.5">
+                <div className="flex flex-wrap gap-3">
                   {gains.map((g, i) => (
                     <span
                       key={g}
-                      className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-sora font-semibold transition-colors ${
+                      className={`inline-flex items-center px-4 py-2.5 rounded-full text-sm font-sora font-semibold leading-none ${
                         i % 3 === 0
-                          ? 'bg-blue-mein text-white'
+                          ? 'bg-blue-mein text-white shadow-md shadow-blue-mein/20'
                           : i % 3 === 1
-                          ? 'bg-white text-charcoal border border-blue-mein/20'
-                          : 'bg-gold-pale text-gold-dark border border-gold-mein/20'
+                          ? 'bg-white text-charcoal border-2 border-blue-mein/20 shadow-sm'
+                          : 'bg-gold-mein text-charcoal shadow-md shadow-gold-mein/20'
                       }`}
                     >
                       {g}
@@ -273,35 +313,61 @@ export default function AboutPage() {
           </FadeUp>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {actions.map((action, i) => (
-              <FadeUp key={action.title} delay={i * 60}>
-                <Link
-                  to={action.href}
-                  className="flex flex-col bg-white rounded-2xl border-2 border-gray-support p-6 hover:border-blue-mein hover:shadow-lg hover:shadow-blue-mein/8 hover:-translate-y-0.5 transition-all duration-200 group h-full"
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-105"
-                      style={{ backgroundColor: action.iconBg }}
-                    >
-                      <action.icon size={18} style={{ color: action.iconColor }} strokeWidth={2} />
+            {actions.map((action, i) => {
+              const isFeatured = i < 2
+              return (
+                <FadeUp key={action.title} delay={i * 60}>
+                  <Link
+                    to={action.href}
+                    className={`flex flex-col rounded-2xl p-6 hover:-translate-y-0.5 transition-all duration-200 group h-full ${
+                      isFeatured
+                        ? 'bg-blue-mein border-2 border-blue-mein hover:border-blue-dark hover:bg-blue-dark shadow-lg shadow-blue-mein/20'
+                        : 'bg-white border-2 border-gray-support hover:border-blue-mein hover:shadow-lg hover:shadow-blue-mein/8'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <div
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-105 ${
+                          isFeatured ? 'bg-white/20' : ''
+                        }`}
+                        style={!isFeatured ? { backgroundColor: action.iconBg } : undefined}
+                      >
+                        <action.icon
+                          size={18}
+                          style={{ color: isFeatured ? '#ffffff' : action.iconColor }}
+                          strokeWidth={2}
+                        />
+                      </div>
+                      <span className={`text-[10px] font-sora font-semibold uppercase tracking-widest ${isFeatured ? 'text-white/60' : 'text-gray-mid'}`}>
+                        {action.label}
+                      </span>
                     </div>
-                    <span className="text-[10px] font-sora font-semibold uppercase tracking-widest text-gray-mid">
-                      {action.label}
-                    </span>
-                  </div>
-                  <h3 className="font-sora font-bold text-base text-charcoal leading-snug group-hover:text-blue-mein transition-colors duration-200 mb-1.5">
-                    {action.title}
-                  </h3>
-                  <p className="text-sm text-gray-dark font-sora leading-relaxed flex-1">{action.body}</p>
-                  <div className="mt-4 flex items-center gap-1.5 text-sm font-semibold font-sora text-blue-mein group-hover:gap-2.5 transition-all duration-200">
-                    {action.cta}
-                    <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
-                  </div>
-                </Link>
-              </FadeUp>
-            ))}
+                    <h3 className={`font-sora font-bold text-base leading-snug mb-1.5 transition-colors duration-200 ${isFeatured ? 'text-white' : 'text-charcoal group-hover:text-blue-mein'}`}>
+                      {action.title}
+                    </h3>
+                    <p className={`text-sm font-sora leading-relaxed flex-1 ${isFeatured ? 'text-white/80' : 'text-gray-dark'}`}>
+                      {action.body}
+                    </p>
+                    <div className={`mt-4 flex items-center gap-1.5 text-sm font-semibold font-sora group-hover:gap-2.5 transition-all duration-200 ${isFeatured ? 'text-gold-mein' : 'text-blue-mein'}`}>
+                      {action.cta}
+                      <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+                    </div>
+                  </Link>
+                </FadeUp>
+              )
+            })}
           </div>
+        </div>
+      </section>
+
+      {/* ─── MISSION BRIDGE ────────────────────────────────────────────────── */}
+      <section className="py-10 md:py-14 bg-white">
+        <div className="container-wide section-padding text-center">
+          <FadeUp>
+            <p className="font-caveat text-2xl md:text-3xl text-charcoal">
+              Everything starts with one simple belief.
+            </p>
+          </FadeUp>
         </div>
       </section>
 
