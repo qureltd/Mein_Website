@@ -149,13 +149,13 @@ export default function AboutPage() {
               <p className="font-caveat text-blue-mein text-2xl leading-none">What's Mein?</p>
             </div>
             <h1 className="font-sora font-extrabold text-5xl md:text-6xl lg:text-7xl text-charcoal leading-[1.05] max-w-4xl tracking-tight">
-              A youth movement for becoming who you are —{' '}
-              <HandwrittenAccent text="one move at a time." className="text-5xl md:text-6xl lg:text-7xl" />
+              Your future does not start{' '}
+              <HandwrittenAccent text="later." className="text-5xl md:text-6xl lg:text-7xl" />
             </h1>
           </FadeUp>
           <FadeUp delay={150}>
             <p className="mt-7 text-lg md:text-xl text-gray-dark max-w-2xl leading-relaxed font-sora">
-              Mein is a space to explore your future, express your voice, create something real, and start before you have it all figured out.
+              Mein is a youth movement for starting now — with your voice, your ideas, your story, and your next move. You do not need to have it all figured out. One move is enough to begin.
             </p>
           </FadeUp>
           <FadeUp delay={240}>
