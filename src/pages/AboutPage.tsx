@@ -110,7 +110,7 @@ const actions = [
     title: 'Wear the movement',
     body: 'Explore merch and drops that carry the message.',
     href: '/shop',
-    cta: 'Explore shop',
+    cta: 'Explore drops',
   },
 ]
 
@@ -121,7 +121,7 @@ export default function AboutPage() {
     <div className="with-mobile-cta">
 
       {/* ─── HERO ──────────────────────────────────────────────────────────── */}
-      <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 bg-white overflow-hidden">
+      <section className="relative pt-28 pb-12 md:pt-36 md:pb-16 bg-white overflow-hidden">
         {/* Open M watermark */}
         <div className="absolute right-0 top-0 translate-x-1/3 -translate-y-1/4 opacity-[0.04] pointer-events-none select-none">
           <OpenMIcon size={620} />
@@ -361,11 +361,15 @@ export default function AboutPage() {
       </section>
 
       {/* ─── MISSION BRIDGE ────────────────────────────────────────────────── */}
-      <section className="py-10 md:py-14 bg-white">
+      <section className="py-12 md:py-16 bg-white">
         <div className="container-wide section-padding text-center">
           <FadeUp>
+            <SectionDivider className="mx-auto mb-5" />
             <p className="font-caveat text-2xl md:text-3xl text-charcoal">
               Everything starts with one simple belief.
+            </p>
+            <p className="mt-3 font-sora text-sm text-gray-mid max-w-xs mx-auto">
+              Ready to join the movement? Start where you are. One step is enough.
             </p>
           </FadeUp>
         </div>
