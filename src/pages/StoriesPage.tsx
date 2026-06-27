@@ -60,16 +60,56 @@ const filterOptions = [
   ...Object.entries(categoryLabels).map(([value, label]) => ({ value, label })),
 ]
 
-function GhostCard({ label }: { label: string }) {
+// ── Ghost card — decorative, non-interactive ──────────────────────────────────
+function GhostCard({
+  label,
+  accent = 'blue',
+  featured = false,
+}: {
+  label: string
+  accent?: 'blue' | 'gold'
+  featured?: boolean
+}) {
+  const isGold = accent === 'gold'
   return (
-    <div className="border-2 border-dashed border-blue-mein/40 rounded-2xl bg-blue-pale/30 min-h-[180px] flex flex-col items-center justify-center px-6 py-8 relative overflow-hidden select-none">
-      <div className="absolute inset-0 flex items-center justify-center opacity-[0.07] pointer-events-none">
-        <OpenMIcon size={120} />
+    <div
+      className={`relative rounded-2xl border-2 border-dashed overflow-hidden flex flex-col justify-between select-none bg-white/80 shadow-sm ${
+        isGold ? 'border-gold-mein/40' : 'border-blue-mein/40'
+      } ${featured ? 'min-h-[220px] md:min-h-[240px]' : 'min-h-[180px]'}`}
+    >
+      {/* Top accent strip */}
+      <div
+        className={`h-1 w-full ${
+          isGold
+            ? 'bg-gradient-to-r from-gold-mein/60 to-gold-light/60'
+            : 'bg-gradient-to-r from-blue-mein/60 to-blue-light/60'
+        }`}
+      />
+      {/* Faint Open M watermark */}
+      <div className="absolute inset-0 flex items-center justify-center opacity-[0.06] pointer-events-none">
+        <OpenMIcon size={100} />
       </div>
-      <span className="relative font-caveat text-2xl text-blue-mein">{label}</span>
-      <span className="relative mt-2 font-sora text-xs text-gray-mid tracking-wide">
-        Coming soon
-      </span>
+      {/* Content */}
+      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-6 py-6">
+        <span
+          className={`font-caveat text-2xl md:text-3xl ${
+            isGold ? 'text-gold-dark' : 'text-blue-mein'
+          }`}
+        >
+          {label}
+        </span>
+        <span className="mt-2 font-sora text-xs text-gray-mid tracking-wide">
+          Coming soon
+        </span>
+      </div>
+      {/* Bottom badge area */}
+      <div className="relative z-10 px-5 pb-4">
+        <div
+          className={`inline-block w-2 h-2 rounded-full ${
+            isGold ? 'bg-gold-mein/40' : 'bg-blue-mein/40'
+          }`}
+        />
+      </div>
     </div>
   )
 }
@@ -115,16 +155,17 @@ export default function StoriesPage() {
   return (
     <div className="with-mobile-cta">
 
-      {/* ─── 1. WALL HERO ─── */}
+      {/* ─── 1. WALL HERO ────────────────────────────────────────────────────── */}
       <section className="relative pt-24 pb-10 md:pt-32 md:pb-12 bg-charcoal overflow-hidden">
         <div className="absolute inset-0 opacity-5 pointer-events-none">
           <OpenMIcon size={600} className="absolute -right-20 -bottom-10" />
         </div>
         <div className="container-wide section-padding relative z-10">
           <FadeUp>
-            {/* Eyebrow */}
-            <HandwrittenAccent text="The Wall." className="text-2xl md:text-3xl block mb-3 text-gold-mein" />
-            {/* Headline */}
+            <HandwrittenAccent
+              text="The Wall."
+              className="text-2xl md:text-3xl block mb-3 text-gold-mein"
+            />
             <h1 className="font-sora font-extrabold text-4xl md:text-5xl lg:text-6xl text-white leading-tight max-w-2xl">
               Your story belongs here.
             </h1>
@@ -134,9 +175,8 @@ export default function StoriesPage() {
               A curated space for young people's moves, stories, ideas, art, future messages, and creative energy.
             </p>
           </FadeUp>
-          {/* Safety note + CTAs */}
           <FadeUp delay={220}>
-            <div className="mt-5 mb-1">
+            <div className="mt-5">
               <ConsentBadge />
             </div>
           </FadeUp>
@@ -157,7 +197,7 @@ export default function StoriesPage() {
         </div>
       </section>
 
-      {/* ─── 2. FILTER / SEARCH BAR ─── */}
+      {/* ─── 2. FILTER / SEARCH BAR ──────────────────────────────────────────── */}
       <section className="bg-white border-b border-gray-support sticky top-[64px] md:top-[72px] z-20">
         <div className="container-wide section-padding py-2.5">
           <div className="flex flex-col sm:flex-row gap-2.5 items-start sm:items-center justify-between">
@@ -190,8 +230,8 @@ export default function StoriesPage() {
         </div>
       </section>
 
-      {/* ─── 3. WALL CONTENT ─── */}
-      <section className="py-10 md:py-14 bg-white">
+      {/* ─── 3. WALL CONTENT ─────────────────────────────────────────────────── */}
+      <section className="py-10 md:py-14 bg-[#FAFAF8]">
         <div className="container-wide section-padding">
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -200,36 +240,61 @@ export default function StoriesPage() {
               ))}
             </div>
           ) : isEmpty ? (
-            /* ── Empty state ── */
+            /* ── Empty state — curated wall feel ── */
             <FadeUp>
-              <div className="text-center max-w-2xl mx-auto">
-                <HandwrittenAccent text="Nothing here yet." className="text-lg block mb-2" />
-                <h2 className="font-sora font-extrabold text-3xl md:text-4xl text-charcoal">
-                  Your move could live here.
-                </h2>
-                <p className="mt-4 text-gray-dark font-sora max-w-md mx-auto leading-relaxed">
-                  The Wall is where Mein Movers share what they are creating, building, saying, and becoming.
-                </p>
-
-                {/* Decorative ghost cards */}
-                <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <GhostCard label="Future message" />
-                  <GhostCard label="Creative move" />
-                  <GhostCard label="Story loading..." />
+              <div className="relative bg-white rounded-3xl border border-blue-mein/15 shadow-xl overflow-hidden px-6 py-10 md:px-12 md:py-14 max-w-4xl mx-auto">
+                {/* Gold accent strip */}
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-gold-mein via-gold-light to-gold-mein" />
+                {/* Faint Open M background watermark */}
+                <div className="absolute bottom-0 right-0 translate-x-1/4 translate-y-1/4 pointer-events-none select-none opacity-[0.04]">
+                  <OpenMIcon size={380} />
                 </div>
 
-                {/* Single focused CTA */}
-                <div className="mt-8 flex flex-col items-center gap-3">
-                  <Link to="/make-your-move" className="btn-primary inline-flex">
-                    Go first. Make a move.
-                    <ArrowRight size={16} />
-                  </Link>
-                  <Link
-                    to="/future-me"
-                    className="text-sm font-sora font-semibold text-blue-mein hover:underline"
-                  >
-                    Take the Future Me Challenge
-                  </Link>
+                <div className="relative z-10">
+                  {/* Copy */}
+                  <div className="text-center max-w-xl mx-auto mb-10">
+                    <HandwrittenAccent
+                      text="This wall is waiting."
+                      className="text-xl block mb-2"
+                    />
+                    <h2 className="font-sora font-extrabold text-3xl md:text-4xl text-charcoal">
+                      Your move could live here.
+                    </h2>
+                    <p className="mt-4 text-gray-dark font-sora leading-relaxed">
+                      The Wall is where Mein Movers share what they are creating, building, saying, and becoming.
+                    </p>
+                    <p className="mt-2 text-sm text-gray-mid font-sora">
+                      The first stories are coming soon — yours could be one of them.
+                    </p>
+                  </div>
+
+                  {/* Ghost cards — preview wall layout */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+                    {/* Featured ghost — slightly taller */}
+                    <div className="sm:col-span-1">
+                      <GhostCard label="Future message" accent="gold" featured />
+                    </div>
+                    <div className="sm:col-span-1">
+                      <GhostCard label="Creative move" accent="blue" />
+                    </div>
+                    <div className="sm:col-span-1">
+                      <GhostCard label="Story loading..." accent="blue" />
+                    </div>
+                  </div>
+
+                  {/* Single focused CTA */}
+                  <div className="flex flex-col items-center gap-3 text-center">
+                    <Link to="/make-your-move" className="btn-primary inline-flex">
+                      Go first. Make a move.
+                      <ArrowRight size={16} />
+                    </Link>
+                    <Link
+                      to="/future-me"
+                      className="text-sm font-sora font-semibold text-blue-mein hover:underline"
+                    >
+                      Take the Future Me Challenge
+                    </Link>
+                  </div>
                 </div>
               </div>
             </FadeUp>
@@ -363,7 +428,7 @@ export default function StoriesPage() {
         </div>
       </section>
 
-      {/* ─── 4. LOWER CTA — only when stories are populated ─── */}
+      {/* ─── 4. LOWER CTA — only when stories are populated ─────────────────── */}
       {!isEmpty && (
         <section className="py-12 md:py-14 bg-blue-pale">
           <div className="container-wide section-padding text-center max-w-2xl mx-auto">
