@@ -1,8 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ArrowRight, Pen, Play, Hammer, Megaphone, HelpCircle, Check, AlertCircle, Shield } from 'lucide-react'
+import { ArrowRight, Pen, Play, Hammer, Megaphone, HelpCircle, Check, AlertCircle } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
-import { OpenMIcon, HandwrittenAccent, SectionDivider, MeinTagBadge } from '../components/BrandElements'
+import {
+  OpenMIcon,
+  HandwrittenAccent,
+  SectionDivider,
+  ConsentBadge,
+} from '../components/BrandElements'
 import { supabase } from '../lib/supabase'
 
 // ─── Move config ─────────────────────────────────────────────────────────────
@@ -21,7 +26,8 @@ const MOVE_OPTIONS: Record<MoveKey, {
   iconColor: string
   activeBg: string
   activeText: string
-  badgeClass: string
+  stripFrom: string
+  stripTo: string
 }> = {
   create: {
     key: 'create',
@@ -34,7 +40,8 @@ const MOVE_OPTIONS: Record<MoveKey, {
     iconColor: '#2F6BFF',
     activeBg: '#2F6BFF',
     activeText: '#ffffff',
-    badgeClass: 'bg-blue-pale text-blue-mein',
+    stripFrom: '#2F6BFF',
+    stripTo: '#5B8FFF',
   },
   speak: {
     key: 'speak',
@@ -47,7 +54,8 @@ const MOVE_OPTIONS: Record<MoveKey, {
     iconColor: '#111111',
     activeBg: '#111111',
     activeText: '#ffffff',
-    badgeClass: 'bg-[#F0F0F0] text-charcoal',
+    stripFrom: '#111111',
+    stripTo: '#4A5568',
   },
   build: {
     key: 'build',
@@ -57,10 +65,11 @@ const MOVE_OPTIONS: Record<MoveKey, {
     placeholder: 'Tell us about the idea or project you are building. What is it? What problem does it solve?',
     icon: Hammer,
     iconBg: '#FFF8E1',
-    iconColor: '#F4B400',
+    iconColor: '#C48F00',
     activeBg: '#F4B400',
     activeText: '#111111',
-    badgeClass: 'bg-gold-pale text-gold-dark',
+    stripFrom: '#F4B400',
+    stripTo: '#FFCF3D',
   },
   represent: {
     key: 'represent',
@@ -73,7 +82,8 @@ const MOVE_OPTIONS: Record<MoveKey, {
     iconColor: '#2F6BFF',
     activeBg: '#2F6BFF',
     activeText: '#ffffff',
-    badgeClass: 'bg-blue-pale text-blue-mein',
+    stripFrom: '#2F6BFF',
+    stripTo: '#5B8FFF',
   },
   unsure: {
     key: 'unsure',
@@ -86,7 +96,8 @@ const MOVE_OPTIONS: Record<MoveKey, {
     iconColor: '#888888',
     activeBg: '#111111',
     activeText: '#ffffff',
-    badgeClass: 'bg-white text-charcoal border border-gray-support',
+    stripFrom: '#F4B400',
+    stripTo: '#FFCF3D',
   },
 }
 
@@ -126,7 +137,7 @@ const defaultForm: FormData = {
   consentGiven: false,
 }
 
-// ─── What happens next steps ──────────────────────────────────────────────────
+// ─── What happens next ────────────────────────────────────────────────────────
 
 const NEXT_STEPS = [
   {
@@ -160,7 +171,6 @@ export default function MakeYourMovePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Not sure yet form state
   const [notSureForm, setNotSureForm] = useState({ name: '', email: '', interests: '' })
   const [notSureDone, setNotSureDone] = useState(false)
   const [notSureLoading, setNotSureLoading] = useState(false)
@@ -168,7 +178,6 @@ export default function MakeYourMovePage() {
   const formRef = useRef<HTMLDivElement | null>(null)
   const isFirstMount = useRef(true)
 
-  // On chip click: URL param changes → update form.moveType, scroll to form
   useEffect(() => {
     if (isFirstMount.current) {
       isFirstMount.current = false
@@ -254,11 +263,10 @@ export default function MakeYourMovePage() {
         <div className="absolute right-0 top-0 translate-x-1/3 opacity-[0.04] pointer-events-none select-none">
           <OpenMIcon size={500} />
         </div>
-        <div className="relative z-10 max-w-7xl mx-auto px-5 md:px-8 max-w-3xl">
+        <div className="relative z-10 max-w-3xl mx-auto px-5 md:px-8">
           <FadeUp>
             {activeMove ? (
               <>
-                {/* Selected move badge */}
                 <div className="flex items-center gap-2 flex-wrap mb-4">
                   <span className="text-xs font-sora font-semibold text-gray-mid uppercase tracking-widest">
                     Selected move
@@ -330,16 +338,16 @@ export default function MakeYourMovePage() {
       </section>
 
       {/* ─── FORM SECTION ──────────────────────────────────────────────────── */}
-      <section className="pb-16 bg-white">
-        <div className="max-w-7xl mx-auto px-5 md:px-8 max-w-3xl">
+      <section className="pb-16 bg-gradient-to-b from-blue-pale/25 via-blue-pale/10 to-white">
+        <div className="max-w-3xl mx-auto px-5 md:px-8">
 
-          {/* Anchor for scroll-to */}
+          {/* Scroll anchor */}
           <div ref={formRef} className="scroll-mt-28 md:scroll-mt-32" />
 
           {submitted ? (
             /* ── Success state ── */
             <FadeUp>
-              <div className="text-center py-14 md:py-20 bg-blue-pale/40 rounded-3xl px-6 md:px-12 border border-blue-mein/10">
+              <div className="text-center py-14 md:py-20 bg-white rounded-3xl px-6 md:px-12 border border-blue-mein/15 shadow-xl">
                 <div className="w-20 h-20 rounded-full bg-blue-pale ring-4 ring-blue-mein/10 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-mein/10">
                   <OpenMIcon size={44} />
                 </div>
@@ -365,9 +373,16 @@ export default function MakeYourMovePage() {
           ) : normalizedMove === 'unsure' ? (
             /* ── Not sure yet form ── */
             <FadeUp>
-              <div className="bg-white rounded-3xl border-2 border-dashed border-blue-mein/25 overflow-hidden shadow-lg">
+              <div className="relative bg-white rounded-3xl border border-blue-mein/20 shadow-2xl overflow-hidden">
+                {/* Gold accent strip */}
                 <div className="h-1.5 bg-gradient-to-r from-gold-mein via-gold-light to-gold-mein" />
-                <div className="p-6 md:p-10">
+
+                {/* Faint Open M watermark */}
+                <div className="absolute bottom-0 right-0 translate-x-1/4 translate-y-1/4 pointer-events-none select-none opacity-[0.05]" aria-hidden="true">
+                  <OpenMIcon size={280} />
+                </div>
+
+                <div className="relative z-10 p-6 md:p-10">
                   {notSureDone ? (
                     <div className="text-center py-8">
                       <div className="w-16 h-16 rounded-full bg-gold-pale border-2 border-gold-mein/40 flex items-center justify-center mx-auto mb-4">
@@ -391,25 +406,36 @@ export default function MakeYourMovePage() {
                     </div>
                   ) : (
                     <>
-                      <div className="flex items-center gap-3 mb-1">
-                        <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
-                          <HelpCircle size={20} className="text-gray-400" strokeWidth={1.8} />
+                      {/* Card header */}
+                      <div className="flex items-center gap-3 mb-5">
+                        <div className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FFF8E1' }}>
+                          <HelpCircle size={20} style={{ color: '#C48F00' }} strokeWidth={2} />
                         </div>
                         <div>
-                          <MeinTagBadge label="Tell us your first move." color="blue" />
+                          <span
+                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sora font-bold"
+                            style={{ backgroundColor: '#111111', color: '#ffffff' }}
+                          >
+                            <Check size={10} strokeWidth={3} />
+                            Not sure yet
+                          </span>
                         </div>
                       </div>
-                      <h2 className="mt-4 font-sora font-extrabold text-2xl md:text-3xl text-charcoal">
-                        Not sure yet? That's okay.
+
+                      <h2 className="font-sora font-extrabold text-2xl md:text-3xl text-charcoal leading-tight">
+                        Not sure yet?{' '}
+                        <HandwrittenAccent text="That's okay." className="text-2xl md:text-3xl" />
                       </h2>
-                      <p className="mt-2 text-gray-dark font-sora">
+                      <p className="mt-2 text-gray-dark font-sora text-base leading-relaxed">
                         You do not need to know your move yet. Tell us what you're into and we'll help you find your first move.
                       </p>
                       <p className="mt-1 font-caveat text-gray-mid text-lg">
                         Short answers are okay. You do not need a perfect plan to begin.
                       </p>
 
-                      <form onSubmit={handleNotSureSubmit} className="mt-7 space-y-4">
+                      <SectionDivider className="mt-5 mb-6" />
+
+                      <form onSubmit={handleNotSureSubmit} className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Your Name *</label>
@@ -450,7 +476,7 @@ export default function MakeYourMovePage() {
                         <button
                           type="submit"
                           disabled={notSureLoading}
-                          className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="btn-primary w-full justify-center py-3.5 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {notSureLoading ? 'Sending...' : 'Help me start.'}
                           {!notSureLoading && <ArrowRight size={14} />}
@@ -463,47 +489,64 @@ export default function MakeYourMovePage() {
             </FadeUp>
 
           ) : (
-            /* ── Main move form ── */
+            /* ── Main move submission form ── */
             <FadeUp>
-              <div className="bg-white rounded-3xl border border-blue-mein/15 shadow-xl overflow-hidden">
-                {/* Accent strip — color matches active move */}
+              <div className="relative bg-white rounded-3xl border border-blue-mein/20 shadow-2xl overflow-hidden">
+                {/* Accent strip — color-keyed to selected move */}
                 <div
                   className="h-1.5"
                   style={{
                     background: activeMove
-                      ? `linear-gradient(to right, ${activeMove.activeBg}, ${activeMove.iconBg})`
-                      : 'linear-gradient(to right, #2F6BFF, #EBF0FF)',
+                      ? `linear-gradient(to right, ${activeMove.stripFrom}, ${activeMove.stripTo})`
+                      : 'linear-gradient(to right, #2F6BFF, #5B8FFF)',
                   }}
                 />
 
-                <div className="p-6 md:p-10">
-                  {/* Form header */}
+                {/* Faint Open M watermark */}
+                <div className="absolute bottom-0 right-0 translate-x-1/4 translate-y-1/4 pointer-events-none select-none opacity-[0.05]" aria-hidden="true">
+                  <OpenMIcon size={320} />
+                </div>
+
+                <div className="relative z-10 p-6 md:p-10">
+
+                  {/* Form header — selected move identity */}
                   <div className="flex items-start gap-4 mb-6">
-                    {activeMove && (
+                    {activeMove ? (
                       <div
-                        className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                        className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 mt-0.5"
                         style={{ backgroundColor: activeMove.iconBg }}
                       >
                         <activeMove.icon size={22} style={{ color: activeMove.iconColor }} strokeWidth={2} />
                       </div>
+                    ) : (
+                      <div className="w-12 h-12 rounded-2xl bg-blue-pale flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <OpenMIcon size={28} />
+                      </div>
                     )}
+
                     <div className="flex-1 min-w-0">
                       {activeMove && (
-                        <p className="text-xs font-sora font-semibold uppercase tracking-widest mb-1"
-                          style={{ color: activeMove.iconColor }}>
-                          Selected move — {activeMove.label}
-                        </p>
+                        <div className="mb-2">
+                          <span
+                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sora font-bold"
+                            style={{ backgroundColor: activeMove.activeBg, color: activeMove.activeText }}
+                          >
+                            <Check size={10} strokeWidth={3} />
+                            Selected move — {activeMove.label}
+                          </span>
+                        </div>
                       )}
-                      <h2 className="font-sora font-extrabold text-2xl md:text-3xl text-charcoal">
-                        Tell us your first move.
+                      <h2 className="font-sora font-extrabold text-2xl md:text-3xl text-charcoal leading-tight">
+                        Tell us your{' '}
+                        <HandwrittenAccent text="first move." className="text-2xl md:text-3xl" />
                       </h2>
-                      <p className="mt-1 font-caveat text-gray-mid text-lg">
+                      <p className="mt-1.5 font-caveat text-gray-mid text-lg">
                         Short answers are okay. You do not need a perfect plan to begin.
                       </p>
                     </div>
                   </div>
 
-                  <SectionDivider className="mb-6" />
+                  <SectionDivider className="mb-7" />
 
                   <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -593,9 +636,10 @@ export default function MakeYourMovePage() {
                       />
                     </div>
 
+                    {/* Move type selector — only when no move is pre-selected via URL */}
                     {!activeMove && (
                       <div>
-                        <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">
+                        <label className="block text-sm font-sora font-semibold text-charcoal mb-2">
                           Move type *
                         </label>
                         <div className="flex flex-wrap gap-2">
@@ -705,34 +749,43 @@ export default function MakeYourMovePage() {
       {/* ─── WHAT HAPPENS NEXT ─────────────────────────────────────────────── */}
       {!submitted && !notSureDone && (
         <section className="py-12 md:py-16 bg-[#FAFAF8]">
-          <div className="max-w-7xl mx-auto px-5 md:px-8 max-w-3xl">
+          <div className="max-w-3xl mx-auto px-5 md:px-8">
             <FadeUp>
               <div className="text-center mb-8">
                 <SectionDivider className="mx-auto mb-4" />
                 <h2 className="font-sora font-extrabold text-2xl md:text-3xl text-charcoal">
                   What happens next?
                 </h2>
+                <p className="mt-2 font-sora text-gray-mid text-sm">
+                  Here is what to expect after you submit.
+                </p>
               </div>
             </FadeUp>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {NEXT_STEPS.map((step, i) => (
-                <FadeUp key={step.num} delay={i * 80}>
-                  <div className="bg-white rounded-2xl border border-blue-mein/10 p-6 shadow-sm h-full">
-                    <span className="text-xs font-sora font-bold uppercase tracking-widest text-blue-mein mb-3 block">
-                      Step {step.num}
-                    </span>
-                    <h3 className="font-sora font-bold text-lg text-charcoal mb-2">{step.title}</h3>
-                    <p className="font-sora text-gray-dark text-sm leading-relaxed">{step.body}</p>
-                  </div>
-                </FadeUp>
-              ))}
+            {/* Desktop: row with connector line / Mobile: stacked */}
+            <div className="relative">
+              {/* Connector line — desktop only */}
+              <div className="hidden md:block absolute top-8 left-[calc(16.67%+1.5rem)] right-[calc(16.67%+1.5rem)] h-px bg-blue-mein/15 z-0" />
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 relative z-10">
+                {NEXT_STEPS.map((step, i) => (
+                  <FadeUp key={step.num} delay={i * 80}>
+                    <div className="bg-white rounded-2xl border border-blue-mein/10 p-6 shadow-sm h-full flex flex-col items-start md:items-center md:text-center">
+                      {/* Numbered badge */}
+                      <div className="w-10 h-10 rounded-full bg-blue-pale flex items-center justify-center mb-4 flex-shrink-0">
+                        <span className="text-xs font-sora font-black text-blue-mein tracking-wider">{step.num}</span>
+                      </div>
+                      <h3 className="font-sora font-bold text-base text-charcoal mb-1.5">{step.title}</h3>
+                      <p className="font-sora text-gray-dark text-sm leading-relaxed">{step.body}</p>
+                    </div>
+                  </FadeUp>
+                ))}
+              </div>
             </div>
 
-            <FadeUp delay={240}>
-              <div className="mt-6 flex items-center justify-center gap-2 text-sm font-sora text-gray-mid">
-                <Shield size={14} className="text-blue-mein flex-shrink-0" strokeWidth={2} />
-                Staff-reviewed · Consent-aware · Youth-safe
+            <FadeUp delay={280}>
+              <div className="mt-7 flex justify-center">
+                <ConsentBadge />
               </div>
             </FadeUp>
           </div>
