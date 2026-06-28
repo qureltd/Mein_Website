@@ -285,7 +285,8 @@ export default function AdminSubmissionDetailPage() {
   const isConsentEligible = sub.is_under_18 && CONSENT_ELIGIBLE_TYPES.includes(sub.type)
   const consentLink = consentReq ? `${window.location.origin}/consent/${consentReq.consent_token}` : null
   const isPublishable = (PUBLISHABLE_TYPES as readonly string[]).includes(sub.type)
-  const eligibility = isPublishable ? checkPublishEligibility(sub, consentReq) : null
+  const consentLoading = isPublishable && (sub.is_under_18 || sub.consent_required) && consentReq === undefined
+  const eligibility = isPublishable && !consentLoading ? checkPublishEligibility(sub, consentReq) : null
   const showPublishPanel = isPublishable && sub.status === 'approved'
 
   return (
@@ -477,6 +478,8 @@ export default function AdminSubmissionDetailPage() {
                     View on The Wall →
                   </Link>
                 </div>
+              ) : consentLoading ? (
+                <p className="text-xs text-gray-mid font-sora">Checking consent status…</p>
               ) : eligibility && !eligibility.eligible ? (
                 <div className="space-y-2">
                   <div className="flex items-start gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3">

@@ -49,6 +49,7 @@ export default function StoryDetailPage() {
         .select('id, title, excerpt, category, author_display_name, featured, published_at, media_url, submission_id')
         .eq('category', data.category)
         .neq('id', id)
+        .is('unpublished_at', null)
         .limit(3)
 
       setRelated((relatedData as Story[]) || [])
