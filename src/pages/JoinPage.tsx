@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ArrowRight, Check } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
@@ -8,7 +8,6 @@ import {
   SectionDivider,
   ConsentBadge,
 } from '../components/BrandElements'
-import { supabase } from '../lib/supabase'
 
 // ── Join path config ──────────────────────────────────────────────────────────
 
@@ -75,14 +74,6 @@ function normalizeJoinPathParam(raw: string | null): JoinPathKey | null {
   return null
 }
 
-// Maps JoinPathKey to join_interests.path DB enum values
-const PATH_TO_DB: Record<JoinPathKey, string> = {
-  'young-person': 'young_person',
-  'parent':        'parent_guardian',
-  'creator':       'creator',
-  'partner':       'school_partner',
-}
-
 
 
 const belongingBadges = [
@@ -101,7 +92,7 @@ const audiencePaths = [
     label: 'Young person',
     desc: 'Explore, create, speak, build, represent, or just start unsure.',
     ctaLabel: 'Start here',
-    href: '/make-your-move?move=unsure',
+    href: '/make-your-move',
     accent: 'blue' as const,
   },
   {
@@ -109,7 +100,7 @@ const audiencePaths = [
     key: 'parent' as JoinPathKey,
     label: 'Parent or guardian',
     desc: 'Understand the movement and support a young person safely.',
-    ctaLabel: 'Learn more',
+    ctaLabel: 'Learn how it works',
     href: '/parents',
     accent: 'gold' as const,
   },
@@ -118,8 +109,8 @@ const audiencePaths = [
     key: 'creator' as JoinPathKey,
     label: 'Creator',
     desc: 'Help shape content, stories, ideas, and youth-led energy.',
-    ctaLabel: 'Create with Mein',
-    href: '/make-your-move?move=represent',
+    ctaLabel: 'Collaborate with Mein',
+    href: '/contact?type=creator',
     accent: 'blue' as const,
   },
   {
@@ -127,7 +118,7 @@ const audiencePaths = [
     key: 'partner' as JoinPathKey,
     label: 'School or partner',
     desc: 'Support youth development, showcases, challenges, and opportunities.',
-    ctaLabel: 'Partner with us',
+    ctaLabel: 'Partner with Mein',
     href: '/schools',
     accent: 'gold' as const,
   },
@@ -183,33 +174,6 @@ export default function JoinPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const normalizedPath = normalizeJoinPathParam(searchParams.get('path'))
   const pathsRef = useRef<HTMLDivElement>(null)
-
-  const [joinForm, setJoinForm]     = useState({ name: '', email: '', path: normalizedPath ?? 'young-person' as JoinPathKey })
-  const [joinLoading, setJoinLoading] = useState(false)
-  const [joinDone, setJoinDone]     = useState(false)
-  const [joinError, setJoinError]   = useState<string | null>(null)
-
-  // Keep form path in sync when URL param changes
-  const formPath: JoinPathKey = normalizedPath ?? (joinForm.path as JoinPathKey) ?? 'young-person'
-
-  async function handleJoinSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setJoinLoading(true)
-    setJoinError(null)
-    const { error } = await supabase.from('join_interests').insert({
-      name:   joinForm.name.trim() || null,
-      email:  joinForm.email.trim(),
-      path:   PATH_TO_DB[formPath],
-      status: 'new',
-    })
-    setJoinLoading(false)
-    if (error) {
-      console.error('[JoinPage] join_interests insert failed:', error.message)
-      setJoinError('Something went wrong. Please try again.')
-    } else {
-      setJoinDone(true)
-    }
-  }
 
   function handleChipClick(key: JoinPathKey) {
     setSearchParams({ path: key })
@@ -445,119 +409,7 @@ export default function JoinPage() {
         </div>
       </section>
 
-      {/* ─── 4. INTEREST CAPTURE ─────────────────────────────────────────── */}
-      <section className="py-12 md:py-16 bg-white border-t border-gray-support/60">
-        <div className="container-wide section-padding max-w-md mx-auto">
-          <FadeUp>
-            <div className="text-center mb-7">
-              <SectionDivider className="mx-auto mb-4" />
-              <h2 className="font-sora font-extrabold text-2xl md:text-3xl text-charcoal">
-                Stay in the loop.
-              </h2>
-              <p className="mt-2 text-gray-dark font-sora text-sm md:text-base">
-                Register your interest and we'll let you know when your space is ready.
-              </p>
-            </div>
-          </FadeUp>
-
-          <FadeUp delay={80}>
-            {joinDone ? (
-              <div className="text-center py-10 bg-blue-pale rounded-3xl">
-                <div className="w-14 h-14 rounded-full bg-blue-mein flex items-center justify-center mx-auto mb-4">
-                  <Check size={24} className="text-white" strokeWidth={2.5} />
-                </div>
-                <h3 className="font-sora font-bold text-lg text-charcoal">You're on the list.</h3>
-                <HandwrittenAccent text="We'll be in touch." className="text-xl block mt-2" />
-                <p className="mt-3 text-sm text-gray-dark font-sora max-w-xs mx-auto">
-                  We'll reach out to {JOIN_PATH_OPTIONS[formPath].label.toLowerCase()}s as space opens up.
-                </p>
-              </div>
-            ) : (
-              <form onSubmit={handleJoinSubmit} className="space-y-4">
-                {/* Selected path badge */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-sora font-semibold text-gray-mid uppercase tracking-widest">
-                    Joining as
-                  </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {JOIN_PATH_KEYS.map((key) => {
-                      const opt = JOIN_PATH_OPTIONS[key]
-                      const isActive = formPath === key
-                      return (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={() => {
-                            setSearchParams({ path: key })
-                            setJoinForm((f) => ({ ...f, path: key }))
-                          }}
-                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-sora font-semibold border transition-all duration-150 ${
-                            isActive
-                              ? 'border-transparent'
-                              : 'border-gray-support bg-white text-gray-dark hover:border-blue-mein/50'
-                          }`}
-                          style={isActive ? { backgroundColor: opt.activeBg, color: opt.activeText } : undefined}
-                        >
-                          {isActive && <Check size={10} strokeWidth={3} />}
-                          {opt.label}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">
-                    Your name <span className="text-gray-mid font-normal">(optional)</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="input-field"
-                    placeholder="Your name"
-                    value={joinForm.name}
-                    onChange={(e) => setJoinForm((f) => ({ ...f, name: e.target.value }))}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    className="input-field"
-                    placeholder="your@email.com"
-                    value={joinForm.email}
-                    onChange={(e) => setJoinForm((f) => ({ ...f, email: e.target.value }))}
-                  />
-                </div>
-
-                {joinError && (
-                  <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 font-sora">
-                    {joinError}
-                  </p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={joinLoading}
-                  className="btn-primary w-full justify-center"
-                >
-                  {joinLoading ? 'Registering...' : 'Register my interest'}
-                  {!joinLoading && <ArrowRight size={15} />}
-                </button>
-
-                <p className="text-center text-xs text-gray-mid font-sora">
-                  No spam. Just movement updates when the time is right.
-                </p>
-              </form>
-            )}
-          </FadeUp>
-        </div>
-      </section>
-
-      {/* ─── 5. PLEDGE ───────────────────────────────────────────────────── */}
+      {/* ─── 4. PLEDGE ───────────────────────────────────────────────────── */}
       <section className="py-16 md:py-20 bg-charcoal overflow-hidden relative">
         <div className="absolute inset-0 pointer-events-none select-none flex items-center justify-center opacity-[0.04]">
           <OpenMIcon size={500} />
@@ -589,7 +441,7 @@ export default function JoinPage() {
         </div>
       </section>
 
-      {/* ─── 6. SAFETY REASSURANCE ───────────────────────────────────────── */}
+      {/* ─── 5. SAFETY REASSURANCE ───────────────────────────────────────── */}
       <section className="py-8 md:py-10 bg-blue-pale border-t border-blue-mein/10">
         <div className="container-wide section-padding">
           <FadeUp>
@@ -613,7 +465,7 @@ export default function JoinPage() {
         </div>
       </section>
 
-      {/* ─── 7. BOTTOM CTA ───────────────────────────────────────────────── */}
+      {/* ─── 6. BOTTOM CTA ───────────────────────────────────────────────── */}
       <section className="py-14 md:py-16 bg-white">
         <div className="container-wide section-padding text-center max-w-xl mx-auto">
           <FadeUp>
