@@ -47,11 +47,19 @@ export default function AdminLoginPage() {
     }
 
     // Check the signed-in user exists in admin_users
-    const { data: adminRecord } = await supabase
+    const { data: adminRecord, error: adminError } = await supabase
       .from('admin_users')
       .select('id')
       .eq('email', data.session.user.email)
       .maybeSingle()
+
+    if (adminError) {
+      console.error('[AdminLogin] admin_users lookup failed:', adminError.message, adminError.code)
+      await supabase.auth.signOut()
+      setError('Admin access check failed. Please try again or contact support.')
+      setLoading(false)
+      return
+    }
 
     if (!adminRecord) {
       await supabase.auth.signOut()

@@ -20,11 +20,15 @@ export default function AdminRouteGuard({ children }: { children: React.ReactNod
       }
 
       // Check the authenticated user is in admin_users
-      const { data } = await supabase
+      const { data, error: adminError } = await supabase
         .from('admin_users')
         .select('id')
         .eq('email', session.user.email)
         .maybeSingle()
+
+      if (adminError) {
+        console.error('[AdminRouteGuard] admin_users lookup failed:', adminError.message, adminError.code)
+      }
 
       if (!cancelled) setState(data ? 'allowed' : 'denied')
     }

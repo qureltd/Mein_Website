@@ -285,13 +285,15 @@ export default function MakeYourMovePage() {
             ) : (
               <>
                 <p className="font-caveat text-blue-mein text-xl mb-3">
-                  How do you want to make your move?
+                  Choose the move that feels closest.
                 </p>
                 <h1 className="font-sora font-extrabold text-5xl md:text-6xl text-charcoal leading-tight">
                   Make Your Move.
                 </h1>
                 <p className="mt-5 text-lg text-gray-dark font-sora max-w-xl">
-                  Choose one move to start. One move is enough. You do not need a perfect plan to begin.
+                  You do not need a perfect plan. Pick a starting point, or choose{' '}
+                  <span className="font-semibold text-charcoal">Not sure yet</span>{' '}
+                  if you want help finding one.
                 </p>
               </>
             )}

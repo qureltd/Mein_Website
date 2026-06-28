@@ -4,6 +4,7 @@ import Nav from './components/Nav'
 import Footer from './components/Footer'
 import MobileCtaBanner from './components/MobileCtaBanner'
 import AdminRouteGuard from './components/AdminRouteGuard'
+import AdminLayout from './components/AdminLayout'
 
 import HomePage from './pages/HomePage'
 import AboutPage from './pages/AboutPage'
@@ -19,9 +20,19 @@ import SchoolsPage from './pages/SchoolsPage'
 import CommunityRulesPage from './pages/CommunityRulesPage'
 import ContactPage from './pages/ContactPage'
 import PrivacyPage, { TermsPage } from './pages/LegalPages'
-import AdminDashboard from './pages/AdminDashboard'
 import AdminLoginPage from './pages/AdminLoginPage'
-import ConsentPlaceholderPage from './pages/ConsentPlaceholderPage'
+import ConsentPage from './pages/ConsentPage'
+
+import AdminDashboardPage from './pages/admin/AdminDashboardPage'
+import AdminSubmissionsPage from './pages/admin/AdminSubmissionsPage'
+import AdminSubmissionDetailPage from './pages/admin/AdminSubmissionDetailPage'
+import AdminContactPage from './pages/admin/AdminContactPage'
+import AdminMembersPage from './pages/admin/AdminMembersPage'
+import AdminConsentPage from './pages/admin/AdminConsentPage'
+import AdminWallPage from './pages/admin/AdminWallPage'
+import { AdminShopPage, AdminShopProductsPage, AdminShopDropsPage } from './pages/admin/AdminShopPages'
+import AdminEmailEventsPage from './pages/admin/AdminEmailEventsPage'
+import AdminSettingsPage from './pages/admin/AdminSettingsPage'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -42,20 +53,32 @@ function SiteLayout({ children }: { children: React.ReactNode }) {
   )
 }
 
+function AdminShell({ children }: { children: React.ReactNode }) {
+  return (
+    <AdminRouteGuard>
+      <AdminLayout>{children}</AdminLayout>
+    </AdminRouteGuard>
+  )
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
         {/* ── Admin — protected, standalone layout ── */}
-        <Route
-          path="/admin"
-          element={
-            <AdminRouteGuard>
-              <AdminDashboard />
-            </AdminRouteGuard>
-          }
-        />
+        <Route path="/admin" element={<AdminShell><AdminDashboardPage /></AdminShell>} />
+        <Route path="/admin/submissions" element={<AdminShell><AdminSubmissionsPage /></AdminShell>} />
+        <Route path="/admin/submissions/:id" element={<AdminShell><AdminSubmissionDetailPage /></AdminShell>} />
+        <Route path="/admin/contact" element={<AdminShell><AdminContactPage /></AdminShell>} />
+        <Route path="/admin/members" element={<AdminShell><AdminMembersPage /></AdminShell>} />
+        <Route path="/admin/consent" element={<AdminShell><AdminConsentPage /></AdminShell>} />
+        <Route path="/admin/wall" element={<AdminShell><AdminWallPage /></AdminShell>} />
+        <Route path="/admin/shop" element={<AdminShell><AdminShopPage /></AdminShell>} />
+        <Route path="/admin/shop/products" element={<AdminShell><AdminShopProductsPage /></AdminShell>} />
+        <Route path="/admin/shop/drops" element={<AdminShell><AdminShopDropsPage /></AdminShell>} />
+        <Route path="/admin/email-events" element={<AdminShell><AdminEmailEventsPage /></AdminShell>} />
+        <Route path="/admin/settings" element={<AdminShell><AdminSettingsPage /></AdminShell>} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
 
         {/* ── Consent — public token route, placeholder for now ── */}
@@ -63,7 +86,7 @@ export default function App() {
           path="/consent/:token"
           element={
             <SiteLayout>
-              <ConsentPlaceholderPage />
+              <ConsentPage />
             </SiteLayout>
           }
         />

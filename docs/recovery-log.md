@@ -148,18 +148,203 @@ Files changed in Phase 1:
 
 ### Phase 2 — Postmark Email Infrastructure
 
-Status: In progress
+Status: Completed
 Started: 2026-06-28
-Completed: —
+Completed: 2026-06-28
 
-Changes: (to be filled in after completion)
+Changes:
+- Audited existing project: no prior email provider, no prior Edge Functions, no Postmark secret present
+- Created Supabase Edge Function: `send-email` (deployed ACTIVE, verifyJWT: true)
+  - File: `supabase/functions/send-email/index.ts`
+  - Accepts POST with: email_type, recipient_email, recipient_name, template_alias (optional override),
+    template_data (optional), related_table (optional), related_id (optional), dry_run (optional)
+  - Validates: email_type (against 12-value allowlist), recipient_email format, template resolution
+  - Uses SUPABASE_SERVICE_ROLE_KEY (server-side only) to write to email_events table
+  - Reads POSTMARK_SERVER_TOKEN from secrets only — never exposed to frontend
+  - Reads POSTMARK_FROM_EMAIL (default: hello@mein.world) and POSTMARK_MESSAGE_STREAM from secrets
+  - Dry run mode: logs email_events row, skips Postmark call, returns dry_run: true
+  - Full send: inserts pending row → calls Postmark template API → updates to sent/failed
+  - Stores postmark_message_id on success; stores error_message on failure
+  - Returns only safe error messages to callers; internal errors logged via console.error only
+  - Missing POSTMARK_SERVER_TOKEN: returns safe 500 and logs failed event
+  - Unknown template alias (Postmark 422): surfaces safe template error to caller
 
+Secrets required (to be added via Supabase dashboard or secrets manager):
+  - POSTMARK_SERVER_TOKEN — required for live sends; function degrades safely without it
+  - POSTMARK_FROM_EMAIL — optional, defaults to hello@mein.world
+  - POSTMARK_MESSAGE_STREAM — optional, omitted from Postmark payload if not set
+  - ADMIN_NOTIFICATION_EMAIL — reserved for Phase 4/5 use; not used in Phase 2
+
+Email type → template alias map (templates must be created in Postmark dashboard):
+  - consent_request          → mein-consent-request
+  - consent_confirmation     → mein-consent-confirmation
+  - consent_declined         → mein-consent-declined
+  - submission_received      → mein-submission-received
+  - submission_approved      → mein-submission-approved
+  - submission_published     → mein-submission-published
+  - contact_confirmation     → mein-contact-confirmation
+  - admin_new_contact        → mein-admin-new-contact
+  - admin_new_submission     → mein-admin-new-submission
+  - join_confirmation        → mein-join-confirmation
+  - drop_signup_confirmation → mein-drop-signup-confirmation
+  - drop_launch_notification → mein-drop-launch-notification
+
+Security/access:
+  - verifyJWT: true — only authenticated callers (admin or trusted server) can invoke
+  - Public forms do NOT call send-email directly in Phase 2
+  - Arbitrary email dispatch is admin/server-only to prevent abuse
+
+Test (curl dry_run example — requires valid JWT):
+  curl -X POST https://bjimkxrangfaiwofrzkf.supabase.co/functions/v1/send-email \
+    -H "Authorization: Bearer <admin-jwt>" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "email_type": "submission_received",
+      "recipient_email": "test@example.com",
+      "recipient_name": "Test Person",
+      "template_data": { "submission_type": "future_me" },
+      "dry_run": true
+    }'
+
+Verification results:
+  - send-email deployed ACTIVE in Supabase Edge Functions
+  - email_events insert/update cycle tested and confirmed (insert pending → update sent with dry_run marker)
+  - No POSTMARK_ string anywhere in frontend src/ code
+  - email_events table accepts all fields the function writes
+  - Build: clean (pre-existing chunk size warning only)
+  - No public page or form behavior changed
+
+Manual Postmark dashboard steps required before live sends:
+  1. Create a Postmark account and server at postmarkapp.com
+  2. Add sender domain/email (must match POSTMARK_FROM_EMAIL, e.g. hello@mein.world)
+  3. Verify sender domain DNS records in Postmark
+  4. Create each of the 12 template aliases listed above
+  5. Set POSTMARK_SERVER_TOKEN secret in Supabase (dashboard → Settings → Edge Functions → Secrets)
+  6. Optionally set POSTMARK_FROM_EMAIL and POSTMARK_MESSAGE_STREAM
+
+---
+
+### Hotfix: Admin Access (joel@meintoday.com cannot log in)
+
+Date: 2026-06-28
+Status: Resolved
+
+Root cause:
+Two compounding issues prevented admin login despite correct credentials:
+
+1. Missing GRANT: The `authenticated` role had no explicit `GRANT SELECT ON admin_users`.
+   PostgreSQL RLS policy alone is not sufficient — the table-level privilege must also exist.
+   The shared Supabase instance did not automatically add this grant when admin_users was
+   created via migration. The anon/authenticated schema ACL only showed USAGE (not SELECT).
+
+2. Silent error swallowing: Both AdminLoginPage.tsx and AdminRouteGuard.tsx called
+   `.maybeSingle()` on admin_users without checking the returned `error`. A permission
+   denied error was treated identically to "no row found", showing "You do not have admin
+   access" with no way to distinguish the real cause.
+
+Changes made:
+
+Migration: supabase/migrations/20260628_admin_users_grant_and_secure_rls.sql
+  - GRANT SELECT ON admin_users TO authenticated (explicit, resolves the privilege gap)
+  - DROP POLICY "select_admin_users" (removed USING (true) — was too permissive)
+  - CREATE POLICY "select_own_admin_user" FOR SELECT TO authenticated
+      USING (lower(email) = lower(auth.jwt() ->> 'email'))
+    Tighter policy: authenticated users see only their own admin_users row
+  - last_login UPDATE deferred to a later migration
+
+src/pages/AdminLoginPage.tsx
+  - admin_users query now destructures { data, error } (previously ignored error)
+  - if adminError: logs to console.error, shows "Admin access check failed" to user
+  - if !adminRecord and no error: shows "You do not have admin access"
+  - error cases are now clearly distinguished
+
+src/components/AdminRouteGuard.tsx
+  - admin_users query now destructures { data, error }
+  - if adminError: logs to console.error (does not expose detail to user)
+  - route guard behavior unchanged: still redirects to /admin/login when not allowed
+
+Security posture:
+  - /admin is still protected by AdminRouteGuard
+  - anon has no SELECT on admin_users (GRANT only covers authenticated)
+  - each admin can only read their own row (tighter than before)
+  - no admin email in frontend code
+  - no RLS bypass
+
+Build: clean
 ---
 
 ### Phase 3 — Connect Public Forms to Correct Tables
 
-Status: Pending
-Started: —
+Status: Completed
+Started: 2026-06-28
+Completed: 2026-06-28
+
+Forms audited: JoinPage, ContactPage, SchoolsPage, ShopPage, MakeYourMovePage, FutureMePage
+
+Pre-phase audit findings:
+  - JoinPage: navigation-only, no form/submit — needed new interest capture section added
+  - ContactPage: was writing to submissions (type='contact') — moved to contact_messages
+  - SchoolsPage: was writing to submissions (type='school'|'partner') — moved to contact_messages
+  - ShopPage: both notify modal and early access form writing to submissions — moved to contact_messages
+  - MakeYourMovePage: correctly writes to submissions — no changes needed
+  - FutureMePage: correctly writes to submissions (type='future_me') — no changes needed
+
+Migration: supabase/migrations/20260628_phase3_form_table_grants.sql
+  - GRANT INSERT ON join_interests TO anon
+  - GRANT SELECT, INSERT, UPDATE, DELETE ON join_interests TO authenticated
+  - GRANT INSERT ON contact_messages TO anon
+  - GRANT SELECT, INSERT, UPDATE, DELETE ON contact_messages TO authenticated
+  (Same pattern as admin_users fix — RLS policies without explicit GRANTs would silently fail)
+
+Files changed:
+
+src/pages/JoinPage.tsx
+  - Added supabase import
+  - Added useState import
+  - Added PATH_TO_DB mapping (JoinPathKey → join_interests path enum)
+  - Added joinForm state, joinLoading, joinDone, joinError
+  - Added handleJoinSubmit → inserts to join_interests
+  - Added new "Stay in the loop" section (between paths and pledge)
+    - Path chips mirror URL-param selection
+    - name (optional), email (required)
+    - Success + error states
+    - No redesign of existing sections
+  - TODO: Phase 4 — join confirmation email via server-side handler
+
+src/pages/ContactPage.tsx
+  - handleSubmit now writes to contact_messages (was: submissions type='contact')
+  - Added contactTypeFromRoute() mapping: 'young-person'→'young_person', 'parent'→'parent', 'school'→'school', null→'general'
+  - Added error state and display
+  - TODO: Phase 4 — contact_confirmation + admin_new_contact emails
+
+src/pages/SchoolsPage.tsx
+  - handleSubmit now writes to contact_messages (was: submissions type='school'|'partner')
+  - contact_type: 'school' for school, 'organisation' for partner
+  - subject: auto-set from formType
+  - message: combines orgName + role + message into single message field
+  - Added error state and display
+  - TODO: Phase 4 — admin_new_contact email
+
+src/pages/ShopPage.tsx
+  - handleNotify now writes to contact_messages (was: submissions type='contact')
+    - contact_type: 'shop', subject: "Drop notification: {product}"
+  - handleAccessSubmit now writes to contact_messages (was: submissions type='contact')
+    - contact_type: 'shop', subject: 'Drop 001 — early access'
+  - TODO: Phase 4 — drop_signup_confirmation email
+
+Table routing summary:
+  join_interests:  JoinPage "Register my interest" form
+  contact_messages: ContactPage, SchoolsPage, ShopPage (notify + access), MakeYourMovePage "not sure" stays in submissions
+  submissions: MakeYourMovePage (all move types), FutureMePage (future_me)
+
+RLS verification:
+  - join_interests: anon INSERT ✓, anon SELECT blocked ✓
+  - contact_messages: anon INSERT ✓, anon SELECT blocked ✓
+  - submissions: anon INSERT ✓, anon SELECT blocked ✓
+  - email_events: no public write access ✓
+
+Email calls: NONE added to public frontend. All email TODOs deferred to Phase 4.
+Build: clean
 Completed: —
 
 ---

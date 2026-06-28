@@ -11,50 +11,68 @@ import {
 
 // ── Join path config ──────────────────────────────────────────────────────────
 
-const JOIN_PATH_KEYS = ['young-person', 'parent', 'creator', 'partner'] as const
+const JOIN_PATH_KEYS = ['young-person', 'parent', 'creator', 'partner', 'supporter'] as const
 type JoinPathKey = typeof JOIN_PATH_KEYS[number]
 
-const JOIN_PATH_OPTIONS: Record<JoinPathKey, {
+interface JoinPathOption {
   key: JoinPathKey
   label: string
   headline: string
   description: string
-  activeBg: string
-  activeText: string
-}> = {
-  'young-person': {
+  ctaLabel: string
+  href: string
+  accent: 'blue' | 'gold'
+}
+
+const JOIN_PATHS: JoinPathOption[] = [
+  {
     key: 'young-person',
     label: 'Young person',
     headline: "You're joining as a young person.",
-    description: 'Explore, create, speak, build, represent, or just start unsure.',
-    activeBg: '#2F6BFF',
-    activeText: '#ffffff',
+    description: 'Explore, create, speak, build, represent, or just start unsure. Mein is built for you.',
+    ctaLabel: 'Start here',
+    href: '/make-your-move',
+    accent: 'blue',
   },
-  parent: {
+  {
     key: 'parent',
     label: 'Parent or guardian',
     headline: "You're here as a parent or guardian.",
-    description: 'Understand the movement and support a young person safely.',
-    activeBg: '#F4B400',
-    activeText: '#111111',
+    description: 'Understand how Mein works, how consent is handled, and how you can support a young person safely.',
+    ctaLabel: 'Learn how it works',
+    href: '/parents',
+    accent: 'gold',
   },
-  creator: {
+  {
     key: 'creator',
     label: 'Creator',
     headline: "You're joining as a creator.",
-    description: 'Help shape content, stories, ideas, and youth-led energy.',
-    activeBg: '#2F6BFF',
-    activeText: '#ffffff',
+    description: 'Help shape content, stories, and ideas. Collaborate with Mein to produce youth-led creative work.',
+    ctaLabel: 'Collaborate with Mein',
+    href: '/contact?type=creator',
+    accent: 'blue',
   },
-  partner: {
+  {
     key: 'partner',
     label: 'School or partner',
     headline: "You're here as a school or partner.",
-    description: 'Support youth development, showcases, challenges, and opportunities.',
-    activeBg: '#F4B400',
-    activeText: '#111111',
+    description: 'Bring Mein to your students or community. We offer structured programmes, projects, and ongoing support.',
+    ctaLabel: 'Partner with us',
+    href: '/schools',
+    accent: 'gold',
   },
-}
+  {
+    key: 'supporter',
+    label: 'Supporter',
+    headline: "You want to support the movement.",
+    description: 'Cheer it on, spread the word, volunteer, or contribute in any way you can. Every form of support matters.',
+    ctaLabel: 'Support the movement',
+    href: '/contact?type=support',
+    accent: 'blue',
+  },
+]
+
+const JOIN_PATH_MAP = Object.fromEntries(JOIN_PATHS.map(p => [p.key, p])) as Record<JoinPathKey, JoinPathOption>
 
 function normalizeJoinPathParam(raw: string | null): JoinPathKey | null {
   if (!raw) return null
@@ -68,13 +86,14 @@ function normalizeJoinPathParam(raw: string | null): JoinPathKey | null {
     sponsor: 'partner',
     organisation: 'partner',
     organization: 'partner',
+    support: 'supporter',
   }
   if (aliases[s]) return aliases[s]
   if ((JOIN_PATH_KEYS as readonly string[]).includes(s)) return s as JoinPathKey
   return null
 }
 
-// ── Static data ───────────────────────────────────────────────────────────────
+
 
 const belongingBadges = [
   { text: 'For the quiet ones.', variant: 'blue' },
@@ -83,45 +102,6 @@ const belongingBadges = [
   { text: 'For the ones with ideas.', variant: 'gold' },
   { text: 'For the ones building anyway.', variant: 'blue' },
   { text: "For the ones who haven't started yet.", variant: 'gold' },
-] as const
-
-const audiencePaths = [
-  {
-    number: '01',
-    key: 'young-person' as JoinPathKey,
-    label: 'Young person',
-    desc: 'Explore, create, speak, build, represent, or just start unsure.',
-    ctaLabel: 'Start here',
-    href: '/make-your-move?move=unsure',
-    accent: 'blue' as const,
-  },
-  {
-    number: '02',
-    key: 'parent' as JoinPathKey,
-    label: 'Parent or guardian',
-    desc: 'Understand the movement and support a young person safely.',
-    ctaLabel: 'Learn more',
-    href: '/parents',
-    accent: 'gold' as const,
-  },
-  {
-    number: '03',
-    key: 'creator' as JoinPathKey,
-    label: 'Creator',
-    desc: 'Help shape content, stories, ideas, and youth-led energy.',
-    ctaLabel: 'Create with Mein',
-    href: '/make-your-move?move=represent',
-    accent: 'blue' as const,
-  },
-  {
-    number: '04',
-    key: 'partner' as JoinPathKey,
-    label: 'School or partner',
-    desc: 'Support youth development, showcases, challenges, and opportunities.',
-    ctaLabel: 'Partner with us',
-    href: '/schools',
-    accent: 'gold' as const,
-  },
 ] as const
 
 const badgeStyles = {
@@ -175,11 +155,15 @@ export default function JoinPage() {
   const normalizedPath = normalizeJoinPathParam(searchParams.get('path'))
   const pathsRef = useRef<HTMLDivElement>(null)
 
-  function handleChipClick(key: JoinPathKey) {
-    setSearchParams({ path: key })
-    requestAnimationFrame(() => {
-      pathsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    })
+  function handlePillClick(key: JoinPathKey) {
+    if (normalizedPath === key) {
+      setSearchParams({})
+    } else {
+      setSearchParams({ path: key })
+      requestAnimationFrame(() => {
+        pathsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+    }
   }
 
   return (
@@ -288,7 +272,7 @@ export default function JoinPage() {
       <section id="paths" className="py-16 md:py-20 bg-[#FAFAF8]" ref={pathsRef}>
         <div className="container-wide section-padding max-w-3xl mx-auto">
           <FadeUp>
-            <div className="text-center mb-8">
+            <div className="text-center mb-10">
               <SectionDivider className="mx-auto mb-5" />
               <h2 className="font-sora font-extrabold text-3xl md:text-4xl text-charcoal">
                 Choose your way in.
@@ -299,113 +283,78 @@ export default function JoinPage() {
             </div>
           </FadeUp>
 
-          {/* Compact path chip switcher */}
+          {/* Prominent pill switcher */}
           <FadeUp delay={80}>
-            <div className="flex flex-wrap gap-2 justify-center mb-8">
-              {JOIN_PATH_KEYS.map((key) => {
-                const opt = JOIN_PATH_OPTIONS[key]
-                const isActive = normalizedPath === key
+            <div className="flex flex-wrap gap-2.5 justify-center mb-8">
+              {JOIN_PATHS.map((path) => {
+                const isActive = normalizedPath === path.key
+                const isGold = path.accent === 'gold'
                 return (
                   <button
-                    key={key}
-                    onClick={() => handleChipClick(key)}
-                    className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-sora font-semibold border transition-all duration-150 ${
+                    key={path.key}
+                    onClick={() => handlePillClick(path.key)}
+                    aria-pressed={isActive}
+                    className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-sora font-semibold border-2 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-mein ${
                       isActive
-                        ? 'border-transparent'
-                        : 'border-gray-support bg-white text-gray-dark hover:border-blue-mein/50 hover:text-blue-mein'
+                        ? isGold
+                          ? 'bg-gold-mein border-gold-mein text-charcoal shadow-md scale-[1.04]'
+                          : 'bg-blue-mein border-blue-mein text-white shadow-md scale-[1.04]'
+                        : 'bg-white border-gray-support text-gray-dark hover:border-blue-mein/60 hover:text-blue-mein hover:shadow-sm'
                     }`}
-                    style={isActive ? { backgroundColor: opt.activeBg, color: opt.activeText } : undefined}
                   >
-                    {isActive && <Check size={12} strokeWidth={3} />}
-                    {opt.label}
+                    {isActive && <Check size={13} strokeWidth={3} />}
+                    {path.label}
                   </button>
                 )
               })}
             </div>
           </FadeUp>
 
-          {/* Contextual banner — shown when a path is selected */}
-          {normalizedPath && (
-            <FadeUp>
-              <div className="mb-8 rounded-2xl bg-blue-pale/60 border border-blue-mein/20 px-5 py-4 flex items-start gap-3">
-                <div className="flex-shrink-0 flex items-center gap-2 mt-0.5">
-                  <span className="text-xs font-sora font-semibold text-gray-mid uppercase tracking-widest whitespace-nowrap">
-                    Selected path
-                  </span>
-                  <span
-                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-sora font-semibold"
-                    style={{
-                      backgroundColor: JOIN_PATH_OPTIONS[normalizedPath].activeBg,
-                      color: JOIN_PATH_OPTIONS[normalizedPath].activeText,
-                    }}
-                  >
-                    <Check size={10} strokeWidth={3} />
-                    {JOIN_PATH_OPTIONS[normalizedPath].label}
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-sora font-bold text-sm text-charcoal leading-snug">
-                    {JOIN_PATH_OPTIONS[normalizedPath].headline}
-                  </p>
-                  <p className="mt-0.5 font-sora text-xs text-gray-dark leading-snug">
-                    {JOIN_PATH_OPTIONS[normalizedPath].description}
-                  </p>
-                </div>
+          {/* Selected path card */}
+          {normalizedPath ? (
+            <FadeUp key={normalizedPath}>
+              {(() => {
+                const path = JOIN_PATH_MAP[normalizedPath]
+                const isGold = path.accent === 'gold'
+                return (
+                  <div className={`rounded-2xl border-2 p-7 md:p-9 shadow-lg transition-all duration-200 ${
+                    isGold ? 'bg-gold-pale border-yellow-300/60' : 'bg-blue-pale border-blue-mein/25'
+                  }`}>
+                    <p className={`font-sora text-xs font-bold uppercase tracking-widest mb-3 ${
+                      isGold ? 'text-gold-dark' : 'text-blue-mein'
+                    }`}>
+                      Your path
+                    </p>
+                    <h3 className="font-sora font-extrabold text-xl md:text-2xl text-charcoal leading-snug">
+                      {path.headline}
+                    </h3>
+                    <p className="mt-3 font-sora text-base text-gray-dark leading-relaxed max-w-lg">
+                      {path.description}
+                    </p>
+                    <Link
+                      to={path.href}
+                      className={`mt-7 inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-sora font-bold shadow-md transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] ${
+                        isGold
+                          ? 'bg-gold-mein text-charcoal hover:bg-gold-dark hover:text-white'
+                          : 'bg-blue-mein text-white hover:bg-blue-600'
+                      }`}
+                    >
+                      {path.ctaLabel}
+                      <ArrowRight size={15} />
+                    </Link>
+                  </div>
+                )
+              })()}
+            </FadeUp>
+          ) : (
+            <FadeUp delay={120}>
+              <div className="rounded-2xl border-2 border-dashed border-gray-support bg-white px-7 py-10 text-center">
+                <p className="font-sora font-semibold text-base text-gray-mid">
+                  Select a path above to see where to go next.
+                </p>
               </div>
             </FadeUp>
           )}
-
-          {/* Vertical path list */}
-          <div className="relative">
-            <div className="hidden md:block absolute left-[38px] top-10 bottom-10 w-0.5 bg-blue-mein/15" />
-
-            <div className="flex flex-col gap-3.5">
-              {audiencePaths.map((path, i) => {
-                const isGold = path.accent === 'gold'
-                const isSelected = normalizedPath === path.key
-                return (
-                  <FadeUp key={path.number} delay={i * 80}>
-                    <Link
-                      to={path.href}
-                      className={`group relative flex items-center gap-5 md:gap-6 bg-white rounded-2xl border hover:shadow-lg active:scale-[0.99] transition-all duration-200 px-5 py-6 md:px-8 md:py-7 ${
-                        isSelected
-                          ? 'border-blue-mein/40 shadow-md'
-                          : 'border-gray-support hover:border-blue-mein/40'
-                      }`}
-                    >
-                      <div
-                        className={`relative z-10 flex-shrink-0 w-[56px] h-[56px] rounded-full flex items-center justify-center font-sora font-black text-base transition-colors duration-200 ${
-                          isGold
-                            ? 'bg-gold-pale text-gold-dark group-hover:bg-gold-mein group-hover:text-white'
-                            : 'bg-blue-pale text-blue-mein group-hover:bg-blue-mein group-hover:text-white'
-                        }`}
-                      >
-                        {path.number}
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <p className="font-sora font-extrabold text-base md:text-lg text-charcoal group-hover:text-blue-mein transition-colors leading-snug">
-                          {path.label}
-                        </p>
-                        <p className="text-sm text-gray-dark font-sora mt-1 leading-snug">
-                          {path.desc}
-                        </p>
-                      </div>
-
-                      <div
-                        className={`hidden sm:flex items-center gap-1.5 flex-shrink-0 text-sm font-sora font-semibold whitespace-nowrap ${
-                          isGold ? 'text-gold-dark' : 'text-blue-mein'
-                        } group-hover:gap-3 transition-all duration-200`}
-                      >
-                        {path.ctaLabel}
-                        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-200" />
-                      </div>
-                    </Link>
-                  </FadeUp>
-                )
-              })}
-            </div>
-          </div>
         </div>
       </section>
 

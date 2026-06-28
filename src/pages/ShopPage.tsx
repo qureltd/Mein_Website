@@ -192,15 +192,15 @@ export default function ShopPage() {
   async function handleNotify(e: React.FormEvent) {
     e.preventDefault()
     setNotifyLoading(true)
-    await supabase.from('submissions').insert({
-      name: notifyForm.name,
-      email: notifyForm.email,
-      type: 'contact',
-      title: `Drop notification: ${notifyProduct}`,
-      content: `User wants to be notified when "${notifyProduct}" drops.`,
-      status: 'received',
-      is_under_18: false,
+    await supabase.from('contact_messages').insert({
+      contact_type: 'shop',
+      name:         notifyForm.name || null,
+      email:        notifyForm.email,
+      subject:      `Drop notification: ${notifyProduct}`,
+      message:      `User wants to be notified when "${notifyProduct}" drops.`,
+      status:       'new',
     })
+    // TODO: Phase 4 — trigger drop_signup_confirmation email via server-side handler
     setNotifyLoading(false)
     setNotifyDone(true)
   }
@@ -208,15 +208,15 @@ export default function ShopPage() {
   async function handleAccessSubmit(e: React.FormEvent) {
     e.preventDefault()
     setAccessLoading(true)
-    await supabase.from('submissions').insert({
-      name: accessForm.name,
-      email: accessForm.email,
-      type: 'contact',
-      title: 'Drop 001 — early access request',
-      content: 'Early access signup for Drop 001.',
-      status: 'received',
-      is_under_18: false,
+    await supabase.from('contact_messages').insert({
+      contact_type: 'shop',
+      name:         accessForm.name || null,
+      email:        accessForm.email,
+      subject:      'Drop 001 — early access',
+      message:      'Drop 001 early access signup.',
+      status:       'new',
     })
+    // TODO: Phase 4 — trigger drop_signup_confirmation email via server-side handler
     setAccessLoading(false)
     setAccessDone(true)
   }
