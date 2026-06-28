@@ -1,13 +1,49 @@
 import { useState } from 'react'
-import { ArrowRight, Check, Mail, MessageCircle } from 'lucide-react'
+import { ArrowRight, Check, Lightbulb, HelpCircle, Building2 } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
 import { OpenMIcon, HandwrittenAccent, SectionDivider } from '../components/BrandElements'
 import { supabase } from '../lib/supabase'
 
+const contactRoutes = [
+  {
+    key: 'young-person',
+    icon: Lightbulb,
+    title: "I'm a young person with an idea",
+    support: 'Share what you are thinking, building, creating, or trying to start.',
+    subject: 'Young person with an idea',
+    iconBg: '#EBF0FF',
+    iconColor: '#2F6BFF',
+  },
+  {
+    key: 'parent',
+    icon: HelpCircle,
+    title: "I'm a parent with a question",
+    support: 'Ask about consent, safety, participation, or how Mein works.',
+    subject: 'Parent question',
+    iconBg: '#FFF8E1',
+    iconColor: '#C48F00',
+  },
+  {
+    key: 'school',
+    icon: Building2,
+    title: 'I represent a school or organisation',
+    support: 'Start a conversation about bringing Mein to young people you support.',
+    subject: 'School or organisation enquiry',
+    iconBg: '#F0FDF4',
+    iconColor: '#16A34A',
+  },
+]
+
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
+  const [selectedRoute, setSelectedRoute] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+
+  function handleRouteSelect(route: typeof contactRoutes[number]) {
+    setSelectedRoute(route.key)
+    setForm(f => ({ ...f, subject: route.subject }))
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -38,7 +74,10 @@ export default function ContactPage() {
               Get in{' '}
               <HandwrittenAccent text="touch." className="text-5xl md:text-6xl" />
             </h1>
-            <p className="mt-5 text-xl text-gray-dark font-sora max-w-xl">
+            <p className="mt-3 font-caveat text-blue-mein text-xl md:text-2xl">
+              We read every message. We will reply.
+            </p>
+            <p className="mt-4 text-xl text-gray-dark font-sora max-w-xl">
               Questions, ideas, partnership enquiries, or just want to say hi — we'd love to hear from you.
             </p>
           </FadeUp>
@@ -62,36 +101,85 @@ export default function ContactPage() {
               </div>
             </FadeUp>
           ) : (
-            <FadeUp>
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Your Name *</label>
-                    <input type="text" required className="input-field" placeholder="Your full name"
-                      value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} />
+            <>
+              {/* Contact route tiles */}
+              <FadeUp>
+                <div className="mb-8">
+                  <SectionDivider className="mb-4" />
+                  <p className="text-xs font-sora font-semibold text-gray-mid uppercase tracking-widest mb-4">
+                    Who is getting in touch?
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {contactRoutes.map((route) => {
+                      const isSelected = selectedRoute === route.key
+                      return (
+                        <button
+                          key={route.key}
+                          type="button"
+                          onClick={() => handleRouteSelect(route)}
+                          className={`text-left p-4 rounded-2xl border-2 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-mein focus-visible:ring-offset-2 ${
+                            isSelected
+                              ? 'border-blue-mein bg-blue-pale/40 shadow-sm'
+                              : 'border-gray-support bg-white hover:border-blue-mein/40 hover:shadow-sm'
+                          }`}
+                          aria-pressed={isSelected}
+                        >
+                          <div
+                            className="w-9 h-9 rounded-xl flex items-center justify-center mb-3 flex-shrink-0"
+                            style={{ backgroundColor: route.iconBg }}
+                          >
+                            <route.icon size={18} style={{ color: route.iconColor }} strokeWidth={2} />
+                          </div>
+                          <p className={`font-sora font-semibold text-sm leading-snug mb-1.5 ${isSelected ? 'text-blue-mein' : 'text-charcoal'}`}>
+                            {route.title}
+                          </p>
+                          <p className="font-sora text-xs text-gray-dark leading-relaxed">
+                            {route.support}
+                          </p>
+                          {isSelected && (
+                            <div className="mt-2.5 flex items-center gap-1">
+                              <Check size={11} className="text-blue-mein" strokeWidth={3} />
+                              <span className="text-[10px] font-sora font-bold text-blue-mein uppercase tracking-widest">Selected</span>
+                            </div>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              </FadeUp>
+
+              <FadeUp delay={80}>
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Your Name *</label>
+                      <input type="text" required className="input-field" placeholder="Your full name"
+                        value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Email *</label>
+                      <input type="email" required className="input-field" placeholder="your@email.com"
+                        value={form.email} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} />
+                    </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Email *</label>
-                    <input type="email" required className="input-field" placeholder="your@email.com"
-                      value={form.email} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} />
+                    <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Subject</label>
+                    <input type="text" className="input-field" placeholder="What is this about?"
+                      value={form.subject} onChange={(e) => setForm(f => ({ ...f, subject: e.target.value }))} />
                   </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Subject</label>
-                  <input type="text" className="input-field" placeholder="What is this about?"
-                    value={form.subject} onChange={(e) => setForm(f => ({ ...f, subject: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Message *</label>
-                  <textarea required rows={6} className="textarea-field" placeholder="Tell us what's on your mind..."
-                    value={form.message} onChange={(e) => setForm(f => ({ ...f, message: e.target.value }))} />
-                </div>
-                <button type="submit" disabled={loading} className="btn-primary w-full justify-center py-4">
-                  {loading ? 'Sending...' : 'Send Message'}
-                  {!loading && <ArrowRight size={16} />}
-                </button>
-              </form>
-            </FadeUp>
+                  <div>
+                    <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Message *</label>
+                    <textarea required rows={6} className="textarea-field" placeholder="Tell us what's on your mind..."
+                      value={form.message} onChange={(e) => setForm(f => ({ ...f, message: e.target.value }))} />
+                  </div>
+                  <button type="submit" disabled={loading} className="btn-primary w-full justify-center py-4">
+                    {loading ? 'Sending...' : 'Send Message'}
+                    {!loading && <ArrowRight size={16} />}
+                  </button>
+                </form>
+              </FadeUp>
+            </>
           )}
         </div>
       </section>
