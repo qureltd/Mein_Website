@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ArrowRight, Search } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { FadeUp } from '../hooks/useInView'
 import {
   OpenMIcon,
@@ -11,6 +11,55 @@ import {
 } from '../components/BrandElements'
 import { supabase, type Story, type StoryCategory } from '../lib/supabase'
 
+// ── Story filter config ───────────────────────────────────────────────────────
+
+// Visible filter chips. Only include slugs that map cleanly to real DB categories.
+// TODO: Add 'build' and 'represent' chips once matching DB categories exist.
+const VISIBLE_FILTERS = [
+  { slug: 'all',       label: 'All Moves' },
+  { slug: 'future-me', label: 'Future Me' },
+  { slug: 'creative',  label: 'Creative' },
+  { slug: 'story',     label: 'Stories' },
+] as const
+
+type VisibleFilterSlug = typeof VISIBLE_FILTERS[number]['slug']
+
+// All accepted inbound URL slugs (including hidden ones that normalize safely)
+const VALID_FILTER_SLUGS = ['all', 'future-me', 'creative', 'story', 'build', 'represent'] as const
+type FilterSlug = typeof VALID_FILTER_SLUGS[number]
+
+// Mapping from URL slug to Supabase category column value
+const FILTER_TO_DB: Record<FilterSlug, string | null> = {
+  'all':        null,
+  'future-me':  'future_self_letters',
+  'creative':   'creative_submissions',
+  'story':      'youth_stories',
+  // build and represent normalize to 'all' — no matching DB category yet
+  'build':      null,
+  'represent':  null,
+}
+
+function normalizeStoryFilterParam(raw: string | null): FilterSlug {
+  if (!raw) return 'all'
+  const s = raw.trim().toLowerCase()
+  const aliases: Record<string, FilterSlug> = {
+    future:          'future-me',
+    'future-message': 'future-me',
+    voice:           'story',
+    speak:           'story',
+    create:          'creative',
+    art:             'creative',
+    // build and represent are valid params but resolve to all — no visible chip yet
+    build:           'build',
+    represent:       'represent',
+  }
+  if (aliases[s]) return aliases[s]
+  if ((VALID_FILTER_SLUGS as readonly string[]).includes(s)) return s as FilterSlug
+  return 'all'
+}
+
+// ── Category display maps ─────────────────────────────────────────────────────
+
 const categoryWallLabels: Record<StoryCategory, string> = {
   future_self_letters: 'Future Me',
   mein_mover_videos: 'Mover Video',
@@ -20,17 +69,6 @@ const categoryWallLabels: Record<StoryCategory, string> = {
   writing: 'Writing',
   behind_the_scenes: 'Behind the Movement',
   merch_drops: 'Merch',
-}
-
-const categoryLabels: Record<StoryCategory, string> = {
-  future_self_letters: 'Future-Self Letters',
-  mein_mover_videos: 'Mein Mover Videos',
-  youth_stories: 'Youth Stories',
-  creative_submissions: 'Creative Work',
-  art_gallery: 'Art Gallery',
-  writing: 'Writing',
-  behind_the_scenes: 'Behind the Scenes',
-  merch_drops: 'Merch Drops',
 }
 
 const categoryRotation: Record<StoryCategory, number> = {
@@ -55,12 +93,8 @@ const categoryColor: Record<StoryCategory, 'blue' | 'gold'> = {
   merch_drops: 'gold',
 }
 
-const filterOptions = [
-  { value: 'all', label: 'All Moves' },
-  ...Object.entries(categoryLabels).map(([value, label]) => ({ value, label })),
-]
+// ── Ghost card ────────────────────────────────────────────────────────────────
 
-// ── Ghost card — decorative, non-interactive ──────────────────────────────────
 function GhostCard({
   label,
   accent = 'blue',
@@ -77,7 +111,6 @@ function GhostCard({
         isGold ? 'border-gold-mein/40' : 'border-blue-mein/40'
       } ${featured ? 'min-h-[220px] md:min-h-[240px]' : 'min-h-[180px]'}`}
     >
-      {/* Top accent strip */}
       <div
         className={`h-1 w-full ${
           isGold
@@ -85,41 +118,47 @@ function GhostCard({
             : 'bg-gradient-to-r from-blue-mein/60 to-blue-light/60'
         }`}
       />
-      {/* Faint Open M watermark */}
       <div className="absolute inset-0 flex items-center justify-center opacity-[0.06] pointer-events-none">
         <OpenMIcon size={100} />
       </div>
-      {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-6 py-6">
-        <span
-          className={`font-caveat text-2xl md:text-3xl ${
-            isGold ? 'text-gold-dark' : 'text-blue-mein'
-          }`}
-        >
+        <span className={`font-caveat text-2xl md:text-3xl ${isGold ? 'text-gold-dark' : 'text-blue-mein'}`}>
           {label}
         </span>
         <span className="mt-2 font-sora text-xs text-gray-mid tracking-wide">
           Coming soon
         </span>
       </div>
-      {/* Bottom badge area */}
       <div className="relative z-10 px-5 pb-4">
-        <div
-          className={`inline-block w-2 h-2 rounded-full ${
-            isGold ? 'bg-gold-mein/40' : 'bg-blue-mein/40'
-          }`}
-        />
+        <div className={`inline-block w-2 h-2 rounded-full ${isGold ? 'bg-gold-mein/40' : 'bg-blue-mein/40'}`} />
       </div>
     </div>
   )
 }
 
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export default function StoriesPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [filter, setFilter] = useState<FilterSlug>(() =>
+    normalizeStoryFilterParam(searchParams.get('filter'))
+  )
   const [stories, setStories] = useState<Story[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<string>('all')
   const [search, setSearch] = useState('')
+  const isFirstMount = useRef(true)
 
+  // Respond to browser back/forward updating the URL param
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false
+      return
+    }
+    const slug = normalizeStoryFilterParam(searchParams.get('filter'))
+    setFilter(slug)
+  }, [searchParams]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Re-fetch stories when filter changes
   useEffect(() => {
     async function fetchStories() {
       setLoading(true)
@@ -128,8 +167,9 @@ export default function StoriesPage() {
         .select('*')
         .order('published_at', { ascending: false })
 
-      if (filter !== 'all') {
-        query = query.eq('category', filter)
+      const dbCategory = FILTER_TO_DB[filter]
+      if (dbCategory) {
+        query = query.eq('category', dbCategory)
       }
 
       const { data, error } = await query
@@ -141,6 +181,15 @@ export default function StoriesPage() {
     fetchStories()
   }, [filter])
 
+  function handleFilterClick(slug: VisibleFilterSlug) {
+    setFilter(slug)
+    if (slug === 'all') {
+      setSearchParams({})
+    } else {
+      setSearchParams({ filter: slug })
+    }
+  }
+
   const filtered = stories.filter(
     (s) =>
       search === '' ||
@@ -151,6 +200,12 @@ export default function StoriesPage() {
   const featuredStory = filtered.find((s) => s.featured) ?? filtered[0]
   const supportingStories = filtered.filter((s) => s.id !== featuredStory?.id)
   const isEmpty = !loading && filtered.length === 0
+
+  // Determine the active chip slug — build/represent show no active chip (they resolve to all)
+  const activeChipSlug: VisibleFilterSlug =
+    filter === 'build' || filter === 'represent'
+      ? 'all'
+      : (filter as VisibleFilterSlug)
 
   return (
     <div className="with-mobile-cta">
@@ -202,12 +257,12 @@ export default function StoriesPage() {
         <div className="container-wide section-padding py-2.5">
           <div className="flex flex-col sm:flex-row gap-2.5 items-start sm:items-center justify-between">
             <div className="flex gap-2 overflow-x-auto pb-0.5 sm:pb-0 no-scrollbar">
-              {filterOptions.slice(0, 6).map((opt) => (
+              {VISIBLE_FILTERS.map((opt) => (
                 <button
-                  key={opt.value}
-                  onClick={() => setFilter(opt.value)}
+                  key={opt.slug}
+                  onClick={() => handleFilterClick(opt.slug)}
                   className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-sora font-semibold transition-colors duration-200 ${
-                    filter === opt.value
+                    activeChipSlug === opt.slug
                       ? 'bg-blue-mein text-white'
                       : 'bg-gray-support text-gray-dark hover:bg-blue-pale hover:text-blue-mein'
                   }`}
@@ -240,23 +295,16 @@ export default function StoriesPage() {
               ))}
             </div>
           ) : isEmpty ? (
-            /* ── Empty state — curated wall feel ── */
             <FadeUp>
               <div className="relative bg-white rounded-3xl border border-blue-mein/15 shadow-xl overflow-hidden px-6 py-10 md:px-12 md:py-14 max-w-4xl mx-auto">
-                {/* Gold accent strip */}
                 <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-gold-mein via-gold-light to-gold-mein" />
-                {/* Faint Open M background watermark */}
                 <div className="absolute bottom-0 right-0 translate-x-1/4 translate-y-1/4 pointer-events-none select-none opacity-[0.04]">
                   <OpenMIcon size={380} />
                 </div>
 
                 <div className="relative z-10">
-                  {/* Copy */}
                   <div className="text-center max-w-xl mx-auto mb-10">
-                    <HandwrittenAccent
-                      text="This wall is waiting."
-                      className="text-xl block mb-2"
-                    />
+                    <HandwrittenAccent text="This wall is waiting." className="text-xl block mb-2" />
                     <h2 className="font-sora font-extrabold text-3xl md:text-4xl text-charcoal">
                       Your move could live here.
                     </h2>
@@ -268,9 +316,7 @@ export default function StoriesPage() {
                     </p>
                   </div>
 
-                  {/* Ghost cards — preview wall layout */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-                    {/* Featured ghost — slightly taller */}
                     <div className="sm:col-span-1">
                       <GhostCard label="Future message" accent="gold" featured />
                     </div>
@@ -282,7 +328,6 @@ export default function StoriesPage() {
                     </div>
                   </div>
 
-                  {/* Single focused CTA */}
                   <div className="flex flex-col items-center gap-3 text-center">
                     <Link to="/make-your-move" className="btn-primary inline-flex">
                       Go first. Make a move.
@@ -300,7 +345,6 @@ export default function StoriesPage() {
             </FadeUp>
           ) : (
             <>
-              {/* ── Featured card ── */}
               {featuredStory && (
                 <FadeUp>
                   <Link
@@ -326,11 +370,7 @@ export default function StoriesPage() {
                             <StickerNote
                               text={categoryWallLabels[featuredStory.category]}
                               rotate={categoryRotation[featuredStory.category]}
-                              color={
-                                categoryColor[featuredStory.category] === 'gold'
-                                  ? 'gold-bold'
-                                  : 'white-blue'
-                              }
+                              color={categoryColor[featuredStory.category] === 'gold' ? 'gold-bold' : 'white-blue'}
                             />
                             {featuredStory.featured && (
                               <span
@@ -356,10 +396,7 @@ export default function StoriesPage() {
                           </span>
                           <span className="inline-flex items-center gap-1.5 text-white/70 text-sm font-sora group-hover:text-white transition-colors">
                             Read{' '}
-                            <ArrowRight
-                              size={14}
-                              className="group-hover:translate-x-1 transition-transform"
-                            />
+                            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                           </span>
                         </div>
                       </div>
@@ -368,7 +405,6 @@ export default function StoriesPage() {
                 </FadeUp>
               )}
 
-              {/* ── Supporting grid ── */}
               {supportingStories.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {supportingStories.map((story, i) => (

@@ -71,7 +71,7 @@ export default function StoryDetailPage() {
         <OpenMIcon size={64} className="mb-6 opacity-20" />
         <h1 className="font-sora font-extrabold text-3xl text-charcoal">Story not found</h1>
         <p className="mt-3 text-gray-dark font-sora">This story may have been moved or removed.</p>
-        <Link to="/stories" className="mt-7 btn-primary inline-flex">
+        <Link to="/wall" className="mt-7 btn-primary inline-flex">
           Back to The Wall
           <ArrowRight size={16} />
         </Link>
@@ -95,7 +95,7 @@ export default function StoryDetailPage() {
         <div className="container-wide section-padding relative z-10 max-w-3xl">
           <FadeUp>
             <Link
-              to="/stories"
+              to="/wall"
               className="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm font-sora transition-colors mb-8"
             >
               <ArrowLeft size={15} />
@@ -165,7 +165,7 @@ export default function StoryDetailPage() {
                 <p className="text-xs text-gray-mid font-sora mt-0.5">{publishedDate}</p>
               </div>
               <Link
-                to="/stories"
+                to="/wall"
                 className="ml-auto text-xs font-sora font-semibold text-blue-mein hover:underline flex items-center gap-1"
               >
                 <ArrowLeft size={12} />

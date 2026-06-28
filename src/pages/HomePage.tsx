@@ -21,7 +21,7 @@ const moveCards = [
     label: 'Create',
     tagline: 'Express it.',
     description: 'Submit art, writing, ideas, designs, photography, or poetry. This is your canvas.',
-    href: '/make-your-move?type=create',
+    href: '/make-your-move?move=create',
     accent: '#2F6BFF',
     bg: '#dce8ff',
   },
@@ -31,7 +31,7 @@ const moveCards = [
     label: 'Speak',
     tagline: 'Say it.',
     description: 'Upload a video, share a story, or send a future-self message. Your voice belongs here.',
-    href: '/make-your-move?type=speak',
+    href: '/make-your-move?move=speak',
     accent: '#111111',
     bg: '#efefef',
   },
@@ -41,7 +41,7 @@ const moveCards = [
     label: 'Build',
     tagline: 'Start it.',
     description: 'Explore the youth entrepreneur route and start shaping an idea into something real.',
-    href: '/make-your-move?type=build',
+    href: '/make-your-move?move=build',
     accent: '#b88000',
     bg: '#fff3c4',
   },
@@ -51,7 +51,7 @@ const moveCards = [
     label: 'Represent',
     tagline: 'Own it.',
     description: 'Apply as a Mein content creator or youth voice and shape this movement from the inside.',
-    href: '/make-your-move?type=represent',
+    href: '/make-your-move?move=represent',
     accent: '#1a4fdb',
     bg: '#e6eeff',
   },
@@ -185,7 +185,7 @@ export default function HomePage() {
                     Join the Movement
                     <ArrowRight size={16} />
                   </Link>
-                  <Link to="/stories" className="btn-secondary text-base py-4 px-8">
+                  <Link to="/wall" className="btn-secondary text-base py-4 px-8">
                     See the Stories
                   </Link>
                 </div>
@@ -289,7 +289,7 @@ export default function HomePage() {
               {/* 5th card — Not sure yet? */}
               <div className="snap-start flex-shrink-0 w-[78vw]">
                 <Link
-                  to="/make-your-move"
+                  to="/make-your-move?move=unsure"
                   className="flex flex-col h-full rounded-2xl border-2 border-dashed border-gray-support bg-white p-6 group hover:border-blue-mein/40 hover:bg-blue-pale/20 transition-all duration-200 relative overflow-hidden"
                 >
                   <div className="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0 mb-4 group-hover:bg-blue-pale transition-colors">
@@ -376,7 +376,7 @@ export default function HomePage() {
           <FadeUp delay={400} className="hidden md:block">
             <div className="mt-8">
               <Link
-                to="/make-your-move"
+                to="/make-your-move?move=unsure"
                 className="group flex flex-col sm:flex-row items-center gap-6 rounded-2xl border-2 border-dashed border-gray-support bg-white/70 px-8 py-6 hover:border-blue-mein/40 hover:bg-blue-pale/20 transition-all duration-300"
               >
                 <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center group-hover:bg-blue-pale transition-colors">
@@ -597,7 +597,7 @@ export default function HomePage() {
                 />
               </div>
               <Link
-                to="/stories"
+                to="/wall"
                 className="btn-outline-blue text-white border-white hover:bg-white hover:text-charcoal self-start md:self-auto flex-shrink-0"
               >
                 See the Wall
@@ -628,7 +628,7 @@ export default function HomePage() {
 
             <FadeUp className="md:col-span-7">
               <Link
-                to="/make-your-move"
+                to="/make-your-move?move=speak"
                 className="flex flex-col h-full bg-white/5 border border-white/10 rounded-2xl p-8 md:p-10 hover:bg-white/10 transition-all duration-200 group cursor-pointer"
               >
                 <div className="flex items-start justify-between mb-6">
@@ -660,7 +660,7 @@ export default function HomePage() {
             <div className="md:col-span-5 flex flex-col gap-5">
               <FadeUp delay={100}>
                 <Link
-                  to="/make-your-move"
+                  to="/make-your-move?move=speak"
                   className="flex flex-col bg-white/5 border border-white/10 rounded-2xl p-7 hover:bg-white/10 transition-all duration-200 group cursor-pointer"
                 >
                   <span
@@ -683,7 +683,7 @@ export default function HomePage() {
 
               <FadeUp delay={200}>
                 <Link
-                  to="/make-your-move"
+                  to="/make-your-move?move=create"
                   className="flex flex-col bg-white/5 border border-white/10 rounded-2xl p-7 hover:bg-white/10 transition-all duration-200 group cursor-pointer"
                 >
                   <span

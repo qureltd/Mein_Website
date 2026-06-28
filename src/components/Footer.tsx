@@ -6,7 +6,7 @@ const youthLinks = [
   { label: "What's Mein?", href: '/about' },
   { label: 'Join Mein', href: '/join' },
   { label: 'Make Your Move', href: '/make-your-move' },
-  { label: 'Stories', href: '/stories' },
+  { label: 'The Wall', href: '/wall' },
   { label: 'Future Me', href: '/future-me' },
   { label: 'Shop', href: '/shop' },
 ]
