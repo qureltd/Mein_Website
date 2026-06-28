@@ -193,27 +193,41 @@ export default function WhyThisMattersPage() {
               </FadeUp>
             </div>
 
-            {/* Right: dark principle box */}
+            {/* Right: premium dark principle panel */}
             <div className="lg:col-span-3">
               <FadeUp delay={120}>
-                <div className="bg-[#1A2236] rounded-3xl p-7 md:p-9 relative overflow-hidden">
-                  <div className="absolute -right-6 -bottom-8 opacity-[0.07] pointer-events-none select-none">
-                    <OpenMIcon size={180} />
+                <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#131927] shadow-2xl p-7 md:p-10">
+                  {/* Watermark — bottom-right, hidden on mobile to reduce clutter */}
+                  <div className="absolute -right-10 -bottom-10 opacity-[0.055] pointer-events-none select-none hidden sm:block">
+                    <OpenMIcon size={220} />
                   </div>
-                  <div className="space-y-0 relative z-10">
-                    {principles.map((p, i) => (
+
+                  {/* Panel label */}
+                  <div className="relative z-10 mb-7 flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-gold-mein" />
+                      <span className="font-sora text-[10px] font-bold uppercase tracking-[0.12em] text-white/60">
+                        Mein principles
+                      </span>
+                    </span>
+                  </div>
+
+                  {/* Principle cards */}
+                  <div className="relative z-10 space-y-2">
+                    {principles.map((p) => (
                       <div
                         key={p.num}
-                        className={`flex items-start gap-4 py-5 ${
-                          i < principles.length - 1 ? 'border-b border-white/10' : ''
-                        }`}
+                        className="group flex items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:p-5 hover:bg-white/[0.06] transition-colors"
                       >
-                        <span className="font-sora font-black text-[11px] text-blue-mein/70 tracking-widest mt-0.5 flex-shrink-0 w-6">
+                        {/* Gold number badge */}
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold-mein font-sora text-sm font-black text-charcoal">
                           {p.num}
                         </span>
                         <div>
-                          <p className="font-sora font-bold text-white text-sm mb-1">{p.title}</p>
-                          <p className="font-sora text-white/60 text-xs leading-relaxed">{p.body}</p>
+                          <p className="font-sora font-bold text-white text-sm mb-1 leading-snug">
+                            {p.title}
+                          </p>
+                          <p className="font-sora text-white/65 text-xs leading-relaxed">{p.body}</p>
                         </div>
                       </div>
                     ))}
