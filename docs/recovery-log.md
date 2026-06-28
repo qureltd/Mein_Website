@@ -275,8 +275,76 @@ Build: clean
 
 ### Phase 3 — Connect Public Forms to Correct Tables
 
-Status: Pending
-Started: —
+Status: Completed
+Started: 2026-06-28
+Completed: 2026-06-28
+
+Forms audited: JoinPage, ContactPage, SchoolsPage, ShopPage, MakeYourMovePage, FutureMePage
+
+Pre-phase audit findings:
+  - JoinPage: navigation-only, no form/submit — needed new interest capture section added
+  - ContactPage: was writing to submissions (type='contact') — moved to contact_messages
+  - SchoolsPage: was writing to submissions (type='school'|'partner') — moved to contact_messages
+  - ShopPage: both notify modal and early access form writing to submissions — moved to contact_messages
+  - MakeYourMovePage: correctly writes to submissions — no changes needed
+  - FutureMePage: correctly writes to submissions (type='future_me') — no changes needed
+
+Migration: supabase/migrations/20260628_phase3_form_table_grants.sql
+  - GRANT INSERT ON join_interests TO anon
+  - GRANT SELECT, INSERT, UPDATE, DELETE ON join_interests TO authenticated
+  - GRANT INSERT ON contact_messages TO anon
+  - GRANT SELECT, INSERT, UPDATE, DELETE ON contact_messages TO authenticated
+  (Same pattern as admin_users fix — RLS policies without explicit GRANTs would silently fail)
+
+Files changed:
+
+src/pages/JoinPage.tsx
+  - Added supabase import
+  - Added useState import
+  - Added PATH_TO_DB mapping (JoinPathKey → join_interests path enum)
+  - Added joinForm state, joinLoading, joinDone, joinError
+  - Added handleJoinSubmit → inserts to join_interests
+  - Added new "Stay in the loop" section (between paths and pledge)
+    - Path chips mirror URL-param selection
+    - name (optional), email (required)
+    - Success + error states
+    - No redesign of existing sections
+  - TODO: Phase 4 — join confirmation email via server-side handler
+
+src/pages/ContactPage.tsx
+  - handleSubmit now writes to contact_messages (was: submissions type='contact')
+  - Added contactTypeFromRoute() mapping: 'young-person'→'young_person', 'parent'→'parent', 'school'→'school', null→'general'
+  - Added error state and display
+  - TODO: Phase 4 — contact_confirmation + admin_new_contact emails
+
+src/pages/SchoolsPage.tsx
+  - handleSubmit now writes to contact_messages (was: submissions type='school'|'partner')
+  - contact_type: 'school' for school, 'organisation' for partner
+  - subject: auto-set from formType
+  - message: combines orgName + role + message into single message field
+  - Added error state and display
+  - TODO: Phase 4 — admin_new_contact email
+
+src/pages/ShopPage.tsx
+  - handleNotify now writes to contact_messages (was: submissions type='contact')
+    - contact_type: 'shop', subject: "Drop notification: {product}"
+  - handleAccessSubmit now writes to contact_messages (was: submissions type='contact')
+    - contact_type: 'shop', subject: 'Drop 001 — early access'
+  - TODO: Phase 4 — drop_signup_confirmation email
+
+Table routing summary:
+  join_interests:  JoinPage "Register my interest" form
+  contact_messages: ContactPage, SchoolsPage, ShopPage (notify + access), MakeYourMovePage "not sure" stays in submissions
+  submissions: MakeYourMovePage (all move types), FutureMePage (future_me)
+
+RLS verification:
+  - join_interests: anon INSERT ✓, anon SELECT blocked ✓
+  - contact_messages: anon INSERT ✓, anon SELECT blocked ✓
+  - submissions: anon INSERT ✓, anon SELECT blocked ✓
+  - email_events: no public write access ✓
+
+Email calls: NONE added to public frontend. All email TODOs deferred to Phase 4.
+Build: clean
 Completed: —
 
 ---

@@ -18,19 +18,27 @@ export default function SchoolsPage() {
   const [form, setForm] = useState({ name: '', orgName: '', email: '', role: '', message: '' })
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    await supabase.from('submissions').insert({
-      name: form.name,
-      email: form.email,
-      type: formType,
-      content: `Organisation: ${form.orgName}\nRole: ${form.role}\nMessage: ${form.message}`,
-      status: 'received',
-      is_under_18: false,
+    setError(null)
+    const { error: dbError } = await supabase.from('contact_messages').insert({
+      contact_type: formType === 'school' ? 'school' : 'organisation',
+      name:         form.name,
+      email:        form.email,
+      subject:      formType === 'school' ? 'School or programme enquiry' : 'Partner or sponsor enquiry',
+      message:      `Organisation: ${form.orgName}\nRole: ${form.role || 'Not provided'}\n\n${form.message}`,
+      status:       'new',
     })
     setLoading(false)
+    if (dbError) {
+      console.error('[SchoolsPage] contact_messages insert failed:', dbError.message)
+      setError('Something went wrong. Please try again.')
+      return
+    }
+    // TODO: Phase 4 — trigger admin_new_contact email via server-side handler
     setSubmitted(true)
   }
 
@@ -175,6 +183,11 @@ export default function SchoolsPage() {
                     {loading ? 'Sending...' : 'Send Enquiry'}
                     {!loading && <ArrowRight size={16} />}
                   </button>
+                  {error && (
+                    <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 font-sora text-center">
+                      {error}
+                    </p>
+                  )}
                 </form>
               </div>
             </FadeUp>
