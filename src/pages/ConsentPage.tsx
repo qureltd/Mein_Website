@@ -40,6 +40,7 @@ export default function ConsentPage() {
   const [consentData, setConsentData] = useState<ConsentData | null>(null)
   const [signedName, setSignedName] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [pendingDecision, setPendingDecision] = useState<'approved' | 'declined' | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -55,11 +56,7 @@ export default function ConsentPage() {
 
     if (error || !data?.success) {
       const msg: string = data?.error ?? error?.message ?? ''
-      if (msg.includes('not found') || msg.includes('invalid')) {
-        setState('not_found')
-      } else {
-        setState('error')
-      }
+      setState(msg.includes('not found') || msg.includes('invalid') ? 'not_found' : 'error')
       return
     }
 
@@ -76,25 +73,28 @@ export default function ConsentPage() {
 
   async function handleSubmit(decision: 'approved' | 'declined') {
     if (!token) return
-    if (decision === 'approved' && !signedName.trim()) {
-      setError('Please enter your full name to confirm consent.')
+    if (!signedName.trim()) {
+      setError('Please enter your full name to confirm your decision.')
       return
     }
     setError(null)
     setSubmitting(true)
+    setPendingDecision(decision)
 
     const { data, error: fnError } = await supabase.functions.invoke('submit-consent-response', {
-      body: { token, decision, signed_name: signedName.trim() || undefined },
+      body: { token, decision, signed_name: signedName.trim() },
     })
 
     if (fnError || !data?.success) {
       setError(data?.error ?? fnError?.message ?? 'Something went wrong. Please try again.')
       setSubmitting(false)
+      setPendingDecision(null)
       return
     }
 
     setState(decision === 'approved' ? 'submitted_approved' : 'submitted_declined')
     setSubmitting(false)
+    setPendingDecision(null)
   }
 
   return (
@@ -197,7 +197,7 @@ export default function ConsentPage() {
               {/* What consent covers */}
               {consentData.consent_type && consentData.consent_type.length > 0 && (
                 <div>
-                  <p className="text-xs font-sora font-semibold text-gray-mid uppercase tracking-wide mb-2">This consent covers</p>
+                  <p className="text-xs font-sora font-semibold text-gray-mid uppercase tracking-wide mb-2">This consent covers permission to</p>
                   <ul className="space-y-1.5">
                     {consentData.consent_type.map((ct) => (
                       <li key={ct} className="flex items-start gap-2 text-sm font-sora text-charcoal">
@@ -218,8 +218,9 @@ export default function ConsentPage() {
 
               {/* Legal text */}
               <div className="bg-blue-pale rounded-xl border border-blue-mein/15 p-4 text-xs font-sora text-gray-dark leading-relaxed">
-                By signing below, you confirm that you are the parent or legal guardian of the young person named above, and that you give Mein permission to use their submission as described. You can withdraw consent at any time by contacting{' '}
-                <a href="mailto:hello@mein.world" className="text-blue-mein hover:underline">hello@mein.world</a>.
+                By signing below, you confirm that you are the parent or legal guardian of the young person named above.
+                Giving consent means Mein may use their submission as described. Declining means their submission will not proceed.
+                You can contact <a href="mailto:hello@mein.world" className="text-blue-mein hover:underline">hello@mein.world</a> at any time with questions.
               </div>
 
               {/* Email hint */}
@@ -227,18 +228,19 @@ export default function ConsentPage() {
                 Sent to: {consentData.guardian_email_hint}
               </p>
 
-              {/* Signature input */}
+              {/* Signature input — required for BOTH approve and decline */}
               <div>
                 <label className="block text-xs font-sora font-semibold text-gray-mid uppercase tracking-wide mb-2">
-                  Your full name (signature)
+                  Your full name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={signedName}
-                  onChange={(e) => setSignedName(e.target.value)}
-                  placeholder="Type your full name to confirm"
+                  onChange={(e) => { setSignedName(e.target.value); setError(null) }}
+                  placeholder="Type your full name to confirm your decision"
                   className="w-full border border-gray-200 rounded-xl px-4 py-3 font-sora text-sm text-charcoal placeholder-gray-mid focus:outline-none focus:ring-2 focus:ring-blue-mein/30 focus:border-blue-mein transition"
                 />
+                <p className="mt-1.5 text-xs text-gray-mid font-sora">Required for both giving and declining consent — creates a formal record of who made this decision.</p>
                 {error && (
                   <p className="mt-2 text-xs text-red-600 font-sora">{error}</p>
                 )}
@@ -251,14 +253,14 @@ export default function ConsentPage() {
                   disabled={submitting}
                   className="w-full bg-blue-mein text-white font-sora font-semibold text-sm py-3 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {submitting ? 'Submitting…' : 'I give consent'}
+                  {submitting && pendingDecision === 'approved' ? 'Submitting…' : 'I give consent'}
                 </button>
                 <button
                   onClick={() => handleSubmit('declined')}
                   disabled={submitting}
                   className="w-full bg-white text-red-600 border border-red-200 font-sora font-semibold text-sm py-3 rounded-xl hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  I do not give consent
+                  {submitting && pendingDecision === 'declined' ? 'Submitting…' : 'I do not give consent'}
                 </button>
               </div>
 

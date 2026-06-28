@@ -6,7 +6,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export type SubmissionType = 'create' | 'speak' | 'build' | 'represent' | 'feature' | 'school' | 'partner' | 'contact' | 'future_me'
-export type SubmissionStatus = 'received' | 'under_review' | 'needs_consent' | 'approved' | 'not_approved' | 'published' | 'archived'
+export type SubmissionStatus = 'received' | 'under_review' | 'needs_consent' | 'consent_sent' | 'consent_received' | 'approved' | 'not_approved' | 'published' | 'archived'
 export type StoryCategory = 'future_self_letters' | 'mein_mover_videos' | 'youth_stories' | 'creative_submissions' | 'art_gallery' | 'writing' | 'behind_the_scenes' | 'merch_drops'
 
 export interface Submission {

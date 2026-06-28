@@ -5,23 +5,27 @@ import { supabase, type Submission, type SubmissionStatus } from '../../lib/supa
 import { AdminPageHeader, AdminTable } from '../../components/AdminLayout'
 
 const STATUS_COLORS: Record<SubmissionStatus, string> = {
-  received:      'bg-blue-pale text-blue-mein',
-  under_review:  'bg-yellow-50 text-yellow-700',
-  needs_consent: 'bg-orange-50 text-orange-700',
-  approved:      'bg-green-50 text-green-700',
-  not_approved:  'bg-red-50 text-red-700',
-  published:     'bg-green-100 text-green-800',
-  archived:      'bg-gray-100 text-gray-600',
+  received:         'bg-blue-pale text-blue-mein',
+  under_review:     'bg-yellow-50 text-yellow-700',
+  needs_consent:    'bg-orange-50 text-orange-700',
+  consent_sent:     'bg-blue-50 text-blue-700',
+  consent_received: 'bg-teal-50 text-teal-700',
+  approved:         'bg-green-50 text-green-700',
+  not_approved:     'bg-red-50 text-red-700',
+  published:        'bg-green-100 text-green-800',
+  archived:         'bg-gray-100 text-gray-600',
 }
 
 const STATUS_LABELS: Record<SubmissionStatus, string> = {
-  received:      'Received',
-  under_review:  'Under Review',
-  needs_consent: 'Needs Consent',
-  approved:      'Approved',
-  not_approved:  'Not Approved',
-  published:     'Published',
-  archived:      'Archived',
+  received:         'Received',
+  under_review:     'Under Review',
+  needs_consent:    'Needs Consent',
+  consent_sent:     'Consent Sent',
+  consent_received: 'Consent Received',
+  approved:         'Approved',
+  not_approved:     'Not Approved',
+  published:        'Published',
+  archived:         'Archived',
 }
 
 const TYPE_LABELS: Record<string, string> = {

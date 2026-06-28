@@ -1,21 +1,33 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Clock, Check, X, Archive, ShieldCheck, Send, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Clock, Check, X, Archive, ShieldCheck, Send, RefreshCw, Copy, CheckCheck, AlertTriangle } from 'lucide-react'
 import { supabase, type Submission, type SubmissionStatus, type ConsentRequest } from '../../lib/supabase'
 
+// Submission types that can enter the consent workflow
+const CONSENT_ELIGIBLE_TYPES = ['create', 'speak', 'build', 'represent', 'feature', 'future_me']
+
 const STATUS_COLORS: Record<SubmissionStatus, string> = {
-  received:      'bg-blue-pale text-blue-mein',
-  under_review:  'bg-yellow-50 text-yellow-700',
-  needs_consent: 'bg-orange-50 text-orange-700',
-  approved:      'bg-green-50 text-green-700',
-  not_approved:  'bg-red-50 text-red-700',
-  published:     'bg-green-100 text-green-800',
-  archived:      'bg-gray-100 text-gray-600',
+  received:         'bg-blue-pale text-blue-mein',
+  under_review:     'bg-yellow-50 text-yellow-700',
+  needs_consent:    'bg-orange-50 text-orange-700',
+  consent_sent:     'bg-blue-50 text-blue-700',
+  consent_received: 'bg-teal-50 text-teal-700',
+  approved:         'bg-green-50 text-green-700',
+  not_approved:     'bg-red-50 text-red-700',
+  published:        'bg-green-100 text-green-800',
+  archived:         'bg-gray-100 text-gray-600',
 }
 
 const STATUS_LABELS: Record<SubmissionStatus, string> = {
-  received: 'Received', under_review: 'Under Review', needs_consent: 'Needs Consent',
-  approved: 'Approved', not_approved: 'Not Approved', published: 'Published', archived: 'Archived',
+  received:         'Received',
+  under_review:     'Under Review',
+  needs_consent:    'Needs Consent',
+  consent_sent:     'Consent Sent',
+  consent_received: 'Consent Received',
+  approved:         'Approved',
+  not_approved:     'Not Approved',
+  published:        'Published',
+  archived:         'Archived',
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -24,8 +36,8 @@ const TYPE_LABELS: Record<string, string> = {
 }
 
 const CONSENT_STATUS_COLORS: Record<string, string> = {
-  pending:   'bg-gray-100 text-gray-600',
-  sent:      'bg-yellow-50 text-yellow-700',
+  pending:   'bg-yellow-50 text-yellow-700',
+  sent:      'bg-blue-50 text-blue-700',
   approved:  'bg-green-50 text-green-700',
   declined:  'bg-red-50 text-red-700',
   withdrawn: 'bg-orange-50 text-orange-700',
@@ -40,6 +52,25 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
   )
 }
 
+function CopyButton({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false)
+  function copy() {
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+  return (
+    <button
+      onClick={copy}
+      className="shrink-0 text-gray-mid hover:text-blue-mein transition-colors"
+      title={copied ? 'Copied!' : 'Copy link'}
+    >
+      {copied ? <CheckCheck size={13} className="text-green-600" /> : <Copy size={13} />}
+    </button>
+  )
+}
+
 export default function AdminSubmissionDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -48,36 +79,38 @@ export default function AdminSubmissionDetailPage() {
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [consentSending, setConsentSending] = useState(false)
+  const [emailFailed, setEmailFailed] = useState(false)
   const [notFound, setNotFound] = useState(false)
 
-  useEffect(() => {
-    if (!id) return
-    loadAll(id)
-  }, [id])
-
-  async function loadAll(subId: string) {
+  const loadAll = useCallback(async (subId: string) => {
     const [{ data: subData }, { data: crData }] = await Promise.all([
       supabase.from('submissions').select('*').eq('id', subId).maybeSingle(),
-      supabase.from('consent_requests').select('*').eq('submission_id', subId).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+      supabase.from('consent_requests').select('*').eq('submission_id', subId)
+        .order('created_at', { ascending: false }).limit(1).maybeSingle(),
     ])
     if (!subData) { setNotFound(true); setLoading(false); return }
     setSub(subData as Submission)
     setConsentReq(crData as ConsentRequest | null)
     setLoading(false)
-  }
+  }, [])
 
-  async function updateStatus(status: SubmissionStatus, extra?: Record<string, unknown>) {
+  useEffect(() => {
+    if (id) loadAll(id)
+  }, [id, loadAll])
+
+  async function updateStatus(status: SubmissionStatus) {
     if (!sub) return
     setActionLoading(true)
     const { data } = await supabase
       .from('submissions')
-      .update({ status, reviewed_at: new Date().toISOString(), updated_at: new Date().toISOString(), ...extra })
+      .update({ status, reviewed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
       .eq('id', sub.id)
       .select()
       .maybeSingle()
     if (data) setSub(data as Submission)
+    const userId = (await supabase.auth.getUser()).data.user?.id ?? null
     await supabase.from('audit_logs').insert({
-      admin_id: (await supabase.auth.getUser()).data.user?.id ?? null,
+      admin_id: userId,
       action: `status_changed_to_${status}`,
       entity_type: 'submissions',
       entity_id: sub.id,
@@ -90,14 +123,18 @@ export default function AdminSubmissionDetailPage() {
   async function sendConsentRequest() {
     if (!sub || !sub.guardian_email) return
     setConsentSending(true)
+    setEmailFailed(false)
 
+    const userId = (await supabase.auth.getUser()).data.user?.id ?? null
+
+    // Create consent_request record
     const { data: cr, error: crErr } = await supabase
       .from('consent_requests')
       .insert({
         submission_id: sub.id,
         guardian_email: sub.guardian_email,
         consent_type: ['story_on_wall', 'use_display_name'],
-        consent_scope: sub.consent_scope ?? 'Display submission content on the Mein platform.',
+        consent_scope: sub.consent_scope ?? 'Display submission content and name on the Mein platform.',
       })
       .select('*')
       .single()
@@ -107,9 +144,30 @@ export default function AdminSubmissionDetailPage() {
       return
     }
 
+    // Audit log: consent request created
+    await supabase.from('audit_logs').insert({
+      admin_id: userId,
+      action: 'consent_request_created',
+      entity_type: 'consent_requests',
+      entity_id: cr.id,
+      previous_status: null,
+      new_status: 'pending',
+      notes: `Consent request created for submission ${sub.id}`,
+    })
+
+    // Mark submission consent_required = true and status = consent_sent
+    await supabase.from('submissions').update({
+      consent_required: true,
+      status: 'consent_sent',
+      updated_at: new Date().toISOString(),
+    }).eq('id', sub.id)
+
+    // Update local sub state optimistically
+    setSub((prev) => prev ? { ...prev, consent_required: true, status: 'consent_sent' } : prev)
+
+    // Send email via edge function
     const origin = window.location.origin
     const consentLink = `${origin}/consent/${cr.consent_token}`
-
     const { error: emailErr } = await supabase.functions.invoke('send-email', {
       body: {
         email_type: 'consent_request',
@@ -133,12 +191,18 @@ export default function AdminSubmissionDetailPage() {
       .select('*')
       .single()
 
-    await supabase
-      .from('submissions')
-      .update({ consent_required: true, updated_at: new Date().toISOString() })
-      .eq('id', sub.id)
+    // Audit log: consent request sent (or failed)
+    await supabase.from('audit_logs').insert({
+      admin_id: userId,
+      action: emailErr ? 'consent_request_email_failed' : 'consent_request_sent',
+      entity_type: 'consent_requests',
+      entity_id: cr.id,
+      previous_status: 'pending',
+      new_status: newStatus,
+      notes: emailErr ? `Email send failed: ${emailErr.message}` : `Email sent to ${sub.guardian_email}`,
+    })
 
-    setSub((prev) => prev ? { ...prev, consent_required: true } : prev)
+    if (emailErr) setEmailFailed(true)
     setConsentReq((updatedCr ?? cr) as ConsentRequest)
     setConsentSending(false)
   }
@@ -160,9 +224,10 @@ export default function AdminSubmissionDetailPage() {
 
   if (!sub) return null
 
-  // Consent state helpers
   const consentApproved = consentReq?.status === 'approved'
   const canApprove = !sub.consent_required || consentApproved
+  const isConsentEligible = sub.is_under_18 && CONSENT_ELIGIBLE_TYPES.includes(sub.type)
+  const consentLink = consentReq ? `${window.location.origin}/consent/${consentReq.consent_token}` : null
 
   return (
     <>
@@ -243,19 +308,27 @@ export default function AdminSubmissionDetailPage() {
             </div>
           </div>
 
-          {/* Consent panel — only for under-18 submissions */}
-          {sub.is_under_18 && (
+          {/* Guardian consent panel — only for under-18 creative submissions */}
+          {isConsentEligible && (
             <div className="bg-white rounded-xl border border-gray-200 p-5">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs font-sora font-semibold text-gray-mid uppercase tracking-wide">Guardian Consent</p>
                 <button
-                  onClick={() => loadAll(sub.id)}
+                  onClick={() => id && loadAll(id)}
                   className="text-gray-mid hover:text-blue-mein transition-colors"
-                  title="Refresh"
+                  title="Refresh consent status"
                 >
                   <RefreshCw size={12} />
                 </button>
               </div>
+
+              {/* Email failure warning */}
+              {emailFailed && (
+                <div className="mb-3 flex items-start gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-xs font-sora text-yellow-800">
+                  <AlertTriangle size={13} className="mt-0.5 shrink-0" />
+                  Email not sent — Postmark may not be configured. Copy the consent link below and share it manually.
+                </div>
+              )}
 
               {consentReq === undefined ? (
                 <p className="text-xs text-gray-mid font-sora">Loading…</p>
@@ -280,9 +353,21 @@ export default function AdminSubmissionDetailPage() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold font-sora ${CONSENT_STATUS_COLORS[consentReq.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                      {consentReq.status}
+                      {consentReq.status === 'pending' ? 'Pending (email not sent)' : consentReq.status}
                     </span>
                   </div>
+
+                  {/* Consent link — always visible for manual copy */}
+                  {consentLink && (
+                    <div>
+                      <p className="text-xs font-sora font-semibold text-gray-mid mb-1">Consent link</p>
+                      <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2">
+                        <p className="text-xs font-sora text-gray-mid truncate flex-1 font-mono">{consentLink}</p>
+                        <CopyButton value={consentLink} />
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-1.5 text-xs font-sora text-gray-mid">
                     <p>Sent to: {consentReq.guardian_email}</p>
                     <p>Created: {new Date(consentReq.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
@@ -290,18 +375,19 @@ export default function AdminSubmissionDetailPage() {
                       <p>Responded: {new Date(consentReq.responded_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                     )}
                     {consentReq.signed_name && (
-                      <p>Signed by: {consentReq.signed_name}</p>
+                      <p>Signed by: <span className="text-charcoal font-medium">{consentReq.signed_name}</span></p>
                     )}
                   </div>
 
-                  {(consentReq.status === 'declined' || consentReq.status === 'withdrawn') && sub.guardian_email && (
+                  {/* Resend: available when email failed (pending) or consent was declined/withdrawn */}
+                  {(['pending', 'declined', 'withdrawn'] as const).includes(consentReq.status as 'pending' | 'declined' | 'withdrawn') && sub.guardian_email && (
                     <button
                       onClick={sendConsentRequest}
                       disabled={consentSending}
                       className="flex items-center gap-2 bg-orange-50 text-orange-700 border border-orange-200 px-3 py-2 rounded-lg text-xs font-semibold font-sora hover:bg-orange-100 transition-colors w-full justify-center disabled:opacity-60"
                     >
                       <Send size={12} />
-                      {consentSending ? 'Sending…' : 'Resend Consent Request'}
+                      {consentSending ? 'Sending…' : consentReq.status === 'pending' ? 'Retry Send' : 'Resend Consent Request'}
                     </button>
                   )}
                 </div>
@@ -322,7 +408,7 @@ export default function AdminSubmissionDetailPage() {
                   <Clock size={13} /> Mark Under Review
                 </button>
               )}
-              {sub.is_under_18 && sub.status !== 'needs_consent' && (
+              {isConsentEligible && !['needs_consent', 'consent_sent', 'consent_received'].includes(sub.status) && (
                 <button
                   onClick={() => updateStatus('needs_consent')}
                   disabled={actionLoading}
@@ -331,7 +417,7 @@ export default function AdminSubmissionDetailPage() {
                   <ShieldCheck size={13} /> Flag: Needs Consent
                 </button>
               )}
-              {['under_review', 'needs_consent'].includes(sub.status) && (
+              {['under_review', 'needs_consent', 'consent_sent', 'consent_received'].includes(sub.status) && (
                 canApprove ? (
                   <button
                     onClick={() => updateStatus('approved')}
@@ -351,7 +437,7 @@ export default function AdminSubmissionDetailPage() {
                   </button>
                 )
               )}
-              {sub.status === 'approved' && ['create', 'speak', 'build', 'represent', 'feature'].includes(sub.type) && (
+              {sub.status === 'approved' && CONSENT_ELIGIBLE_TYPES.includes(sub.type) && (
                 <button
                   disabled
                   title="Publishing requires the Phase 6 consent-verified workflow before stories go public."
