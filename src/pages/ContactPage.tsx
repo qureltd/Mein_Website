@@ -71,7 +71,7 @@ function normalizeTypeParam(raw: string | null): string | null {
 
 export default function ContactPage() {
   const [searchParams] = useSearchParams()
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
+  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '', _trap: '' })
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -104,6 +104,7 @@ export default function ContactPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (form._trap) return  // honeypot triggered — silently ignore
     setLoading(true)
     setError(null)
     const { error: dbError } = await supabase.from('contact_messages').insert({
@@ -214,26 +215,31 @@ export default function ContactPage() {
 
               <FadeUp delay={80}>
                 <form onSubmit={handleSubmit} className="space-y-5">
+                  {/* Honeypot — hidden from real users, filled by bots */}
+                  <div style={{ display: 'none' }} aria-hidden="true">
+                    <input tabIndex={-1} autoComplete="off" type="text" value={form._trap}
+                      onChange={(e) => setForm(f => ({ ...f, _trap: e.target.value }))} />
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Your Name *</label>
-                      <input type="text" required className="input-field" placeholder="Your full name"
+                      <input type="text" required maxLength={100} className="input-field" placeholder="Your full name"
                         value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} />
                     </div>
                     <div>
                       <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Email *</label>
-                      <input type="email" required className="input-field" placeholder="your@email.com"
+                      <input type="email" required maxLength={254} className="input-field" placeholder="your@email.com"
                         value={form.email} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} />
                     </div>
                   </div>
                   <div>
                     <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Subject</label>
-                    <input type="text" className="input-field" placeholder="What is this about?"
+                    <input type="text" maxLength={200} className="input-field" placeholder="What is this about?"
                       value={form.subject} onChange={(e) => setForm(f => ({ ...f, subject: e.target.value }))} />
                   </div>
                   <div>
                     <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Message *</label>
-                    <textarea required rows={6} className="textarea-field" placeholder="Tell us what's on your mind..."
+                    <textarea required maxLength={3000} rows={6} className="textarea-field" placeholder="Tell us what's on your mind..."
                       value={form.message} onChange={(e) => setForm(f => ({ ...f, message: e.target.value }))} />
                   </div>
                   <button type="submit" disabled={loading} className="btn-primary w-full justify-center py-4">

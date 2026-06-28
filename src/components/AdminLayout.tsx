@@ -5,7 +5,9 @@ import {
   Layers, ShoppingBag, Mail, Settings, LogOut, Menu, X, ExternalLink,
   ChevronRight, Package,
 } from 'lucide-react'
-import { supabase, type AdminUser } from '../lib/supabase'
+import { type AdminUser } from '../lib/supabase'
+import { supabase } from '../lib/supabase'
+import { useAdminUser } from './AdminRouteGuard'
 import { OpenMIcon } from './BrandElements'
 
 interface NavItem {
@@ -102,21 +104,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const location = useLocation()
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [adminUser, setAdminUser] = useState<AdminUser | null>(null)
-
-  useEffect(() => {
-    async function loadAdminUser() {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
-      const { data } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('email', session.user.email)
-        .maybeSingle()
-      if (data) setAdminUser(data as AdminUser)
-    }
-    loadAdminUser()
-  }, [])
+  const { adminUser } = useAdminUser()
 
   async function handleSignOut() {
     await supabase.auth.signOut()

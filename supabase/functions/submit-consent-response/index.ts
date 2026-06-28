@@ -56,6 +56,10 @@ Deno.serve(async (req: Request) => {
     return errorResponse("signed_name is required. Please enter your full name to confirm your decision.");
   }
 
+  if (signed_name.trim().length > 255) {
+    return errorResponse("signed_name must be 255 characters or fewer.");
+  }
+
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 

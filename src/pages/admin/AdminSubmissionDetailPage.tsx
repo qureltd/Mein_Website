@@ -103,8 +103,8 @@ export default function AdminSubmissionDetailPage() {
 
   const loadAll = useCallback(async (subId: string) => {
     const [{ data: subData }, { data: crData }] = await Promise.all([
-      supabase.from('submissions').select('*').eq('id', subId).maybeSingle(),
-      supabase.from('consent_requests').select('*').eq('submission_id', subId)
+      supabase.from('submissions').select('id, name, display_name, email, age, type, title, content, media_url, status, is_under_18, guardian_email, guardian_name, admin_notes, rejection_reason, reviewed_at, published_at, consent_scope, consent_required, public_display_name, created_at, updated_at').eq('id', subId).maybeSingle(),
+      supabase.from('consent_requests').select('id, submission_id, guardian_email, consent_token, status, consent_type, consent_scope, signed_name, consent_text_version, created_at, responded_at, withdrawn_at, admin_notes').eq('submission_id', subId)
         .order('created_at', { ascending: false }).limit(1).maybeSingle(),
     ])
     if (!subData) { setNotFound(true); setLoading(false); return }
@@ -192,7 +192,7 @@ export default function AdminSubmissionDetailPage() {
         consent_type: ['story_on_wall', 'use_display_name'],
         consent_scope: sub.consent_scope ?? 'Display submission content and name on the Mein platform.',
       })
-      .select('*')
+      .select('id, submission_id, guardian_email, consent_token, status, consent_type, consent_scope, signed_name, consent_text_version, created_at, responded_at, withdrawn_at, admin_notes')
       .single()
 
     if (crErr || !cr) {
@@ -217,6 +217,17 @@ export default function AdminSubmissionDetailPage() {
       status: 'consent_sent',
       updated_at: new Date().toISOString(),
     }).eq('id', sub.id)
+
+    // Audit log: submission status updated to consent_sent
+    await supabase.from('audit_logs').insert({
+      admin_id: userId,
+      action: 'status_changed_to_consent_sent',
+      entity_type: 'submissions',
+      entity_id: sub.id,
+      previous_status: sub.status,
+      new_status: 'consent_sent',
+      notes: 'Consent required flag set; consent request dispatched',
+    })
 
     // Update local sub state optimistically
     setSub((prev) => prev ? { ...prev, consent_required: true, status: 'consent_sent' } : prev)
@@ -244,7 +255,7 @@ export default function AdminSubmissionDetailPage() {
       .from('consent_requests')
       .update({ status: newStatus })
       .eq('id', cr.id)
-      .select('*')
+      .select('id, submission_id, guardian_email, consent_token, status, consent_type, consent_scope, signed_name, consent_text_version, created_at, responded_at, withdrawn_at, admin_notes')
       .single()
 
     // Audit log: consent request sent (or failed)

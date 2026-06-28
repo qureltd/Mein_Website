@@ -17,7 +17,7 @@ export default function AdminEmailEventsPage() {
 
   async function fetchEvents() {
     setLoading(true)
-    let q = supabase.from('email_events').select('*').order('created_at', { ascending: false }).limit(200)
+    let q = supabase.from('email_events').select('id, recipient_email, recipient_name, email_type, template_alias, related_table, related_id, postmark_message_id, status, error_message, sent_at, created_at').order('created_at', { ascending: false }).limit(200)
     if (statusFilter !== 'all') q = q.eq('status', statusFilter)
     const { data } = await q
     setEvents((data as EmailEvent[]) ?? [])

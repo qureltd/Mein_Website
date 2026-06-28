@@ -116,6 +116,7 @@ const defaultForm = {
   guardianName: '',
   guardianEmail: '',
   message: '',
+  _trap: '',
 }
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
@@ -133,6 +134,7 @@ export default function FutureMePage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (form._trap) return  // honeypot triggered
     setLoading(true)
     setError(null)
     try {
@@ -409,13 +411,16 @@ export default function FutureMePage() {
                   </div>
 
                   <form onSubmit={handleSubmit} className="space-y-4">
+                    <div style={{ display: 'none' }} aria-hidden="true">
+                      <input tabIndex={-1} autoComplete="off" type="text" name="_trap" value={form._trap} onChange={handleChange} />
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">
                           Your Name *
                         </label>
                         <input
-                          type="text" name="name" required value={form.name}
+                          type="text" name="name" required maxLength={100} value={form.name}
                           onChange={handleChange} placeholder="Your name"
                           className="input-field"
                         />
@@ -425,7 +430,7 @@ export default function FutureMePage() {
                           Email *
                         </label>
                         <input
-                          type="email" name="email" required value={form.email}
+                          type="email" name="email" required maxLength={254} value={form.email}
                           onChange={handleChange} placeholder="your@email.com"
                           className="input-field"
                         />
@@ -448,7 +453,7 @@ export default function FutureMePage() {
                         Your Future Me Message *
                       </label>
                       <textarea
-                        name="message" required value={form.message}
+                        name="message" required maxLength={5000} value={form.message}
                         onChange={handleChange} rows={7}
                         placeholder={"Dear [your name],\n\nIn 10 years, you will have..."}
                         className="textarea-field"

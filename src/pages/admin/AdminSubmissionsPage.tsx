@@ -51,7 +51,7 @@ export default function AdminSubmissionsPage() {
 
   async function fetchSubmissions() {
     setLoading(true)
-    let q = supabase.from('submissions').select('*').order('created_at', { ascending: false })
+    let q = supabase.from('submissions').select('id, name, display_name, email, age, type, title, content, media_url, status, is_under_18, guardian_email, guardian_name, admin_notes, rejection_reason, reviewed_at, published_at, consent_scope, consent_required, public_display_name, created_at, updated_at').order('created_at', { ascending: false })
     if (statusFilter !== 'all') q = q.eq('status', statusFilter)
     if (typeFilter !== 'all') q = q.eq('type', typeFilter)
     const { data } = await q

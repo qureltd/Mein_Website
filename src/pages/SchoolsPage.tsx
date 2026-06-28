@@ -15,13 +15,14 @@ const benefits = [
 
 export default function SchoolsPage() {
   const [formType, setFormType] = useState<'school' | 'partner'>('school')
-  const [form, setForm] = useState({ name: '', orgName: '', email: '', role: '', message: '' })
+  const [form, setForm] = useState({ name: '', orgName: '', email: '', role: '', message: '', _trap: '' })
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (form._trap) return  // honeypot triggered
     setLoading(true)
     setError(null)
     const { error: dbError } = await supabase.from('contact_messages').insert({
@@ -149,33 +150,37 @@ export default function SchoolsPage() {
                   ))}
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  <div style={{ display: 'none' }} aria-hidden="true">
+                    <input tabIndex={-1} autoComplete="off" type="text" value={form._trap}
+                      onChange={(e) => setForm(f => ({ ...f, _trap: e.target.value }))} />
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Your Name *</label>
-                      <input type="text" required className="input-field" placeholder="Your full name"
+                      <input type="text" required maxLength={100} className="input-field" placeholder="Your full name"
                         value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} />
                     </div>
                     <div>
                       <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Organisation *</label>
-                      <input type="text" required className="input-field" placeholder="School or organisation name"
+                      <input type="text" required maxLength={200} className="input-field" placeholder="School or organisation name"
                         value={form.orgName} onChange={(e) => setForm(f => ({ ...f, orgName: e.target.value }))} />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Email *</label>
-                      <input type="email" required className="input-field" placeholder="your@email.com"
+                      <input type="email" required maxLength={254} className="input-field" placeholder="your@email.com"
                         value={form.email} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} />
                     </div>
                     <div>
                       <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Your Role</label>
-                      <input type="text" className="input-field" placeholder="e.g. Head of Year, CEO"
+                      <input type="text" maxLength={100} className="input-field" placeholder="e.g. Head of Year, CEO"
                         value={form.role} onChange={(e) => setForm(f => ({ ...f, role: e.target.value }))} />
                     </div>
                   </div>
                   <div>
                     <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Message *</label>
-                    <textarea required rows={5} className="textarea-field"
+                    <textarea required maxLength={3000} rows={5} className="textarea-field"
                       placeholder="Tell us about your school or organisation and how you'd like to work with Mein."
                       value={form.message} onChange={(e) => setForm(f => ({ ...f, message: e.target.value }))} />
                   </div>

@@ -23,7 +23,7 @@ export default function AdminConsentPage() {
     setLoading(true)
     let q = supabase
       .from('consent_requests')
-      .select('*')
+      .select('id, submission_id, guardian_email, consent_token, status, consent_type, consent_scope, signed_name, consent_text_version, created_at, responded_at, withdrawn_at, admin_notes')
       .order('created_at', { ascending: false })
     if (statusFilter !== 'all') q = q.eq('status', statusFilter)
     const { data } = await q

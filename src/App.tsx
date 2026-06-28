@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import Nav from './components/Nav'
 import Footer from './components/Footer'
 import MobileCtaBanner from './components/MobileCtaBanner'
-import AdminRouteGuard from './components/AdminRouteGuard'
+import AdminRouteGuard, { RequireRole } from './components/AdminRouteGuard'
 import AdminLayout from './components/AdminLayout'
 
 import HomePage from './pages/HomePage'
@@ -68,17 +68,17 @@ export default function App() {
       <Routes>
         {/* ── Admin — protected, standalone layout ── */}
         <Route path="/admin" element={<AdminShell><AdminDashboardPage /></AdminShell>} />
-        <Route path="/admin/submissions" element={<AdminShell><AdminSubmissionsPage /></AdminShell>} />
-        <Route path="/admin/submissions/:id" element={<AdminShell><AdminSubmissionDetailPage /></AdminShell>} />
-        <Route path="/admin/contact" element={<AdminShell><AdminContactPage /></AdminShell>} />
-        <Route path="/admin/members" element={<AdminShell><AdminMembersPage /></AdminShell>} />
-        <Route path="/admin/consent" element={<AdminShell><AdminConsentPage /></AdminShell>} />
-        <Route path="/admin/wall" element={<AdminShell><AdminWallPage /></AdminShell>} />
-        <Route path="/admin/shop" element={<AdminShell><AdminShopPage /></AdminShell>} />
-        <Route path="/admin/shop/products" element={<AdminShell><AdminShopProductsPage /></AdminShell>} />
-        <Route path="/admin/shop/drops" element={<AdminShell><AdminShopDropsPage /></AdminShell>} />
-        <Route path="/admin/email-events" element={<AdminShell><AdminEmailEventsPage /></AdminShell>} />
-        <Route path="/admin/settings" element={<AdminShell><AdminSettingsPage /></AdminShell>} />
+        <Route path="/admin/submissions" element={<AdminShell><RequireRole roles={['super_admin','content_reviewer','consent_manager']}><AdminSubmissionsPage /></RequireRole></AdminShell>} />
+        <Route path="/admin/submissions/:id" element={<AdminShell><RequireRole roles={['super_admin','content_reviewer','consent_manager']}><AdminSubmissionDetailPage /></RequireRole></AdminShell>} />
+        <Route path="/admin/contact" element={<AdminShell><RequireRole roles={['super_admin','content_reviewer']}><AdminContactPage /></RequireRole></AdminShell>} />
+        <Route path="/admin/members" element={<AdminShell><RequireRole roles={['super_admin','content_reviewer']}><AdminMembersPage /></RequireRole></AdminShell>} />
+        <Route path="/admin/consent" element={<AdminShell><RequireRole roles={['super_admin','consent_manager']}><AdminConsentPage /></RequireRole></AdminShell>} />
+        <Route path="/admin/wall" element={<AdminShell><RequireRole roles={['super_admin','content_reviewer']}><AdminWallPage /></RequireRole></AdminShell>} />
+        <Route path="/admin/shop" element={<AdminShell><RequireRole roles={['super_admin','shop_manager']}><AdminShopPage /></RequireRole></AdminShell>} />
+        <Route path="/admin/shop/products" element={<AdminShell><RequireRole roles={['super_admin','shop_manager']}><AdminShopProductsPage /></RequireRole></AdminShell>} />
+        <Route path="/admin/shop/drops" element={<AdminShell><RequireRole roles={['super_admin','shop_manager']}><AdminShopDropsPage /></RequireRole></AdminShell>} />
+        <Route path="/admin/email-events" element={<AdminShell><RequireRole roles={['super_admin']}><AdminEmailEventsPage /></RequireRole></AdminShell>} />
+        <Route path="/admin/settings" element={<AdminShell><RequireRole roles={['super_admin']}><AdminSettingsPage /></RequireRole></AdminShell>} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
 
         {/* ── Consent — public token route, placeholder for now ── */}

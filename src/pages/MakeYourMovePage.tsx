@@ -122,6 +122,7 @@ interface FormData {
   guardianName: string
   guardianEmail: string
   consentGiven: boolean
+  _trap: string
 }
 
 const defaultForm: FormData = {
@@ -135,6 +136,7 @@ const defaultForm: FormData = {
   guardianName: '',
   guardianEmail: '',
   consentGiven: false,
+  _trap: '',
 }
 
 // ─── What happens next ────────────────────────────────────────────────────────
@@ -171,7 +173,7 @@ export default function MakeYourMovePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const [notSureForm, setNotSureForm] = useState({ name: '', email: '', interests: '' })
+  const [notSureForm, setNotSureForm] = useState({ name: '', email: '', interests: '', _trap: '' })
   const [notSureDone, setNotSureDone] = useState(false)
   const [notSureLoading, setNotSureLoading] = useState(false)
 
@@ -203,6 +205,7 @@ export default function MakeYourMovePage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (form._trap) return  // honeypot triggered
     setLoading(true)
     setError(null)
     try {
@@ -233,6 +236,7 @@ export default function MakeYourMovePage() {
 
   async function handleNotSureSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (notSureForm._trap) return  // honeypot triggered
     setNotSureLoading(true)
     await supabase.from('submissions').insert({
       name: notSureForm.name,
@@ -390,7 +394,7 @@ export default function MakeYourMovePage() {
                       <button
                         onClick={() => {
                           setNotSureDone(false)
-                          setNotSureForm({ name: '', email: '', interests: '' })
+                          setNotSureForm({ name: '', email: '', interests: '', _trap: '' })
                           setSearchParams({})
                         }}
                         className="mt-6 btn-outline-blue inline-flex text-sm"
@@ -430,12 +434,16 @@ export default function MakeYourMovePage() {
                       <SectionDivider className="mt-5 mb-6" />
 
                       <form onSubmit={handleNotSureSubmit} className="space-y-4">
+                        <div style={{ display: 'none' }} aria-hidden="true">
+                          <input tabIndex={-1} autoComplete="off" type="text" value={notSureForm._trap}
+                            onChange={(e) => setNotSureForm((f) => ({ ...f, _trap: e.target.value }))} />
+                        </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Your Name *</label>
                             <input
                               type="text"
-                              required
+                              required maxLength={100}
                               value={notSureForm.name}
                               onChange={(e) => setNotSureForm((f) => ({ ...f, name: e.target.value }))}
                               placeholder="Your name"
@@ -446,7 +454,7 @@ export default function MakeYourMovePage() {
                             <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Email *</label>
                             <input
                               type="email"
-                              required
+                              required maxLength={254}
                               value={notSureForm.email}
                               onChange={(e) => setNotSureForm((f) => ({ ...f, email: e.target.value }))}
                               placeholder="your@email.com"
@@ -460,7 +468,7 @@ export default function MakeYourMovePage() {
                             <span className="font-normal text-gray-mid">(optional)</span>
                           </label>
                           <textarea
-                            rows={4}
+                            rows={4} maxLength={2000}
                             value={notSureForm.interests}
                             onChange={(e) => setNotSureForm((f) => ({ ...f, interests: e.target.value }))}
                             placeholder="e.g. I love drawing but also want to start a business..."
@@ -543,13 +551,16 @@ export default function MakeYourMovePage() {
                   <SectionDivider className="mb-7" />
 
                   <form onSubmit={handleSubmit} className="space-y-5">
+                    <div style={{ display: 'none' }} aria-hidden="true">
+                      <input tabIndex={-1} autoComplete="off" type="text" name="_trap" value={form._trap} onChange={handleChange} />
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Full Name *</label>
                         <input
                           type="text"
                           name="name"
-                          required
+                          required maxLength={100}
                           value={form.name}
                           onChange={handleChange}
                           placeholder="Your full name"
@@ -564,6 +575,7 @@ export default function MakeYourMovePage() {
                         <input
                           type="text"
                           name="displayName"
+                          maxLength={60}
                           value={form.displayName}
                           onChange={handleChange}
                           placeholder="e.g. @username or first name"
@@ -578,7 +590,7 @@ export default function MakeYourMovePage() {
                         <input
                           type="email"
                           name="email"
-                          required
+                          required maxLength={254}
                           value={form.email}
                           onChange={handleChange}
                           placeholder="your@email.com"
@@ -606,6 +618,7 @@ export default function MakeYourMovePage() {
                       <input
                         type="text"
                         name="title"
+                        maxLength={200}
                         value={form.title}
                         onChange={handleChange}
                         placeholder="Give your submission a title (optional)"
@@ -617,7 +630,7 @@ export default function MakeYourMovePage() {
                       <label className="block text-sm font-sora font-semibold text-charcoal mb-1.5">Your Move *</label>
                       <textarea
                         name="content"
-                        required
+                        required maxLength={5000}
                         value={form.content}
                         onChange={handleChange}
                         rows={6}
@@ -678,7 +691,7 @@ export default function MakeYourMovePage() {
                             <input
                               type="text"
                               name="guardianName"
-                              required={isUnder18}
+                              required={isUnder18} maxLength={100}
                               value={form.guardianName}
                               onChange={handleChange}
                               placeholder="Parent / guardian name"
@@ -690,7 +703,7 @@ export default function MakeYourMovePage() {
                             <input
                               type="email"
                               name="guardianEmail"
-                              required={isUnder18}
+                              required={isUnder18} maxLength={254}
                               value={form.guardianEmail}
                               onChange={handleChange}
                               placeholder="guardian@email.com"
