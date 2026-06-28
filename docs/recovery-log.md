@@ -217,3 +217,36 @@ Completed: —
 Status: Pending
 Started: —
 Completed: —
+## MEIN Midday Checkpoint — Phase 5 Complete — 2026-06-28
+
+### Branch
+feature/mein-phases2-to-10-buildout
+
+### Checkpoint Tag
+checkpoint-mein-midday-20260628-phase5-consent-workflow-complete
+
+### Completed Through
+Phase 5 — Consent workflow and `/consent/:token` form
+
+### Work Completed Since Start Checkpoint
+- Phase 2: Postmark email infrastructure
+- Phase 3: Public forms connected to correct tables
+- Phase 4: Admin shell, auth, and dashboard structure
+- Phase 5: Consent workflow and `/consent/:token` form
+
+### Safety Notes
+- Phase 0 security, RLS, admin protection, and route cleanup should remain intact.
+- Phase 1 foundation tables and storage buckets should remain intact.
+- This checkpoint marks the safe recovery point before moving into Phase 6.
+- Do not begin Phase 6 until the current build/checks are confirmed.
+
+### Checks Run
+- `npm run build`: [pass/fail/not run]
+- `npm run lint`: [pass/fail/not run]
+- Manual QA: [summarize]
+
+### Known Issues
+- [List any known issues or write “None known at this checkpoint.”]
+
+### Next Phase
+Phase 6 — Submission review + Wall publishing workflow
