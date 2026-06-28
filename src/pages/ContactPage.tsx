@@ -1,8 +1,9 @@
-import { useState } from 'react'
-import { ArrowRight, Check, Lightbulb, HelpCircle, Building2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ArrowRight, Check, Lightbulb, HelpCircle, Building2, Sparkles } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
 import { OpenMIcon, HandwrittenAccent, SectionDivider } from '../components/BrandElements'
 import { supabase } from '../lib/supabase'
+import { useSearchParams } from 'react-router-dom'
 
 const contactRoutes = [
   {
@@ -32,14 +33,60 @@ const contactRoutes = [
     iconBg: '#F0FDF4',
     iconColor: '#16A34A',
   },
+  {
+    key: 'creator',
+    icon: Sparkles,
+    title: 'I want to collaborate or support Mein',
+    support: 'For creators, mentors, sponsors, supporters, or anyone who wants to help the movement grow.',
+    subject: 'Collaboration or support enquiry',
+    iconBg: '#F5F0FF',
+    iconColor: '#7C3AED',
+  },
 ]
 
+// Normalise ?type= query param to a route key
+function normalizeTypeParam(raw: string | null): string | null {
+  if (!raw) return null
+  const s = raw.trim().toLowerCase()
+  const aliases: Record<string, string> = {
+    young_person: 'young-person',
+    'young-person': 'young-person',
+    young: 'young-person',
+    youth: 'young-person',
+    parent: 'parent',
+    guardian: 'parent',
+    school: 'school',
+    organisation: 'school',
+    organization: 'school',
+    partner: 'school',
+    creator: 'creator',
+    collaborate: 'creator',
+    collaboration: 'creator',
+    support: 'creator',
+    supporter: 'creator',
+    general: 'creator',
+  }
+  return aliases[s] ?? null
+}
+
 export default function ContactPage() {
+  const [searchParams] = useSearchParams()
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Pre-select tile from ?type= param on mount
+  useEffect(() => {
+    const key = normalizeTypeParam(searchParams.get('type'))
+    if (!key) return
+    const route = contactRoutes.find((r) => r.key === key)
+    if (route) {
+      setSelectedRoute(route.key)
+      setForm((f) => ({ ...f, subject: route.subject }))
+    }
+  }, [searchParams])
 
   function handleRouteSelect(route: typeof contactRoutes[number]) {
     setSelectedRoute(route.key)
@@ -51,6 +98,7 @@ export default function ContactPage() {
     if (key === 'young-person') return 'young_person'
     if (key === 'parent') return 'parent'
     if (key === 'school') return 'school'
+    if (key === 'creator') return 'creator'
     return 'general'
   }
 
@@ -124,7 +172,7 @@ export default function ContactPage() {
                   <p className="text-xs font-sora font-semibold text-gray-mid uppercase tracking-widest mb-4">
                     Who is getting in touch?
                   </p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {contactRoutes.map((route) => {
                       const isSelected = selectedRoute === route.key
                       return (
