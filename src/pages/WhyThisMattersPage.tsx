@@ -175,12 +175,20 @@ export default function WhyThisMattersPage() {
       </section>
 
       {/* ─── THE MEIN APPROACH ───────────────────────────────────────────────── */}
-      <section className="py-14 md:py-20 bg-white">
+      <section className="py-14 md:py-20 bg-white border-t border-gray-support/40">
         <div className="max-w-4xl mx-auto px-5 md:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 items-start">
 
-            {/* Left: intro */}
-            <div className="lg:col-span-2">
+          {/* Bridge line */}
+          <FadeUp>
+            <p className="font-sora text-gray-mid text-sm mb-8">
+              Those changes do not happen by accident. Mein is built around a simple approach.
+            </p>
+          </FadeUp>
+
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+
+            {/* Left: intro + why it works callout */}
+            <div className="lg:col-span-2 flex flex-col gap-5">
               <FadeUp>
                 <SectionDivider />
                 <h2 className="mt-4 font-sora font-extrabold text-2xl md:text-3xl text-charcoal leading-tight">
@@ -191,43 +199,61 @@ export default function WhyThisMattersPage() {
                   should already be.
                 </p>
               </FadeUp>
+
+              {/* Why it works callout */}
+              <FadeUp delay={80}>
+                <div className="rounded-2xl border border-blue-mein/15 bg-blue-pale px-5 py-5">
+                  <p className="font-sora text-[11px] font-bold uppercase tracking-widest text-blue-mein mb-2">
+                    Why it works
+                  </p>
+                  <p className="font-sora text-gray-dark text-sm leading-relaxed">
+                    Young people do not always need a bigger speech. Sometimes they need a smaller
+                    first step, a safer place to share, and someone to believe they can begin.
+                  </p>
+                  <p className="mt-3 font-caveat text-blue-mein text-lg leading-snug">
+                    Start where they are.
+                  </p>
+                </div>
+              </FadeUp>
             </div>
 
-            {/* Right: premium dark principle panel */}
+            {/* Right: principle panel */}
             <div className="lg:col-span-3">
               <FadeUp delay={120}>
-                <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#131927] shadow-2xl p-7 md:p-10">
-                  {/* Watermark — bottom-right, hidden on mobile to reduce clutter */}
-                  <div className="absolute -right-10 -bottom-10 opacity-[0.055] pointer-events-none select-none hidden sm:block">
-                    <OpenMIcon size={220} />
+                <div className="relative overflow-hidden rounded-3xl border border-[#1e2a3a]/60 bg-[#1a2333] shadow-lg p-6 md:p-8">
+                  {/* Watermark — hidden on mobile */}
+                  <div className="absolute -right-8 -bottom-8 opacity-[0.05] pointer-events-none select-none hidden sm:block">
+                    <OpenMIcon size={200} />
                   </div>
 
                   {/* Panel label */}
-                  <div className="relative z-10 mb-7 flex items-center gap-2">
+                  <div className="relative z-10 mb-5 flex items-center gap-2">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1">
                       <span className="h-1.5 w-1.5 rounded-full bg-gold-mein" />
-                      <span className="font-sora text-[10px] font-bold uppercase tracking-[0.12em] text-white/60">
+                      <span className="font-sora text-[10px] font-bold uppercase tracking-[0.12em] text-white/55">
                         Mein principles
                       </span>
                     </span>
                   </div>
 
-                  {/* Principle cards */}
-                  <div className="relative z-10 space-y-2">
-                    {principles.map((p) => (
+                  {/* Principle rows */}
+                  <div className="relative z-10">
+                    {principles.map((p, i) => (
                       <div
                         key={p.num}
-                        className="group flex items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:p-5 hover:bg-white/[0.06] transition-colors"
+                        className={`flex items-start gap-4 py-4 ${
+                          i < principles.length - 1 ? 'border-b border-white/[0.08]' : ''
+                        }`}
                       >
                         {/* Gold number badge */}
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold-mein font-sora text-sm font-black text-charcoal">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold-mein font-sora text-xs font-black text-charcoal">
                           {p.num}
                         </span>
                         <div>
-                          <p className="font-sora font-bold text-white text-sm mb-1 leading-snug">
+                          <p className="font-sora font-bold text-white text-sm mb-0.5 leading-snug">
                             {p.title}
                           </p>
-                          <p className="font-sora text-white/65 text-xs leading-relaxed">{p.body}</p>
+                          <p className="font-sora text-white/60 text-xs leading-relaxed">{p.body}</p>
                         </div>
                       </div>
                     ))}
