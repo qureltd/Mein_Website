@@ -12,7 +12,7 @@ const gains = [
   },
   {
     title: 'Clarity',
-    body: 'They begin to see what they want, what they care about, and what step they can take next.',
+    body: 'They begin to see what they want, what matters, and the next step they can take.',
   },
   {
     title: 'Creativity',
@@ -151,7 +151,7 @@ export default function WhyThisMattersPage() {
             <div className="text-center mb-10">
               <SectionDivider className="mx-auto" />
               <h2 className="mt-4 font-sora font-extrabold text-2xl md:text-3xl text-charcoal">
-                What actually changes.
+                What actually changes
               </h2>
               <p className="mt-2 font-sora text-gray-dark text-base max-w-md mx-auto">
                 Not outcomes on a slide deck. Real shifts in how young people see themselves.
@@ -161,9 +161,9 @@ export default function WhyThisMattersPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {gains.map((gain, i) => (
               <FadeUp key={gain.title} delay={i * 55}>
-                <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow h-full flex flex-col">
+                <div className="group bg-white rounded-2xl p-6 border border-gray-support hover:border-blue-mein/30 shadow-sm hover:shadow-md transition-all duration-200 h-full flex flex-col min-h-[140px]">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-2.5 h-2.5 rounded-full bg-blue-mein flex-shrink-0" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-blue-mein group-hover:bg-gold-mein transition-colors duration-200 flex-shrink-0" />
                     <h3 className="font-sora font-bold text-charcoal text-base">{gain.title}</h3>
                   </div>
                   <p className="font-sora text-gray-dark text-sm leading-relaxed flex-1">{gain.body}</p>
