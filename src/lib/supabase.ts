@@ -67,8 +67,9 @@ export interface ConsentRequest {
   admin_notes: string | null
 }
 
-export type ContactMessageStatus = 'new' | 'read' | 'in_progress' | 'resolved' | 'archived'
+export type ContactMessageStatus = 'new' | 'read' | 'in_progress' | 'waiting' | 'resolved' | 'archived'
 export type ContactType = 'young_person' | 'parent' | 'school' | 'organisation' | 'creator' | 'shop' | 'general'
+export type Priority = 'low' | 'normal' | 'high' | 'urgent'
 
 export interface ContactMessage {
   id: string
@@ -79,11 +80,15 @@ export interface ContactMessage {
   message: string
   status: ContactMessageStatus
   admin_notes: string | null
+  priority: Priority
+  follow_up_required: boolean
+  follow_up_date: string | null
+  resolved_at: string | null
   created_at: string
   updated_at: string
 }
 
-export type JoinInterestStatus = 'new' | 'reviewed' | 'contacted' | 'followed_up' | 'archived'
+export type JoinInterestStatus = 'new' | 'reviewed' | 'contacted' | 'invited' | 'active' | 'followed_up' | 'archived'
 export type JoinPath = 'young_person' | 'parent_guardian' | 'creator' | 'school_partner' | 'supporter'
 
 export interface JoinInterest {
@@ -99,6 +104,10 @@ export interface JoinInterest {
   consent_status: 'not_required' | 'required' | 'pending' | 'received' | 'declined'
   status: JoinInterestStatus
   admin_notes: string | null
+  priority: Priority
+  follow_up_required: boolean
+  follow_up_date: string | null
+  reviewed_at: string | null
   created_at: string
   updated_at: string
 }
