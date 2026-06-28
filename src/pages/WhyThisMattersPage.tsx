@@ -180,8 +180,8 @@ export default function WhyThisMattersPage() {
 
           {/* Bridge line */}
           <FadeUp>
-            <p className="font-sora text-gray-mid text-sm mb-8">
-              Those changes do not happen by accident. Mein is built around a simple approach.
+            <p className="font-sora font-medium text-base text-charcoal/70 mb-6">
+              Those changes do not happen by accident. Mein is built around one simple approach: start where young people are.
             </p>
           </FadeUp>
 
