@@ -250,7 +250,6 @@ export default function ShopPage() {
   const [products, setProducts]           = useState<DisplayProduct[]>([])
   const [heroImg, setHeroImg]             = useState<string>(FALLBACK_HERO_IMG)
   const [productsLoading, setProductsLoading] = useState(true)
-  const [usingFallback, setUsingFallback] = useState(false)
 
   const [notifyProduct, setNotifyProduct] = useState<string | null>(null)
   const [notifyForm, setNotifyForm]       = useState({ name: '', email: '' })
@@ -274,13 +273,11 @@ export default function ShopPage() {
       if (error || !data || data.length === 0) {
         setProducts(FALLBACK_PRODUCTS)
         setHeroImg(FALLBACK_HERO_IMG)
-        setUsingFallback(true)
       } else {
         const displayProducts = (data as DbShopProduct[]).map(dbProductToDisplay)
         setProducts(displayProducts)
         const featuredWithImg = displayProducts.find((p) => p.img)
         if (featuredWithImg) setHeroImg(featuredWithImg.img)
-        setUsingFallback(false)
       }
       setProductsLoading(false)
     }
