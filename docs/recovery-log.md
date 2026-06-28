@@ -224,6 +224,55 @@ Manual Postmark dashboard steps required before live sends:
 
 ---
 
+### Hotfix: Admin Access (joel@meintoday.com cannot log in)
+
+Date: 2026-06-28
+Status: Resolved
+
+Root cause:
+Two compounding issues prevented admin login despite correct credentials:
+
+1. Missing GRANT: The `authenticated` role had no explicit `GRANT SELECT ON admin_users`.
+   PostgreSQL RLS policy alone is not sufficient — the table-level privilege must also exist.
+   The shared Supabase instance did not automatically add this grant when admin_users was
+   created via migration. The anon/authenticated schema ACL only showed USAGE (not SELECT).
+
+2. Silent error swallowing: Both AdminLoginPage.tsx and AdminRouteGuard.tsx called
+   `.maybeSingle()` on admin_users without checking the returned `error`. A permission
+   denied error was treated identically to "no row found", showing "You do not have admin
+   access" with no way to distinguish the real cause.
+
+Changes made:
+
+Migration: supabase/migrations/20260628_admin_users_grant_and_secure_rls.sql
+  - GRANT SELECT ON admin_users TO authenticated (explicit, resolves the privilege gap)
+  - DROP POLICY "select_admin_users" (removed USING (true) — was too permissive)
+  - CREATE POLICY "select_own_admin_user" FOR SELECT TO authenticated
+      USING (lower(email) = lower(auth.jwt() ->> 'email'))
+    Tighter policy: authenticated users see only their own admin_users row
+  - last_login UPDATE deferred to a later migration
+
+src/pages/AdminLoginPage.tsx
+  - admin_users query now destructures { data, error } (previously ignored error)
+  - if adminError: logs to console.error, shows "Admin access check failed" to user
+  - if !adminRecord and no error: shows "You do not have admin access"
+  - error cases are now clearly distinguished
+
+src/components/AdminRouteGuard.tsx
+  - admin_users query now destructures { data, error }
+  - if adminError: logs to console.error (does not expose detail to user)
+  - route guard behavior unchanged: still redirects to /admin/login when not allowed
+
+Security posture:
+  - /admin is still protected by AdminRouteGuard
+  - anon has no SELECT on admin_users (GRANT only covers authenticated)
+  - each admin can only read their own row (tighter than before)
+  - no admin email in frontend code
+  - no RLS bypass
+
+Build: clean
+---
+
 ### Phase 3 — Connect Public Forms to Correct Tables
 
 Status: Pending
