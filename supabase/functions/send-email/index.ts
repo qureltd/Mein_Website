@@ -12,18 +12,20 @@ const corsHeaders = {
 // Maps email_type values (stored in email_events) to Postmark template aliases.
 // Templates must be created in the Postmark dashboard before they can be used.
 const TEMPLATE_ALIASES: Record<string, string> = {
-  consent_request:             "mein-consent-request",
-  consent_confirmation:        "mein-consent-confirmation",
-  consent_declined:            "mein-consent-declined",
-  submission_received:         "mein-submission-received",
-  submission_approved:         "mein-submission-approved",
-  submission_published:        "mein-submission-published",
-  contact_confirmation:        "mein-contact-confirmation",
-  admin_new_contact:           "mein-admin-new-contact",
-  admin_new_submission:        "mein-admin-new-submission",
-  join_confirmation:           "mein-join-confirmation",
-  drop_signup_confirmation:    "mein-drop-signup-confirmation",
-  drop_launch_notification:    "mein-drop-launch-notification",
+  consent_request:                "mein-consent-request",
+  consent_confirmation:           "mein-consent-confirmation",
+  consent_declined:               "mein-consent-declined",
+  submission_received:            "mein-submission-received",
+  future_me_received:             "mein-future-me-received",
+  submission_approved:            "mein-submission-approved",
+  submission_published:           "mein-submission-published",
+  contact_confirmation:           "mein-contact-confirmation",
+  school_enquiry_confirmation:    "mein-school-enquiry-confirmation",
+  admin_new_contact:              "mein-admin-new-contact",
+  admin_new_submission:           "mein-admin-new-submission",
+  join_confirmation:              "mein-join-confirmation",
+  drop_signup_confirmation:       "mein-drop-signup-confirmation",
+  drop_launch_notification:       "mein-drop-launch-notification",
 };
 
 // ── Valid email types (must match email_events CHECK constraint) ──────────────

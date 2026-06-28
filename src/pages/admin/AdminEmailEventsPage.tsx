@@ -48,11 +48,13 @@ export default function AdminEmailEventsPage() {
       </div>
 
       <AdminTable
-        heads={['Type', 'Recipient', 'Template', 'Status', 'Error', 'Sent at']}
+        heads={['Type', 'Recipient', 'Template', 'Status', 'Error', 'Timestamp']}
         loading={loading}
         empty="No email events yet."
       >
-        {events.map((e) => (
+        {events.map((e) => {
+          const timestamp = e.sent_at ?? e.created_at
+          return (
           <tr key={e.id} className="hover:bg-blue-pale/20 transition-colors">
             <td className="px-4 py-3.5">
               <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs font-sora font-medium">
@@ -76,13 +78,19 @@ export default function AdminEmailEventsPage() {
                 <span className="text-xs text-gray-mid font-sora">—</span>
               )}
             </td>
-            <td className="px-4 py-3.5 text-xs text-gray-mid font-sora whitespace-nowrap">
-              {e.sent_at
-                ? new Date(e.sent_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-                : '—'}
+            <td className="px-4 py-3.5 text-xs font-sora whitespace-nowrap">
+              <p className={e.sent_at ? 'text-gray-mid' : 'text-gray-400'}>
+                {timestamp
+                  ? new Date(timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+                  : '—'}
+              </p>
+              {!e.sent_at && timestamp && (
+                <p className="text-[10px] text-gray-400">created</p>
+              )}
             </td>
           </tr>
-        ))}
+          )
+        })}
       </AdminTable>
     </>
   )

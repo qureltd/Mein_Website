@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { ArrowRight, Check, Building2, GraduationCap } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
 import { OpenMIcon, HandwrittenAccent, SectionDivider } from '../components/BrandElements'
-import { supabase } from '../lib/supabase'
 
 const benefits = [
   'Structured youth identity and confidence programmes',
@@ -25,22 +24,34 @@ export default function SchoolsPage() {
     if (form._trap) return  // honeypot triggered
     setLoading(true)
     setError(null)
-    const { error: dbError } = await supabase.from('contact_messages').insert({
-      contact_type: formType === 'school' ? 'school' : 'organisation',
-      name:         form.name,
-      email:        form.email,
-      subject:      formType === 'school' ? 'School or programme enquiry' : 'Partner or sponsor enquiry',
-      message:      `Organisation: ${form.orgName}\nRole: ${form.role || 'Not provided'}\n\n${form.message}`,
-      status:       'new',
-    })
-    setLoading(false)
-    if (dbError) {
-      console.error('[SchoolsPage] contact_messages insert failed:', dbError.message)
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-contact`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY },
+          body: JSON.stringify({
+            contact_type: formType === 'school' ? 'school' : 'organisation',
+            name:     form.name,
+            email:    form.email,
+            subject:  formType === 'school' ? 'School or programme enquiry' : 'Partner or sponsor enquiry',
+            message:  form.message,
+            org_name: form.orgName || undefined,
+            role:     form.role || undefined,
+          }),
+        }
+      )
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        setError(data.error ?? 'Something went wrong. Please try again.')
+        return
+      }
+      setSubmitted(true)
+    } catch {
       setError('Something went wrong. Please try again.')
-      return
+    } finally {
+      setLoading(false)
     }
-    // TODO: Phase 4 — trigger admin_new_contact email via server-side handler
-    setSubmitted(true)
   }
 
   return (
