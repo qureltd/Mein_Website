@@ -176,19 +176,11 @@ export default function MakeYourMovePage() {
   const [notSureLoading, setNotSureLoading] = useState(false)
 
   const formRef = useRef<HTMLDivElement | null>(null)
-  const isFirstMount = useRef(true)
 
   useEffect(() => {
-    if (isFirstMount.current) {
-      isFirstMount.current = false
-      return
-    }
     if (normalizedMove && normalizedMove !== 'unsure') {
       setForm((f) => ({ ...f, moveType: normalizedMove }))
     }
-    requestAnimationFrame(() => {
-      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    })
   }, [normalizedMove]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const isUnder18 = form.age !== '' && parseInt(form.age) < 18
