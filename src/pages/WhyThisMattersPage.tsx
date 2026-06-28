@@ -80,15 +80,17 @@ export default function WhyThisMattersPage() {
             </p>
           </FadeUp>
           <FadeUp delay={200}>
-            <p className="mt-5 text-lg text-gray-dark font-sora leading-relaxed max-w-[520px]">
-              Mein exists because young people do not just need advice about the future. They need spaces
-              where their voice matters, their ideas can become real, and their next move feels possible.
+            <p className="mt-5 text-lg text-gray-dark font-sora leading-relaxed max-w-[480px]">
+              Mein exists because young people need more than advice. They need space to see who they
+              are becoming — and courage to make one move now.
             </p>
           </FadeUp>
           <FadeUp delay={280}>
-            <p className="mt-6 font-caveat text-blue-mein text-2xl md:text-3xl">
-              This is not a programme. It is a movement.
-            </p>
+            <div className="mt-6 inline-block bg-blue-pale border border-blue-mein/20 rounded-xl px-5 py-3">
+              <p className="font-caveat text-blue-mein text-xl md:text-2xl leading-snug">
+                This is not a programme. It is a movement.
+              </p>
+            </div>
           </FadeUp>
         </div>
       </section>
@@ -98,25 +100,46 @@ export default function WhyThisMattersPage() {
         <div className="max-w-4xl mx-auto px-5 md:px-8">
           <FadeUp>
             <SectionDivider />
-            <h2 className="mt-4 font-sora font-extrabold text-2xl md:text-3xl text-charcoal leading-tight">
+            <h2 className="mt-4 font-sora font-extrabold text-2xl md:text-3xl text-charcoal leading-tight mb-8">
               Why this matters now
             </h2>
           </FadeUp>
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-            <FadeUp delay={80}>
-              <p className="font-sora text-gray-dark text-base leading-relaxed">
-                Many young people aged 13–25 feel unseen, directionless, and unsure about who they are
-                becoming. They have access to more information than any previous generation — but less
-                clarity about where they are going and whether anyone is paying attention.
-              </p>
-            </FadeUp>
-            <FadeUp delay={140}>
-              <p className="font-sora text-gray-dark text-base leading-relaxed">
-                They are not waiting to become someone later. They are building right now — or trying to.
-                What they need is not a programme. They need a movement that sees them, makes space for
-                them, and helps them take one real step at a time.
-              </p>
-            </FadeUp>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              {
+                num: '01',
+                title: 'Too many young people feel unseen.',
+                body: 'They are growing up with pressure, noise, and comparison — but not always enough space to be heard.',
+                accent: 'bg-blue-pale border-blue-mein/20',
+                numColor: 'text-blue-mein',
+              },
+              {
+                num: '02',
+                title: 'The future can feel far away.',
+                body: 'Big dreams can feel overwhelming when no one helps you find the next step.',
+                accent: 'bg-[#FFF8E6] border-yellow-200',
+                numColor: 'text-[#C48F00]',
+              },
+              {
+                num: '03',
+                title: 'One move can change momentum.',
+                body: 'When a young person starts, shares, creates, or builds, they begin to see themselves differently.',
+                accent: 'bg-[#F0F5FF] border-blue-mein/20',
+                numColor: 'text-blue-mein',
+              },
+            ].map((item, i) => (
+              <FadeUp key={item.num} delay={i * 70}>
+                <div className={`rounded-2xl border p-6 h-full ${item.accent}`}>
+                  <span className={`font-sora font-black text-[11px] tracking-widest ${item.numColor}`}>
+                    {item.num}
+                  </span>
+                  <h3 className="mt-2 font-sora font-bold text-charcoal text-base leading-snug mb-2">
+                    {item.title}
+                  </h3>
+                  <p className="font-sora text-gray-dark text-sm leading-relaxed">{item.body}</p>
+                </div>
+              </FadeUp>
+            ))}
           </div>
         </div>
       </section>
