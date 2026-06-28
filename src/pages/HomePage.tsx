@@ -185,7 +185,7 @@ export default function HomePage() {
                     Join the Movement
                     <ArrowRight size={16} />
                   </Link>
-                  <Link to="/stories" className="btn-secondary text-base py-4 px-8">
+                  <Link to="/wall" className="btn-secondary text-base py-4 px-8">
                     See the Stories
                   </Link>
                 </div>
@@ -597,7 +597,7 @@ export default function HomePage() {
                 />
               </div>
               <Link
-                to="/stories"
+                to="/wall"
                 className="btn-outline-blue text-white border-white hover:bg-white hover:text-charcoal self-start md:self-auto flex-shrink-0"
               >
                 See the Wall

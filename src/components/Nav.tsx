@@ -6,7 +6,7 @@ const navLinks = [
   { label: 'Start Here', href: '/' },
   { label: 'Make Your Move', href: '/make-your-move' },
   { label: 'Future Me', href: '/future-me' },
-  { label: 'The Wall', href: '/stories' },
+  { label: 'The Wall', href: '/wall' },
   { label: 'Join Mein', href: '/join' },
   { label: 'Shop', href: '/shop' },
 ]
@@ -18,7 +18,7 @@ export default function Nav() {
 
   // Dark hero pages need white nav text before scroll
   const isDarkHero =
-    location.pathname === '/stories' ||
+    location.pathname === '/wall' ||
     location.pathname.startsWith('/stories/') ||
     location.pathname === '/join' ||
     location.pathname === '/shop'

@@ -357,7 +357,7 @@ export default function MakeYourMovePage() {
                   <button onClick={handleReset} className="btn-primary">
                     Make Another Move <ArrowRight size={16} />
                   </button>
-                  <a href="/stories" className="btn-secondary">See Stories</a>
+                  <a href="/wall" className="btn-secondary">See Stories</a>
                 </div>
               </div>
             </FadeUp>
