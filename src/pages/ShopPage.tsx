@@ -1,8 +1,9 @@
-import { useState } from 'react'
-import { ArrowRight, X, Check, Bell } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ArrowRight, X, Check, Bell, ExternalLink } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
 import { OpenMIcon, HandwrittenAccent, SectionDivider, StickerNote } from '../components/BrandElements'
 import { supabase } from '../lib/supabase'
+import type { ShopProduct as DbShopProduct } from '../lib/supabase'
 
 import hoodieImg       from '../assets/shop/Hoodie_Art.png'
 import liveFutureImg   from '../assets/shop/Live_your_future_T.png'
@@ -15,152 +16,229 @@ import capImg          from '../assets/shop/Mein_Black_Cap.png'
 // Default behavior must show the full uploaded image using object-contain.
 // Do not switch to object-cover unless an admin-controlled crop mode is added.
 
-type ShopProduct = {
-  name: string;
-  sub: string;
-  note: string;
-  category: string;
-  label: string;
-  img: string;
-  imgBg: string;
-  darkText: boolean;
-  imageFit?: 'contain' | 'cover';
+type DisplayProduct = {
+  id: string
+  name: string
+  note: string
+  category: string
+  label: string
+  img: string
+  imgBg: string
+  imageFit: 'contain' | 'cover'
+  darkText: boolean
+  external_url: string | null
+  external_platform: string
 }
 
-// ─── Product data — displayed in this exact order ─────────────────────────────
+// ─── Hardcoded fallback products ─────────────────────────────────────────────
+// Used when Supabase returns no visible products.
 
-const products: ShopProduct[] = [
+const FALLBACK_PRODUCTS: DisplayProduct[] = [
   {
+    id: 'fallback-1',
     name: 'Open M Hoodie',
-    sub: 'Big back graphic. Full movement energy.',
     note: 'Built to stand out from behind.',
     category: 'Hoodie',
     label: 'Drop preview',
     img: hoodieImg,
     imgBg: '#EBEBEB',
+    imageFit: 'contain',
     darkText: false,
+    external_url: null,
+    external_platform: 'coming_soon',
   },
   {
+    id: 'fallback-2',
     name: 'Live Your Future Today Tee',
-    sub: 'Future energy in full colour.',
     note: 'A reminder you can wear now.',
     category: 'T-Shirt',
     label: 'Coming soon',
     img: liveFutureImg,
     imgBg: '#111111',
+    imageFit: 'contain',
     darkText: false,
+    external_url: null,
+    external_platform: 'coming_soon',
   },
   {
+    id: 'fallback-3',
     name: "It's All Mein Tee",
-    sub: 'Loud, direct, confident.',
     note: 'For when the tee does the talking.',
     category: 'T-Shirt',
     label: 'Limited run',
     img: itsAllMeinImg,
     imgBg: '#111111',
+    imageFit: 'contain',
     darkText: false,
+    external_url: null,
+    external_platform: 'coming_soon',
   },
   {
+    id: 'fallback-4',
     name: 'MEIN Core Tee',
-    sub: 'The core statement piece.',
     note: 'Clean. Bold. Everyday essential.',
     category: 'T-Shirt',
     label: 'First run',
     img: coreTeeImg,
     imgBg: '#F0EFED',
+    imageFit: 'contain',
     darkText: true,
+    external_url: null,
+    external_platform: 'coming_soon',
   },
   {
+    id: 'fallback-5',
     name: 'MEIN Chest Logo Tee',
-    sub: 'Minimal front mark.',
     note: 'A quiet essential for the movement.',
     category: 'T-Shirt',
     label: 'Early access',
     img: chestLogoImg,
     imgBg: '#1A1A1A',
+    imageFit: 'contain',
     darkText: false,
+    external_url: null,
+    external_platform: 'coming_soon',
   },
   {
+    id: 'fallback-6',
     name: 'Mein Mover Cap',
-    sub: 'Small mark. Big movement.',
     note: 'Low-key but part of the set.',
     category: 'Cap',
     label: 'Drop preview',
     img: capImg,
     imgBg: '#0D0D0D',
+    imageFit: 'contain',
     darkText: false,
+    external_url: null,
+    external_platform: 'coming_soon',
   },
 ]
 
-const labelStyle: Record<string, string> = {
+const FALLBACK_HERO_IMG = hoodieImg
+
+function dbProductToDisplay(p: DbShopProduct): DisplayProduct {
+  const label = p.price_display ?? (p.status === 'live' ? 'Shop now' : p.status === 'coming_soon' ? 'Coming soon' : 'Drop preview')
+  const darkText = p.image_bg ? isLightColor(p.image_bg) : false
+  return {
+    id: p.id,
+    name: p.name,
+    note: p.short_description ?? '',
+    category: p.product_type ?? '',
+    label,
+    img: p.image_url ?? '',
+    imgBg: p.image_bg ?? '#111111',
+    imageFit: p.image_fit ?? 'contain',
+    darkText,
+    external_url: p.external_url ?? null,
+    external_platform: p.external_platform ?? 'coming_soon',
+  }
+}
+
+function isLightColor(hex: string): boolean {
+  const c = hex.replace('#', '')
+  if (c.length !== 6) return false
+  const r = parseInt(c.slice(0, 2), 16)
+  const g = parseInt(c.slice(2, 4), 16)
+  const b = parseInt(c.slice(4, 6), 16)
+  return (r * 299 + g * 587 + b * 114) / 1000 > 150
+}
+
+const LABEL_STYLE: Record<string, string> = {
   'Drop preview': 'bg-gold-mein text-charcoal',
   'Coming soon':  'bg-white/10 text-white border border-white/20 backdrop-blur-sm',
   'Limited run':  'bg-white text-charcoal',
   'First run':    'bg-blue-mein text-white',
   'Early access': 'bg-white/10 text-white border border-white/20 backdrop-blur-sm',
+  'Shop now':     'bg-green-500 text-white',
+  'Sold out':     'bg-white/10 text-white/50 border border-white/10',
 }
 
 // ─── ProductCard ──────────────────────────────────────────────────────────────
-// Image tile owns its own aspect ratio. Text is a sibling below the tile.
-// This ensures the full mockup image is always visible regardless of text length.
 
 function ProductCard({
   product,
   onNotify,
 }: {
-  product: ShopProduct
+  product: DisplayProduct
   onNotify: (name: string) => void
 }) {
+  const hasLink = !!product.external_url
+  const isLive = hasLink
+
   return (
     <article className="group">
-      {/* Image tile — self-contained, aspect ratio lives here not on outer card */}
+      {/* Image tile */}
       <div
         className="relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded-3xl shadow-md"
         style={{ backgroundColor: product.imgBg }}
       >
-        <img
-          src={product.img}
-          alt={product.name}
-          className="h-full w-full object-contain"
-          loading="lazy"
-        />
+        {product.img ? (
+          <img
+            src={product.img}
+            alt={product.name}
+            className={`h-full w-full ${product.imageFit === 'cover' ? 'object-cover' : 'object-contain'}`}
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-16 h-16 rounded-full bg-white/10" />
+        )}
 
         {/* Status label */}
         <div className="absolute left-3 top-3 z-10">
-          <span className={`inline-flex items-center text-[10px] font-sora font-bold px-2.5 py-1 rounded-full uppercase tracking-[0.15em] ${labelStyle[product.label] ?? 'bg-white/10 text-white'}`}>
+          <span className={`inline-flex items-center text-[10px] font-sora font-bold px-2.5 py-1 rounded-full uppercase tracking-[0.15em] ${LABEL_STYLE[product.label] ?? 'bg-white/10 text-white'}`}>
             {product.label}
           </span>
         </div>
 
         {/* Category — top right */}
-        <div className="absolute right-3 top-3 z-10">
-          <span className={`font-sora text-[10px] font-semibold uppercase tracking-widest ${product.darkText ? 'text-gray-mid' : 'text-white/30'}`}>
-            {product.category}
-          </span>
-        </div>
+        {product.category && (
+          <div className="absolute right-3 top-3 z-10">
+            <span className={`font-sora text-[10px] font-semibold uppercase tracking-widest ${product.darkText ? 'text-gray-mid' : 'text-white/30'}`}>
+              {product.category}
+            </span>
+          </div>
+        )}
 
         {/* Hover shimmer */}
         <div className="pointer-events-none absolute inset-0 bg-white/0 transition-colors duration-300 group-hover:bg-white/5" />
       </div>
 
-      {/* Text — below the image tile, never inside it */}
+      {/* Text */}
       <div className="mt-3 px-1">
         <h3 className={`font-caveat text-xl md:text-2xl leading-snug ${product.darkText ? 'text-charcoal' : 'text-white'}`}>
           {product.name}
         </h3>
-        <p className={`mt-0.5 font-sora text-xs leading-snug hidden sm:block ${product.darkText ? 'text-gray-dark' : 'text-white/60'}`}>
-          {product.note}
-        </p>
-        <button
-          onClick={() => onNotify(product.name)}
-          className={`mt-2 inline-flex items-center gap-1.5 text-xs font-sora font-semibold transition-all duration-200 ${
-            product.darkText ? 'text-blue-mein hover:text-blue-dark' : 'text-gold-mein hover:text-gold-light'
-          }`}
-        >
-          <Bell size={11} />
-          Notify me
-          <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
-        </button>
+        {product.note && (
+          <p className={`mt-0.5 font-sora text-xs leading-snug hidden sm:block ${product.darkText ? 'text-gray-dark' : 'text-white/60'}`}>
+            {product.note}
+          </p>
+        )}
+
+        {isLive ? (
+          <a
+            href={product.external_url!}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`mt-2 inline-flex items-center gap-1.5 text-xs font-sora font-semibold transition-all duration-200 ${
+              product.darkText ? 'text-blue-mein hover:text-blue-dark' : 'text-gold-mein hover:text-gold-light'
+            }`}
+          >
+            <ExternalLink size={11} />
+            Shop now
+            <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
+          </a>
+        ) : (
+          <button
+            onClick={() => onNotify(product.name)}
+            className={`mt-2 inline-flex items-center gap-1.5 text-xs font-sora font-semibold transition-all duration-200 ${
+              product.darkText ? 'text-blue-mein hover:text-blue-dark' : 'text-gold-mein hover:text-gold-light'
+            }`}
+          >
+            <Bell size={11} />
+            Notify me
+            <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
+          </button>
+        )}
       </div>
     </article>
   )
@@ -169,6 +247,11 @@ function ProductCard({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ShopPage() {
+  const [products, setProducts]           = useState<DisplayProduct[]>([])
+  const [heroImg, setHeroImg]             = useState<string>(FALLBACK_HERO_IMG)
+  const [productsLoading, setProductsLoading] = useState(true)
+  const [usingFallback, setUsingFallback] = useState(false)
+
   const [notifyProduct, setNotifyProduct] = useState<string | null>(null)
   const [notifyForm, setNotifyForm]       = useState({ name: '', email: '' })
   const [notifyDone, setNotifyDone]       = useState(false)
@@ -177,6 +260,32 @@ export default function ShopPage() {
   const [accessForm, setAccessForm]       = useState({ name: '', email: '' })
   const [accessDone, setAccessDone]       = useState(false)
   const [accessLoading, setAccessLoading] = useState(false)
+
+  useEffect(() => {
+    async function loadProducts() {
+      const { data, error } = await supabase
+        .from('shop_products')
+        .select('id, drop_id, name, slug, short_description, product_type, status, price_display, image_url, image_alt, image_fit, image_bg, featured, sort_order, visible, external_url, external_platform, created_at')
+        .eq('visible', true)
+        .order('featured', { ascending: false })
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: false })
+
+      if (error || !data || data.length === 0) {
+        setProducts(FALLBACK_PRODUCTS)
+        setHeroImg(FALLBACK_HERO_IMG)
+        setUsingFallback(true)
+      } else {
+        const displayProducts = (data as DbShopProduct[]).map(dbProductToDisplay)
+        setProducts(displayProducts)
+        const featuredWithImg = displayProducts.find((p) => p.img)
+        if (featuredWithImg) setHeroImg(featuredWithImg.img)
+        setUsingFallback(false)
+      }
+      setProductsLoading(false)
+    }
+    loadProducts()
+  }, [])
 
   function openNotify(productName: string) {
     setNotifyProduct(productName)
@@ -200,7 +309,6 @@ export default function ShopPage() {
       message:      `User wants to be notified when "${notifyProduct}" drops.`,
       status:       'new',
     })
-    // TODO: Phase 4 — trigger drop_signup_confirmation email via server-side handler
     setNotifyLoading(false)
     setNotifyDone(true)
   }
@@ -216,7 +324,6 @@ export default function ShopPage() {
       message:      'Drop 001 early access signup.',
       status:       'new',
     })
-    // TODO: Phase 4 — trigger drop_signup_confirmation email via server-side handler
     setAccessLoading(false)
     setAccessDone(true)
   }
@@ -289,18 +396,17 @@ export default function ShopPage() {
               </FadeUp>
             </div>
 
-            {/* Right — hoodie hero image */}
+            {/* Right — hero image */}
             <FadeUp delay={220}>
               <div
                 className="relative flex aspect-[4/5] items-center justify-center overflow-hidden rounded-3xl"
-                style={{ backgroundColor: '#EBEBEB' }}
+                style={{ backgroundColor: products[0]?.imgBg ?? '#EBEBEB' }}
               >
                 <img
-                  src={hoodieImg}
-                  alt="Open M Hoodie — Drop 001"
+                  src={heroImg}
+                  alt="Drop 001 hero piece"
                   className="h-full w-full object-contain"
                 />
-                {/* Drop label */}
                 <div className="absolute top-4 left-4">
                   <span className="inline-flex items-center gap-1.5 bg-gold-mein text-charcoal text-[10px] font-sora font-bold px-3 py-1.5 rounded-full uppercase tracking-[0.15em]">
                     Drop 001 — Hero piece
@@ -349,13 +455,19 @@ export default function ShopPage() {
             </div>
           </FadeUp>
 
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5">
-            {products.map((product, i) => (
-              <FadeUp key={product.name} delay={i * 60}>
-                <ProductCard product={product} onNotify={openNotify} />
-              </FadeUp>
-            ))}
-          </div>
+          {productsLoading ? (
+            <div className="flex justify-center py-20">
+              <div className="w-8 h-8 rounded-full border-2 border-gold-mein border-t-transparent animate-spin" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5">
+              {products.map((product, i) => (
+                <FadeUp key={product.id} delay={i * 60}>
+                  <ProductCard product={product} onNotify={openNotify} />
+                </FadeUp>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

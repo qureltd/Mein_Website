@@ -1,24 +1,640 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { ShoppingBag, Package } from 'lucide-react'
-import { supabase, type ShopProduct, type ShopDrop } from '../../lib/supabase'
-import { AdminPageHeader, AdminTable, PlaceholderSection } from '../../components/AdminLayout'
+import { ShoppingBag, Package, Plus, Pencil, Eye, EyeOff, Star, StarOff, ExternalLink, X, AlertTriangle } from 'lucide-react'
+import { supabase, type ShopProduct, type ShopDrop, type ShopProductStatus, type ShopProductPlatform, type ShopDropStatus } from '../../lib/supabase'
+import { AdminPageHeader, StatCard, AdminTable, PlaceholderSection } from '../../components/AdminLayout'
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function slugify(s: string) {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+}
+
+function auditLog(action: string, entity_type: string, entity_id: string, notes?: string) {
+  return supabase.auth.getUser().then(({ data }) =>
+    supabase.from('audit_logs').insert({
+      admin_id: data.user?.id ?? null,
+      action,
+      entity_type,
+      entity_id,
+      previous_status: null,
+      new_status: null,
+      notes: notes ?? null,
+    })
+  )
+}
+
+const PRODUCT_STATUSES: ShopProductStatus[] = ['coming_soon', 'live', 'sold_out', 'hidden', 'archived']
+const PLATFORMS: ShopProductPlatform[] = ['shopify', 'gelato', 'printful', 'external', 'coming_soon']
+const DROP_STATUSES: ShopDropStatus[] = ['draft', 'preview', 'active', 'closed', 'archived']
+const PRODUCT_TYPES = ['hoodie', 't-shirt', 'cap', 'jacket', 'bag', 'accessories', 'other']
+
+const STATUS_COLORS: Record<ShopProductStatus, string> = {
+  coming_soon: 'bg-yellow-50 text-yellow-700',
+  live:        'bg-green-50 text-green-700',
+  sold_out:    'bg-red-50 text-red-700',
+  hidden:      'bg-gray-100 text-gray-600',
+  archived:    'bg-gray-100 text-gray-400',
+}
+
+const DROP_STATUS_COLORS: Record<ShopDropStatus, string> = {
+  draft:    'bg-gray-100 text-gray-600',
+  preview:  'bg-yellow-50 text-yellow-700',
+  active:   'bg-green-50 text-green-700',
+  closed:   'bg-red-50 text-red-700',
+  archived: 'bg-gray-100 text-gray-400',
+}
+
+// ── Product form defaults ─────────────────────────────────────────────────────
+
+type ProductForm = {
+  name: string
+  slug: string
+  short_description: string
+  product_type: string
+  status: ShopProductStatus
+  price_display: string
+  image_url: string
+  image_alt: string
+  image_fit: 'contain' | 'cover'
+  image_bg: string
+  external_url: string
+  external_platform: ShopProductPlatform
+  drop_id: string
+  featured: boolean
+  visible: boolean
+  sort_order: number
+}
+
+const EMPTY_PRODUCT: ProductForm = {
+  name: '', slug: '', short_description: '', product_type: 't-shirt',
+  status: 'coming_soon', price_display: '', image_url: '', image_alt: '',
+  image_fit: 'contain', image_bg: '#F5F5F5', external_url: '',
+  external_platform: 'shopify', drop_id: '', featured: false,
+  visible: false, sort_order: 0,
+}
+
+// ── Drop form defaults ────────────────────────────────────────────────────────
+
+type DropForm = {
+  name: string
+  slug: string
+  description: string
+  status: ShopDropStatus
+  launch_date: string
+  featured: boolean
+  visible: boolean
+  sort_order: number
+}
+
+const EMPTY_DROP: DropForm = {
+  name: '', slug: '', description: '', status: 'draft',
+  launch_date: '', featured: false, visible: false, sort_order: 0,
+}
+
+// ── ProductModal ──────────────────────────────────────────────────────────────
+
+function ProductModal({
+  product,
+  drops,
+  onClose,
+  onSaved,
+}: {
+  product: ShopProduct | null
+  drops: ShopDrop[]
+  onClose: () => void
+  onSaved: () => void
+}) {
+  const isEdit = !!product
+  const [form, setForm] = useState<ProductForm>(() => {
+    if (!product) return EMPTY_PRODUCT
+    return {
+      name:              product.name,
+      slug:              product.slug,
+      short_description: product.short_description ?? '',
+      product_type:      product.product_type ?? 't-shirt',
+      status:            product.status,
+      price_display:     product.price_display ?? '',
+      image_url:         product.image_url ?? '',
+      image_alt:         product.image_alt ?? '',
+      image_fit:         product.image_fit ?? 'contain',
+      image_bg:          product.image_bg ?? '#F5F5F5',
+      external_url:      product.external_url ?? '',
+      external_platform: product.external_platform ?? 'shopify',
+      drop_id:           product.drop_id ?? '',
+      featured:          product.featured,
+      visible:           product.visible,
+      sort_order:        product.sort_order,
+    }
+  })
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  function field(key: keyof ProductForm, value: unknown) {
+    setForm((f) => ({ ...f, [key]: value }))
+    if (key === 'name' && !isEdit) {
+      setForm((f) => ({ ...f, name: value as string, slug: slugify(value as string) }))
+    }
+  }
+
+  async function save() {
+    if (!form.name.trim() || !form.slug.trim()) {
+      setError('Name and slug are required.')
+      return
+    }
+    setSaving(true)
+    setError(null)
+
+    const payload = {
+      name:              form.name.trim(),
+      slug:              form.slug.trim(),
+      short_description: form.short_description.trim() || null,
+      product_type:      form.product_type || null,
+      status:            form.status,
+      price_display:     form.price_display.trim() || null,
+      image_url:         form.image_url.trim() || null,
+      image_alt:         form.image_alt.trim() || null,
+      image_fit:         form.image_fit,
+      image_bg:          form.image_bg.trim() || null,
+      external_url:      form.external_url.trim() || null,
+      external_platform: form.external_platform,
+      drop_id:           form.drop_id || null,
+      featured:          form.featured,
+      visible:           form.visible,
+      sort_order:        Number(form.sort_order),
+      updated_at:        new Date().toISOString(),
+    }
+
+    if (isEdit) {
+      const { error: err } = await supabase.from('shop_products').update(payload).eq('id', product!.id)
+      if (err) { setError(err.message); setSaving(false); return }
+      await auditLog('shop_product_updated', 'shop_products', product!.id, `Updated: ${form.name}`)
+    } else {
+      const { data, error: err } = await supabase.from('shop_products').insert(payload).select('id').single()
+      if (err) { setError(err.message); setSaving(false); return }
+      await auditLog('shop_product_created', 'shop_products', data.id, `Created: ${form.name}`)
+    }
+
+    onSaved()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-t-3xl md:rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl z-10">
+        <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+          <h2 className="font-sora font-bold text-charcoal">{isEdit ? 'Edit Product' : 'New Product'}</h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+            <X size={16} className="text-gray-mid" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-5">
+          {error && (
+            <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm font-sora text-red-700">
+              <AlertTriangle size={14} className="shrink-0" />
+              {error}
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2">
+              <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Name *</label>
+              <input
+                value={form.name}
+                onChange={(e) => field('name', e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
+                placeholder="Open M Hoodie"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Slug *</label>
+              <input
+                value={form.slug}
+                onChange={(e) => field('slug', e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal font-mono focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
+                placeholder="open-m-hoodie"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Product type</label>
+              <select
+                value={form.product_type}
+                onChange={(e) => field('product_type', e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal bg-white focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
+              >
+                {PRODUCT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+
+            <div className="col-span-2">
+              <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Short description</label>
+              <textarea
+                value={form.short_description}
+                onChange={(e) => field('short_description', e.target.value)}
+                rows={2}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal focus:outline-none focus:ring-2 focus:ring-blue-mein/30 resize-none"
+                placeholder="Built for Mein Movers."
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Status</label>
+              <select
+                value={form.status}
+                onChange={(e) => field('status', e.target.value as ShopProductStatus)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal bg-white focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
+              >
+                {PRODUCT_STATUSES.map((s) => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Price label</label>
+              <input
+                value={form.price_display}
+                onChange={(e) => field('price_display', e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
+                placeholder="£39"
+              />
+            </div>
+          </div>
+
+          <div className="border-t border-gray-100 pt-5 space-y-4">
+            <p className="text-xs font-sora font-semibold text-gray-mid uppercase tracking-wide">Image</p>
+            <div>
+              <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Image URL</label>
+              <input
+                value={form.image_url}
+                onChange={(e) => field('image_url', e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal font-mono focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
+                placeholder="/assets/shop/Hoodie_Art.png"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Alt text</label>
+                <input
+                  value={form.image_alt}
+                  onChange={(e) => field('image_alt', e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
+                  placeholder="Open M Hoodie — Drop 001"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Card background</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={form.image_bg || '#F5F5F5'}
+                    onChange={(e) => field('image_bg', e.target.value)}
+                    className="w-10 h-9 rounded border border-gray-200 cursor-pointer p-0.5"
+                  />
+                  <input
+                    value={form.image_bg}
+                    onChange={(e) => field('image_bg', e.target.value)}
+                    className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal font-mono focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
+                    placeholder="#EBEBEB"
+                  />
+                </div>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Image fit</label>
+              <div className="flex gap-3">
+                {(['contain', 'cover'] as const).map((fit) => (
+                  <label key={fit} className="flex items-center gap-1.5 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={form.image_fit === fit}
+                      onChange={() => field('image_fit', fit)}
+                      className="text-blue-mein"
+                    />
+                    <span className="text-sm font-sora text-charcoal">{fit}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            {form.image_url && (
+              <div className="rounded-xl overflow-hidden border border-gray-100" style={{ backgroundColor: form.image_bg || '#F5F5F5', height: 120 }}>
+                <img
+                  src={form.image_url}
+                  alt="Preview"
+                  className={`w-full h-full object-${form.image_fit}`}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="border-t border-gray-100 pt-5 space-y-4">
+            <p className="text-xs font-sora font-semibold text-gray-mid uppercase tracking-wide">External Link</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Platform</label>
+                <select
+                  value={form.external_platform}
+                  onChange={(e) => field('external_platform', e.target.value as ShopProductPlatform)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal bg-white focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
+                >
+                  {PLATFORMS.map((p) => <option key={p} value={p}>{p.replace('_', ' ')}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Drop</label>
+                <select
+                  value={form.drop_id}
+                  onChange={(e) => field('drop_id', e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal bg-white focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
+                >
+                  <option value="">No drop</option>
+                  {drops.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">External URL</label>
+              <input
+                value={form.external_url}
+                onChange={(e) => field('external_url', e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal font-mono focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
+                placeholder="https://mein.myshopify.com/products/open-m-hoodie"
+              />
+              <p className="text-[10px] text-gray-mid font-sora mt-1">Leave blank to show "Coming soon" button.</p>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-100 pt-5">
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Sort order</label>
+                <input
+                  type="number"
+                  value={form.sort_order}
+                  onChange={(e) => field('sort_order', parseInt(e.target.value) || 0)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
+                />
+              </div>
+              <label className="flex flex-col gap-1 cursor-pointer pt-1">
+                <span className="text-xs font-sora font-semibold text-gray-mid">Visible</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <input
+                    type="checkbox"
+                    checked={form.visible}
+                    onChange={(e) => field('visible', e.target.checked)}
+                    className="rounded border-gray-300 text-blue-mein"
+                  />
+                  <span className="text-sm font-sora text-charcoal">Show publicly</span>
+                </div>
+              </label>
+              <label className="flex flex-col gap-1 cursor-pointer pt-1">
+                <span className="text-xs font-sora font-semibold text-gray-mid">Featured</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <input
+                    type="checkbox"
+                    checked={form.featured}
+                    onChange={(e) => field('featured', e.target.checked)}
+                    className="rounded border-gray-300 text-blue-mein"
+                  />
+                  <span className="text-sm font-sora text-charcoal">Feature first</span>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4 flex items-center justify-end gap-3">
+          <button onClick={onClose} className="px-4 py-2 text-sm font-sora font-semibold text-gray-mid hover:text-charcoal transition-colors">
+            Cancel
+          </button>
+          <button
+            onClick={save}
+            disabled={saving}
+            className="px-5 py-2 bg-blue-mein text-white rounded-xl text-sm font-sora font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Create product'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── DropModal ─────────────────────────────────────────────────────────────────
+
+function DropModal({
+  drop,
+  onClose,
+  onSaved,
+}: {
+  drop: ShopDrop | null
+  onClose: () => void
+  onSaved: () => void
+}) {
+  const isEdit = !!drop
+  const [form, setForm] = useState<DropForm>(() => {
+    if (!drop) return EMPTY_DROP
+    return {
+      name:        drop.name,
+      slug:        drop.slug,
+      description: drop.description ?? '',
+      status:      drop.status,
+      launch_date: drop.launch_date ? drop.launch_date.slice(0, 10) : '',
+      featured:    drop.featured,
+      visible:     drop.visible,
+      sort_order:  drop.sort_order,
+    }
+  })
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  function field(key: keyof DropForm, value: unknown) {
+    setForm((f) => ({ ...f, [key]: value }))
+    if (key === 'name' && !isEdit) {
+      setForm((f) => ({ ...f, name: value as string, slug: slugify(value as string) }))
+    }
+  }
+
+  async function save() {
+    if (!form.name.trim() || !form.slug.trim()) {
+      setError('Name and slug are required.')
+      return
+    }
+    setSaving(true)
+    setError(null)
+
+    const payload = {
+      name:        form.name.trim(),
+      slug:        form.slug.trim(),
+      description: form.description.trim() || null,
+      status:      form.status,
+      launch_date: form.launch_date || null,
+      featured:    form.featured,
+      visible:     form.visible,
+      sort_order:  Number(form.sort_order),
+      updated_at:  new Date().toISOString(),
+    }
+
+    if (isEdit) {
+      const { error: err } = await supabase.from('shop_drops').update(payload).eq('id', drop!.id)
+      if (err) { setError(err.message); setSaving(false); return }
+      await auditLog('shop_drop_updated', 'shop_drops', drop!.id, `Updated: ${form.name}`)
+    } else {
+      const { data, error: err } = await supabase.from('shop_drops').insert(payload).select('id').single()
+      if (err) { setError(err.message); setSaving(false); return }
+      await auditLog('shop_drop_created', 'shop_drops', data.id, `Created: ${form.name}`)
+    }
+
+    onSaved()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-t-3xl md:rounded-2xl w-full max-w-md shadow-2xl z-10">
+        <div className="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+          <h2 className="font-sora font-bold text-charcoal">{isEdit ? 'Edit Drop' : 'New Drop'}</h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+            <X size={16} className="text-gray-mid" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-4">
+          {error && (
+            <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm font-sora text-red-700">
+              <AlertTriangle size={14} className="shrink-0" />
+              {error}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Name *</label>
+            <input
+              value={form.name}
+              onChange={(e) => field('name', e.target.value)}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
+              placeholder="Drop 001"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Slug *</label>
+            <input
+              value={form.slug}
+              onChange={(e) => field('slug', e.target.value)}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal font-mono focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
+              placeholder="drop-001"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Description</label>
+            <textarea
+              value={form.description}
+              onChange={(e) => field('description', e.target.value)}
+              rows={3}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal focus:outline-none focus:ring-2 focus:ring-blue-mein/30 resize-none"
+              placeholder="First run. Limited. Built for Mein Movers."
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Status</label>
+              <select
+                value={form.status}
+                onChange={(e) => field('status', e.target.value as ShopDropStatus)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal bg-white focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
+              >
+                {DROP_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Launch date</label>
+              <input
+                type="date"
+                value={form.launch_date}
+                onChange={(e) => field('launch_date', e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Sort order</label>
+            <input
+              type="number"
+              value={form.sort_order}
+              onChange={(e) => field('sort_order', parseInt(e.target.value) || 0)}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
+            />
+          </div>
+
+          <div className="flex gap-6">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.visible}
+                onChange={(e) => field('visible', e.target.checked)}
+                className="rounded border-gray-300 text-blue-mein"
+              />
+              <span className="text-sm font-sora text-charcoal">Visible</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.featured}
+                onChange={(e) => field('featured', e.target.checked)}
+                className="rounded border-gray-300 text-blue-mein"
+              />
+              <span className="text-sm font-sora text-charcoal">Featured</span>
+            </label>
+          </div>
+        </div>
+
+        <div className="border-t border-gray-100 px-6 py-4 flex items-center justify-end gap-3">
+          <button onClick={onClose} className="px-4 py-2 text-sm font-sora font-semibold text-gray-mid hover:text-charcoal transition-colors">
+            Cancel
+          </button>
+          <button
+            onClick={save}
+            disabled={saving}
+            className="px-5 py-2 bg-blue-mein text-white rounded-xl text-sm font-sora font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Create drop'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 // ── Shop Overview ─────────────────────────────────────────────────────────────
 
 export function AdminShopPage() {
-  const [productCount, setProductCount] = useState<number | null>(null)
-  const [dropCount, setDropCount] = useState<number | null>(null)
+  const [stats, setStats] = useState({ total: 0, visible: 0, featured: 0, draft: 0, drops: 0, visibleDrops: 0 })
+  const [recentProducts, setRecentProducts] = useState<ShopProduct[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function load() {
-      const [{ count: pc }, { count: dc }] = await Promise.all([
-        supabase.from('shop_products').select('*', { count: 'exact', head: true }),
-        supabase.from('shop_drops').select('*', { count: 'exact', head: true }),
+      const [{ data: products }, { data: drops }] = await Promise.all([
+        supabase.from('shop_products').select('id, name, visible, featured, status, updated_at').order('updated_at', { ascending: false }),
+        supabase.from('shop_drops').select('id, visible'),
       ])
-      setProductCount(pc ?? 0)
-      setDropCount(dc ?? 0)
+      const ps = (products ?? []) as Pick<ShopProduct, 'id' | 'name' | 'visible' | 'featured' | 'status' | 'updated_at'>[]
+      const ds = (drops ?? []) as Pick<ShopDrop, 'id' | 'visible'>[]
+      setStats({
+        total:        ps.length,
+        visible:      ps.filter((p) => p.visible).length,
+        featured:     ps.filter((p) => p.featured).length,
+        draft:        ps.filter((p) => !p.visible).length,
+        drops:        ds.length,
+        visibleDrops: ds.filter((d) => d.visible).length,
+      })
+      setRecentProducts(ps.slice(0, 5) as ShopProduct[])
       setLoading(false)
     }
     load()
@@ -26,33 +642,42 @@ export function AdminShopPage() {
 
   return (
     <>
-      <AdminPageHeader title="Shop" description="Overview of Mein shop drops and products." />
+      <AdminPageHeader
+        title="Shop"
+        description="Overview of Mein shop drops and products."
+        actions={
+          <Link
+            to="/shop"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-xs font-sora font-semibold text-blue-mein hover:underline"
+          >
+            <ExternalLink size={12} />
+            View public shop
+          </Link>
+        }
+      />
 
-      <div className="mb-6 bg-blue-pale border border-blue-mein/20 rounded-xl px-4 py-3 text-sm font-sora text-blue-mein">
-        Shop product management and Shopify / Gelato / Printful links will be built in Phase 7. This section is read-only.
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+        <StatCard label="Total products" value={loading ? '—' : stats.total} color="blue" />
+        <StatCard label="Visible" value={loading ? '—' : stats.visible} color="green" />
+        <StatCard label="Featured" value={loading ? '—' : stats.featured} color="gold" />
+        <StatCard label="Hidden/draft" value={loading ? '—' : stats.draft} color="gray" />
+        <StatCard label="Total drops" value={loading ? '—' : stats.drops} color="blue" />
+        <StatCard label="Visible drops" value={loading ? '—' : stats.visibleDrops} color="green" />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <div className="bg-white border border-gray-200 rounded-xl p-6 text-center">
-          <p className="font-sora font-bold text-3xl text-charcoal">{loading ? '—' : productCount}</p>
-          <p className="text-sm text-gray-mid font-sora mt-1">Products</p>
-          <Link to="/admin/shop/products" className="mt-3 inline-block text-xs text-blue-mein hover:underline font-sora">View all →</Link>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-xl p-6 text-center">
-          <p className="font-sora font-bold text-3xl text-charcoal">{loading ? '—' : dropCount}</p>
-          <p className="text-sm text-gray-mid font-sora mt-1">Drops</p>
-          <Link to="/admin/shop/drops" className="mt-3 inline-block text-xs text-blue-mein hover:underline font-sora">View all →</Link>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
         {[
           { label: 'Manage Products', href: '/admin/shop/products', icon: Package },
           { label: 'Manage Drops', href: '/admin/shop/drops', icon: ShoppingBag },
+          { label: 'Public Shop', href: '/shop', icon: ExternalLink, external: true },
         ].map((l) => (
           <Link
             key={l.href}
             to={l.href}
+            target={l.external ? '_blank' : undefined}
+            rel={l.external ? 'noopener noreferrer' : undefined}
             className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-5 py-4 font-sora font-semibold text-sm text-charcoal hover:border-blue-mein/50 hover:text-blue-mein transition-colors"
           >
             <l.icon size={16} className="text-gray-mid" />
@@ -60,6 +685,29 @@ export function AdminShopPage() {
           </Link>
         ))}
       </div>
+
+      {recentProducts.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="px-5 py-3 border-b border-gray-100">
+            <p className="text-xs font-sora font-semibold text-gray-mid uppercase tracking-wide">Recently Updated Products</p>
+          </div>
+          {recentProducts.map((p) => (
+            <div key={p.id} className="flex items-center justify-between px-5 py-3 border-b border-gray-50 last:border-0">
+              <p className="font-sora text-sm text-charcoal font-medium">{p.name}</p>
+              <div className="flex items-center gap-2">
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold font-sora ${STATUS_COLORS[p.status]}`}>
+                  {p.status.replace('_', ' ')}
+                </span>
+                {p.visible ? (
+                  <span className="text-[10px] font-sora text-green-600 font-semibold">Live</span>
+                ) : (
+                  <span className="text-[10px] font-sora text-gray-mid">Hidden</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </>
   )
 }
@@ -68,54 +716,179 @@ export function AdminShopPage() {
 
 export function AdminShopProductsPage() {
   const [products, setProducts] = useState<ShopProduct[]>([])
+  const [drops, setDrops] = useState<ShopDrop[]>([])
   const [loading, setLoading] = useState(true)
+  const [modal, setModal] = useState<'create' | ShopProduct | null>(null)
+  const [actionId, setActionId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    async function load() {
-      const { data } = await supabase.from('shop_products').select('id, drop_id, name, slug, product_type, status, price_display, featured, visible, sort_order, created_at').order('sort_order')
-      setProducts((data as ShopProduct[]) ?? [])
-      setLoading(false)
-    }
-    load()
+  const load = useCallback(async () => {
+    const [{ data: ps }, { data: ds }] = await Promise.all([
+      supabase.from('shop_products')
+        .select('id, drop_id, name, slug, short_description, full_description, product_type, status, price_display, shopify_url, gelato_url, printful_url, external_product_url, external_url, external_platform, image_url, image_alt, image_fit, image_bg, image_scale, featured, sort_order, visible, created_at, updated_at')
+        .order('sort_order')
+        .order('created_at', { ascending: false }),
+      supabase.from('shop_drops').select('id, name, slug, description, status, launch_date, featured, hero_product_id, visible, sort_order, created_at, updated_at').order('sort_order'),
+    ])
+    setProducts((ps as ShopProduct[]) ?? [])
+    setDrops((ds as ShopDrop[]) ?? [])
+    setLoading(false)
   }, [])
+
+  useEffect(() => { load() }, [load])
+
+  async function toggleField(product: ShopProduct, field: 'visible' | 'featured') {
+    setActionId(product.id)
+    setError(null)
+    const newVal = !product[field]
+    const { error: err } = await supabase
+      .from('shop_products')
+      .update({ [field]: newVal, updated_at: new Date().toISOString() })
+      .eq('id', product.id)
+    if (err) { setError(err.message); setActionId(null); return }
+    await auditLog(
+      `shop_product_${field}_changed`,
+      'shop_products',
+      product.id,
+      `${field} set to ${newVal}`
+    )
+    setProducts((prev) => prev.map((p) => p.id === product.id ? { ...p, [field]: newVal } : p))
+    setActionId(null)
+  }
+
+  const dropMap = Object.fromEntries(drops.map((d) => [d.id, d.name]))
 
   return (
     <>
-      <AdminPageHeader title="Shop Products" description="All configured shop products." />
-      <div className="mb-4 bg-blue-pale border border-blue-mein/20 rounded-xl px-4 py-3 text-sm font-sora text-blue-mein">
-        Product creation and editing will be built in Phase 7.
-      </div>
+      <AdminPageHeader
+        title="Shop Products"
+        description="Manage visible products, external links, and card display."
+        actions={
+          <button
+            onClick={() => setModal('create')}
+            className="flex items-center gap-1.5 bg-blue-mein text-white px-4 py-2 rounded-xl text-sm font-sora font-semibold hover:bg-blue-700 transition-colors"
+          >
+            <Plus size={14} />
+            New product
+          </button>
+        }
+      />
+
+      {error && (
+        <div className="mb-4 flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm font-sora text-red-700">
+          <AlertTriangle size={14} className="shrink-0" />
+          {error}
+        </div>
+      )}
 
       {products.length === 0 && !loading ? (
         <PlaceholderSection
           icon={Package}
           title="No products yet."
-          note="Products will be added in Phase 7. They will be linked to shop drops and external fulfilment platforms."
+          note="Create your first product using the button above."
         />
       ) : (
-        <AdminTable heads={['Name', 'Type', 'Status', 'Price', 'Visible', 'Featured', 'Sort']} loading={loading}>
-          {products.map((p) => (
-            <tr key={p.id} className="hover:bg-blue-pale/20 transition-colors">
-              <td className="px-4 py-3.5">
-                <p className="font-sora font-medium text-charcoal text-sm">{p.name}</p>
-                <p className="text-xs text-gray-mid font-sora font-mono">{p.slug}</p>
-              </td>
-              <td className="px-4 py-3.5 text-sm text-charcoal font-sora">{p.product_type || '—'}</td>
-              <td className="px-4 py-3.5">
-                <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold font-sora ${
-                  p.status === 'live' ? 'bg-green-50 text-green-700' :
-                  p.status === 'sold_out' ? 'bg-red-50 text-red-700' :
-                  p.status === 'coming_soon' ? 'bg-yellow-50 text-yellow-700' :
-                  'bg-gray-100 text-gray-600'
-                }`}>{p.status.replace('_', ' ')}</span>
-              </td>
-              <td className="px-4 py-3.5 text-sm text-charcoal font-sora">{p.price_display || '—'}</td>
-              <td className="px-4 py-3.5 text-sm font-sora">{p.visible ? <span className="text-green-600">Yes</span> : <span className="text-gray-mid">No</span>}</td>
-              <td className="px-4 py-3.5 text-sm font-sora">{p.featured ? <span className="text-gold-dark">Yes</span> : <span className="text-gray-mid">No</span>}</td>
-              <td className="px-4 py-3.5 text-sm text-charcoal font-sora">{p.sort_order}</td>
-            </tr>
-          ))}
-        </AdminTable>
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-100 bg-gray-50">
+                {['Product', 'Type', 'Status', 'Price', 'Drop', 'Visible', 'Featured', ''].map((h) => (
+                  <th key={h} className="px-4 py-3 text-left text-xs font-sora font-semibold text-gray-mid uppercase tracking-wide">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {loading
+                ? [1, 2, 3].map((n) => (
+                    <tr key={n}>
+                      {Array(8).fill(0).map((_, i) => (
+                        <td key={i} className="px-4 py-3.5"><div className="h-4 bg-gray-100 rounded animate-pulse" /></td>
+                      ))}
+                    </tr>
+                  ))
+                : products.map((p) => (
+                    <tr key={p.id} className={`border-b border-gray-50 last:border-0 hover:bg-blue-pale/20 transition-colors ${!p.visible ? 'opacity-60' : ''}`}>
+                      <td className="px-4 py-3.5 max-w-[180px]">
+                        <div className="flex items-center gap-2.5">
+                          {p.image_url ? (
+                            <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 border border-gray-100" style={{ backgroundColor: p.image_bg ?? '#F5F5F5' }}>
+                              <img src={p.image_url} alt={p.name} className="w-full h-full object-contain" />
+                            </div>
+                          ) : (
+                            <div className="w-9 h-9 rounded-lg bg-gray-100 shrink-0 flex items-center justify-center">
+                              <Package size={14} className="text-gray-400" />
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-sora font-semibold text-charcoal text-sm truncate max-w-[130px]">{p.name}</p>
+                            <p className="text-[10px] text-gray-mid font-sora font-mono truncate max-w-[130px]">{p.slug}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5 text-xs text-gray-dark font-sora">{p.product_type ?? '—'}</td>
+                      <td className="px-4 py-3.5">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold font-sora whitespace-nowrap ${STATUS_COLORS[p.status]}`}>
+                          {p.status.replace('_', ' ')}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 text-sm text-charcoal font-sora whitespace-nowrap">{p.price_display ?? '—'}</td>
+                      <td className="px-4 py-3.5 text-xs text-gray-dark font-sora">{p.drop_id ? dropMap[p.drop_id] ?? '—' : '—'}</td>
+                      <td className="px-4 py-3.5">
+                        <button
+                          onClick={() => toggleField(p, 'visible')}
+                          disabled={actionId === p.id}
+                          title={p.visible ? 'Hide' : 'Make visible'}
+                          className="p-1.5 rounded-lg text-gray-mid hover:text-blue-mein hover:bg-blue-pale transition-colors disabled:opacity-40"
+                        >
+                          {p.visible ? <Eye size={13} className="text-green-600" /> : <EyeOff size={13} />}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <button
+                          onClick={() => toggleField(p, 'featured')}
+                          disabled={actionId === p.id}
+                          title={p.featured ? 'Remove featured' : 'Set featured'}
+                          className="p-1.5 rounded-lg text-gray-mid hover:text-gold-dark hover:bg-yellow-50 transition-colors disabled:opacity-40"
+                        >
+                          {p.featured ? <Star size={13} className="text-gold-dark" /> : <StarOff size={13} />}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <div className="flex items-center gap-1">
+                          {p.external_url && (
+                            <a
+                              href={p.external_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="Open external link"
+                              className="p-1.5 rounded-lg text-gray-mid hover:text-blue-mein hover:bg-blue-pale transition-colors"
+                            >
+                              <ExternalLink size={13} />
+                            </a>
+                          )}
+                          <button
+                            onClick={() => setModal(p)}
+                            className="p-1.5 rounded-lg text-gray-mid hover:text-charcoal hover:bg-gray-100 transition-colors"
+                            title="Edit"
+                          >
+                            <Pencil size={13} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {modal && (
+        <ProductModal
+          product={modal === 'create' ? null : modal}
+          drops={drops}
+          onClose={() => setModal(null)}
+          onSaved={() => { setModal(null); load() }}
+        />
       )}
     </>
   )
@@ -126,54 +899,122 @@ export function AdminShopProductsPage() {
 export function AdminShopDropsPage() {
   const [drops, setDrops] = useState<ShopDrop[]>([])
   const [loading, setLoading] = useState(true)
+  const [modal, setModal] = useState<'create' | ShopDrop | null>(null)
+  const [actionId, setActionId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    async function load() {
-      const { data } = await supabase.from('shop_drops').select('id, name, slug, description, status, launch_date, featured, visible, sort_order, created_at').order('sort_order')
-      setDrops((data as ShopDrop[]) ?? [])
-      setLoading(false)
-    }
-    load()
+  const load = useCallback(async () => {
+    const { data } = await supabase
+      .from('shop_drops')
+      .select('id, name, slug, description, status, launch_date, featured, hero_product_id, visible, sort_order, created_at, updated_at')
+      .order('sort_order')
+      .order('created_at', { ascending: false })
+    setDrops((data as ShopDrop[]) ?? [])
+    setLoading(false)
   }, [])
+
+  useEffect(() => { load() }, [load])
+
+  async function toggleField(drop: ShopDrop, field: 'visible' | 'featured') {
+    setActionId(drop.id)
+    setError(null)
+    const newVal = !drop[field]
+    const { error: err } = await supabase
+      .from('shop_drops')
+      .update({ [field]: newVal, updated_at: new Date().toISOString() })
+      .eq('id', drop.id)
+    if (err) { setError(err.message); setActionId(null); return }
+    await auditLog(`shop_drop_${field}_changed`, 'shop_drops', drop.id, `${field} set to ${newVal}`)
+    setDrops((prev) => prev.map((d) => d.id === drop.id ? { ...d, [field]: newVal } : d))
+    setActionId(null)
+  }
 
   return (
     <>
-      <AdminPageHeader title="Shop Drops" description="Configured drop campaigns." />
-      <div className="mb-4 bg-blue-pale border border-blue-mein/20 rounded-xl px-4 py-3 text-sm font-sora text-blue-mein">
-        Drop creation and launch management will be built in Phase 7.
-      </div>
+      <AdminPageHeader
+        title="Shop Drops"
+        description="Manage drop campaigns and their launch status."
+        actions={
+          <button
+            onClick={() => setModal('create')}
+            className="flex items-center gap-1.5 bg-blue-mein text-white px-4 py-2 rounded-xl text-sm font-sora font-semibold hover:bg-blue-700 transition-colors"
+          >
+            <Plus size={14} />
+            New drop
+          </button>
+        }
+      />
+
+      {error && (
+        <div className="mb-4 flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm font-sora text-red-700">
+          <AlertTriangle size={14} className="shrink-0" />
+          {error}
+        </div>
+      )}
 
       {drops.length === 0 && !loading ? (
         <PlaceholderSection
           icon={ShoppingBag}
           title="No drops yet."
-          note="Shop drops will be configured and managed in Phase 7."
+          note="Create your first drop campaign using the button above."
         />
       ) : (
-        <AdminTable heads={['Name', 'Status', 'Launch date', 'Visible', 'Featured', 'Sort']} loading={loading}>
+        <AdminTable
+          heads={['Name', 'Status', 'Launch date', 'Visible', 'Featured', '']}
+          loading={loading}
+        >
           {drops.map((d) => (
-            <tr key={d.id} className="hover:bg-blue-pale/20 transition-colors">
+            <tr key={d.id} className={`hover:bg-blue-pale/20 transition-colors ${!d.visible ? 'opacity-60' : ''}`}>
               <td className="px-4 py-3.5">
-                <p className="font-sora font-medium text-charcoal text-sm">{d.name}</p>
-                <p className="text-xs text-gray-mid font-sora font-mono">{d.slug}</p>
+                <p className="font-sora font-semibold text-charcoal text-sm">{d.name}</p>
+                <p className="text-[10px] text-gray-mid font-sora font-mono">{d.slug}</p>
               </td>
               <td className="px-4 py-3.5">
-                <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold font-sora ${
-                  d.status === 'active' ? 'bg-green-50 text-green-700' :
-                  d.status === 'preview' ? 'bg-yellow-50 text-yellow-700' :
-                  d.status === 'closed' ? 'bg-red-50 text-red-700' :
-                  'bg-gray-100 text-gray-600'
-                }`}>{d.status}</span>
+                <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold font-sora ${DROP_STATUS_COLORS[d.status]}`}>
+                  {d.status}
+                </span>
               </td>
-              <td className="px-4 py-3.5 text-sm text-charcoal font-sora">
+              <td className="px-4 py-3.5 text-sm text-charcoal font-sora whitespace-nowrap">
                 {d.launch_date ? new Date(d.launch_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
               </td>
-              <td className="px-4 py-3.5 text-sm font-sora">{d.visible ? <span className="text-green-600">Yes</span> : <span className="text-gray-mid">No</span>}</td>
-              <td className="px-4 py-3.5 text-sm font-sora">{d.featured ? <span className="text-gold-dark">Yes</span> : <span className="text-gray-mid">No</span>}</td>
-              <td className="px-4 py-3.5 text-sm text-charcoal font-sora">{d.sort_order}</td>
+              <td className="px-4 py-3.5">
+                <button
+                  onClick={() => toggleField(d, 'visible')}
+                  disabled={actionId === d.id}
+                  className="p-1.5 rounded-lg text-gray-mid hover:text-blue-mein hover:bg-blue-pale transition-colors disabled:opacity-40"
+                >
+                  {d.visible ? <Eye size={13} className="text-green-600" /> : <EyeOff size={13} />}
+                </button>
+              </td>
+              <td className="px-4 py-3.5">
+                <button
+                  onClick={() => toggleField(d, 'featured')}
+                  disabled={actionId === d.id}
+                  className="p-1.5 rounded-lg text-gray-mid hover:text-gold-dark hover:bg-yellow-50 transition-colors disabled:opacity-40"
+                >
+                  {d.featured ? <Star size={13} className="text-gold-dark" /> : <StarOff size={13} />}
+                </button>
+              </td>
+              <td className="px-4 py-3.5">
+                <button
+                  onClick={() => setModal(d)}
+                  className="p-1.5 rounded-lg text-gray-mid hover:text-charcoal hover:bg-gray-100 transition-colors"
+                  title="Edit"
+                >
+                  <Pencil size={13} />
+                </button>
+              </td>
             </tr>
           ))}
         </AdminTable>
+      )}
+
+      {modal && (
+        <DropModal
+          drop={modal === 'create' ? null : modal}
+          onClose={() => setModal(null)}
+          onSaved={() => { setModal(null); load() }}
+        />
       )}
     </>
   )

@@ -129,30 +129,50 @@ export interface AdminUser {
   created_at: string
 }
 
+export type ShopProductStatus = 'coming_soon' | 'live' | 'sold_out' | 'hidden' | 'archived'
+export type ShopProductPlatform = 'shopify' | 'gelato' | 'printful' | 'external' | 'coming_soon'
+
 export interface ShopProduct {
   id: string
   drop_id: string | null
   name: string
   slug: string
   short_description: string | null
+  full_description: string | null
   product_type: string | null
-  status: 'coming_soon' | 'live' | 'sold_out' | 'hidden' | 'archived'
+  status: ShopProductStatus
   price_display: string | null
+  shopify_url: string | null
+  gelato_url: string | null
+  printful_url: string | null
+  external_product_url: string | null
+  external_url: string | null
+  external_platform: ShopProductPlatform
+  image_url: string | null
+  image_alt: string | null
+  image_fit: 'contain' | 'cover'
+  image_bg: string | null
+  image_scale: string | null
   featured: boolean
   visible: boolean
   sort_order: number
   created_at: string
+  updated_at: string
 }
+
+export type ShopDropStatus = 'draft' | 'preview' | 'active' | 'closed' | 'archived'
 
 export interface ShopDrop {
   id: string
   name: string
   slug: string
   description: string | null
-  status: 'draft' | 'preview' | 'active' | 'closed' | 'archived'
+  status: ShopDropStatus
   launch_date: string | null
   featured: boolean
+  hero_product_id: string | null
   visible: boolean
   sort_order: number
   created_at: string
+  updated_at: string
 }
