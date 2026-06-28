@@ -31,8 +31,9 @@ export default function StoryDetailPage() {
 
       const { data, error } = await supabase
         .from('stories')
-        .select('*, submission:submissions(*)')
+        .select('id, title, excerpt, category, author_display_name, featured, published_at, unpublished_at, media_url, submission_id')
         .eq('id', id)
+        .is('unpublished_at', null)
         .maybeSingle()
 
       if (error || !data) {
@@ -79,7 +80,7 @@ export default function StoryDetailPage() {
     )
   }
 
-  const content = story.submission?.content ?? story.excerpt ?? ''
+  const content = story.excerpt ?? ''
   const publishedDate = new Date(story.published_at).toLocaleDateString('en-GB', {
     day: 'numeric', month: 'long', year: 'numeric',
   })

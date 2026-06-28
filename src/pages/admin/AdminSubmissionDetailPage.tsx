@@ -1,7 +1,16 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Clock, Check, X, Archive, ShieldCheck, Send, RefreshCw, Copy, CheckCheck, AlertTriangle } from 'lucide-react'
-import { supabase, type Submission, type SubmissionStatus, type ConsentRequest } from '../../lib/supabase'
+import { ArrowLeft, Clock, Check, X, Archive, ShieldCheck, Send, RefreshCw, Copy, CheckCheck, AlertTriangle, Globe } from 'lucide-react'
+import { supabase, type Submission, type SubmissionStatus, type ConsentRequest, type StoryCategory } from '../../lib/supabase'
+import {
+  PUBLISHABLE_TYPES,
+  SUBMISSION_TYPE_TO_CATEGORY,
+  STORY_CATEGORY_LABELS,
+  checkPublishEligibility,
+  derivePublicDisplayName,
+  derivePublicTitle,
+  derivePublicExcerpt,
+} from '../../lib/publishingRules'
 
 // Submission types that can enter the consent workflow
 const CONSENT_ELIGIBLE_TYPES = ['create', 'speak', 'build', 'represent', 'feature', 'future_me']
@@ -82,6 +91,16 @@ export default function AdminSubmissionDetailPage() {
   const [emailFailed, setEmailFailed] = useState(false)
   const [notFound, setNotFound] = useState(false)
 
+  // Publish form state
+  const [publishTitle, setPublishTitle] = useState('')
+  const [publishExcerpt, setPublishExcerpt] = useState('')
+  const [publishAuthor, setPublishAuthor] = useState('')
+  const [publishCategory, setPublishCategory] = useState<StoryCategory | ''>('')
+  const [publishFeatured, setPublishFeatured] = useState(false)
+  const [publishing, setPublishing] = useState(false)
+  const [publishError, setPublishError] = useState<string | null>(null)
+  const [publishedStoryId, setPublishedStoryId] = useState<string | null>(null)
+
   const loadAll = useCallback(async (subId: string) => {
     const [{ data: subData }, { data: crData }] = await Promise.all([
       supabase.from('submissions').select('*').eq('id', subId).maybeSingle(),
@@ -97,6 +116,43 @@ export default function AdminSubmissionDetailPage() {
   useEffect(() => {
     if (id) loadAll(id)
   }, [id, loadAll])
+
+  // Pre-fill publish form when submission loads
+  useEffect(() => {
+    if (!sub) return
+    setPublishTitle(derivePublicTitle(sub))
+    setPublishExcerpt(derivePublicExcerpt(sub))
+    setPublishAuthor(derivePublicDisplayName(sub))
+    const defaultCategory = SUBMISSION_TYPE_TO_CATEGORY[sub.type] ?? 'youth_stories'
+    setPublishCategory(defaultCategory as StoryCategory)
+  }, [sub?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function publishStory() {
+    if (!sub || !publishTitle.trim() || !publishExcerpt.trim() || !publishAuthor.trim() || !publishCategory) return
+    setPublishing(true)
+    setPublishError(null)
+
+    const { data, error } = await supabase.functions.invoke('publish-story', {
+      body: {
+        submission_id: sub.id,
+        title: publishTitle.trim(),
+        excerpt: publishExcerpt.trim(),
+        author_display_name: publishAuthor.trim(),
+        category: publishCategory,
+        featured: publishFeatured,
+      },
+    })
+
+    if (error || !data?.success) {
+      setPublishError(data?.error ?? error?.message ?? 'Failed to publish story.')
+      setPublishing(false)
+      return
+    }
+
+    setPublishedStoryId(data.story_id)
+    setSub((prev) => prev ? { ...prev, status: 'published' as SubmissionStatus } : prev)
+    setPublishing(false)
+  }
 
   async function updateStatus(status: SubmissionStatus) {
     if (!sub) return
@@ -228,6 +284,9 @@ export default function AdminSubmissionDetailPage() {
   const canApprove = !sub.consent_required || consentApproved
   const isConsentEligible = sub.is_under_18 && CONSENT_ELIGIBLE_TYPES.includes(sub.type)
   const consentLink = consentReq ? `${window.location.origin}/consent/${consentReq.consent_token}` : null
+  const isPublishable = (PUBLISHABLE_TYPES as readonly string[]).includes(sub.type)
+  const eligibility = isPublishable ? checkPublishEligibility(sub, consentReq) : null
+  const showPublishPanel = isPublishable && sub.status === 'approved'
 
   return (
     <>
@@ -395,6 +454,130 @@ export default function AdminSubmissionDetailPage() {
             </div>
           )}
 
+          {/* Prepare for Wall panel — for publishable types when approved */}
+          {showPublishPanel && (
+            <div className="bg-white rounded-xl border border-blue-mein/20 p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Globe size={14} className="text-blue-mein" />
+                <p className="text-xs font-sora font-semibold text-blue-mein uppercase tracking-wide">Prepare for The Wall</p>
+              </div>
+
+              {publishedStoryId ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-green-700 bg-green-50 rounded-lg p-3">
+                    <Check size={14} className="shrink-0" />
+                    <p className="text-xs font-sora font-semibold">Published successfully!</p>
+                  </div>
+                  <Link
+                    to={`/stories/${publishedStoryId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-xs font-sora font-semibold text-blue-mein hover:underline"
+                  >
+                    View on The Wall →
+                  </Link>
+                </div>
+              ) : eligibility && !eligibility.eligible ? (
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <AlertTriangle size={13} className="text-yellow-600 mt-0.5 shrink-0" />
+                    <p className="text-xs font-sora text-yellow-800 leading-relaxed">{eligibility.reason}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {publishError && (
+                    <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-lg p-3">
+                      <AlertTriangle size={13} className="text-red-600 mt-0.5 shrink-0" />
+                      <p className="text-xs font-sora text-red-700">{publishError}</p>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Public title *</label>
+                    <input
+                      type="text"
+                      value={publishTitle}
+                      onChange={(e) => setPublishTitle(e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs font-sora text-charcoal focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Excerpt / display text *</label>
+                    <textarea
+                      value={publishExcerpt}
+                      onChange={(e) => setPublishExcerpt(e.target.value)}
+                      rows={4}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs font-sora text-charcoal focus:outline-none focus:ring-2 focus:ring-blue-mein/30 resize-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Display name *</label>
+                    <input
+                      type="text"
+                      value={publishAuthor}
+                      onChange={(e) => setPublishAuthor(e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs font-sora text-charcoal focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Category *</label>
+                    <select
+                      value={publishCategory}
+                      onChange={(e) => setPublishCategory(e.target.value as StoryCategory)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs font-sora text-charcoal focus:outline-none focus:ring-2 focus:ring-blue-mein/30 bg-white"
+                    >
+                      <option value="">Select category…</option>
+                      {(Object.entries(STORY_CATEGORY_LABELS) as [StoryCategory, string][]).map(([val, label]) => (
+                        <option key={val} value={val}>{label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={publishFeatured}
+                      onChange={(e) => setPublishFeatured(e.target.checked)}
+                      className="rounded border-gray-300 text-blue-mein focus:ring-blue-mein/30"
+                    />
+                    <span className="text-xs font-sora text-charcoal">Feature this story</span>
+                  </label>
+
+                  <button
+                    onClick={publishStory}
+                    disabled={publishing || !publishTitle.trim() || !publishExcerpt.trim() || !publishAuthor.trim() || !publishCategory}
+                    className="w-full flex items-center justify-center gap-2 bg-blue-mein text-white px-4 py-2.5 rounded-lg text-xs font-semibold font-sora hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Globe size={12} />
+                    {publishing ? 'Publishing…' : 'Publish to The Wall'}
+                  </button>
+
+                  <p className="text-[10px] text-gray-mid font-sora leading-relaxed">
+                    Eligibility is re-verified server-side before publishing. This cannot be undone from here — use the Wall Manager to unpublish.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Published story link */}
+          {sub.status === 'published' && !publishedStoryId && (
+            <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Globe size={13} className="text-green-700" />
+                <p className="text-xs font-sora font-semibold text-green-700 uppercase tracking-wide">On The Wall</p>
+              </div>
+              <p className="text-xs font-sora text-green-800 leading-relaxed">
+                This submission is published. Manage it in the{' '}
+                <Link to="/admin/wall" className="font-semibold underline hover:no-underline">Wall Manager</Link>.
+              </p>
+            </div>
+          )}
+
           {/* Actions */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
             <p className="text-xs font-sora font-semibold text-gray-mid uppercase tracking-wide mb-4">Actions</p>
@@ -436,16 +619,6 @@ export default function AdminSubmissionDetailPage() {
                     <span className="ml-auto text-[10px] text-gray-400">Awaiting consent</span>
                   </button>
                 )
-              )}
-              {sub.status === 'approved' && CONSENT_ELIGIBLE_TYPES.includes(sub.type) && (
-                <button
-                  disabled
-                  title="Publishing requires the Phase 6 consent-verified workflow before stories go public."
-                  className="flex items-center gap-2 bg-gray-100 text-gray-400 border border-gray-200 px-3 py-2 rounded-lg text-xs font-semibold font-sora cursor-not-allowed"
-                >
-                  Publish to The Wall
-                  <span className="ml-auto text-[10px] text-gray-400">Phase 6</span>
-                </button>
               )}
               {sub.status !== 'not_approved' && (
                 <button

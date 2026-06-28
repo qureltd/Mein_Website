@@ -49,7 +49,6 @@ export interface Story {
   updated_at: string
   admin_notes: string | null
   unpublished_at: string | null
-  submission?: Submission
 }
 
 export interface ConsentRequest {

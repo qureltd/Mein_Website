@@ -164,7 +164,8 @@ export default function StoriesPage() {
       setLoading(true)
       let query = supabase
         .from('stories')
-        .select('*')
+        .select('id, title, excerpt, category, author_display_name, featured, published_at, media_url, submission_id')
+        .is('unpublished_at', null)
         .order('published_at', { ascending: false })
 
       const dbCategory = FILTER_TO_DB[filter]
