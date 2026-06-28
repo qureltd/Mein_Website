@@ -21,7 +21,7 @@ import CommunityRulesPage from './pages/CommunityRulesPage'
 import ContactPage from './pages/ContactPage'
 import PrivacyPage, { TermsPage } from './pages/LegalPages'
 import AdminLoginPage from './pages/AdminLoginPage'
-import ConsentPlaceholderPage from './pages/ConsentPlaceholderPage'
+import ConsentPage from './pages/ConsentPage'
 
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import AdminSubmissionsPage from './pages/admin/AdminSubmissionsPage'
@@ -86,7 +86,7 @@ export default function App() {
           path="/consent/:token"
           element={
             <SiteLayout>
-              <ConsentPlaceholderPage />
+              <ConsentPage />
             </SiteLayout>
           }
         />

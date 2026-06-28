@@ -28,6 +28,7 @@ export interface Submission {
   reviewed_at: string | null
   published_at: string | null
   consent_scope: string | null
+  consent_required: boolean
   public_display_name: string | null
   created_at: string
   updated_at: string
@@ -56,7 +57,7 @@ export interface ConsentRequest {
   submission_id: string
   guardian_email: string
   consent_token: string
-  status: 'pending' | 'approved' | 'declined'
+  status: 'pending' | 'sent' | 'approved' | 'declined' | 'withdrawn'
   consent_type: string[] | null
   consent_scope: string | null
   signed_name: string | null
