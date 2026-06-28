@@ -64,24 +64,6 @@ export default function AdminSubmissionDetailPage() {
     setActionLoading(false)
   }
 
-  async function publishAsStory() {
-    if (!sub) return
-    setActionLoading(true)
-    const categoryMap: Record<string, string> = {
-      create: 'creative_submissions', speak: 'mein_mover_videos',
-      build: 'youth_stories', represent: 'youth_stories',
-      feature: 'youth_stories', future_me: 'future_self_letters',
-    }
-    await supabase.from('stories').insert({
-      submission_id: sub.id,
-      title: sub.title || `Submission by ${sub.display_name || sub.name}`,
-      excerpt: sub.content.slice(0, 200),
-      category: categoryMap[sub.type] ?? 'youth_stories',
-      author_display_name: sub.display_name || sub.name,
-    })
-    await updateStatus('published')
-  }
-
   if (loading) return (
     <div className="flex justify-center py-20">
       <div className="w-7 h-7 rounded-full border-2 border-blue-mein border-t-transparent animate-spin" />
@@ -206,12 +188,12 @@ export default function AdminSubmissionDetailPage() {
               )}
               {sub.status === 'approved' && ['create', 'speak', 'build', 'represent', 'feature'].includes(sub.type) && (
                 <button
-                  onClick={publishAsStory}
-                  disabled={actionLoading}
-                  className="flex items-center gap-2 bg-blue-mein text-white px-3 py-2 rounded-lg text-xs font-semibold font-sora hover:bg-blue-700 transition-colors"
+                  disabled
+                  title="Publishing requires the Phase 6 consent-verified workflow before stories go public."
+                  className="flex items-center gap-2 bg-gray-100 text-gray-400 border border-gray-200 px-3 py-2 rounded-lg text-xs font-semibold font-sora cursor-not-allowed"
                 >
                   Publish to The Wall
-                  <span className="ml-auto text-[10px] text-white/60">Phase 6</span>
+                  <span className="ml-auto text-[10px] text-gray-400">Phase 6</span>
                 </button>
               )}
               {sub.status !== 'not_approved' && (
