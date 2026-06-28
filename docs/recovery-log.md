@@ -148,11 +148,79 @@ Files changed in Phase 1:
 
 ### Phase 2 — Postmark Email Infrastructure
 
-Status: In progress
+Status: Completed
 Started: 2026-06-28
-Completed: —
+Completed: 2026-06-28
 
-Changes: (to be filled in after completion)
+Changes:
+- Audited existing project: no prior email provider, no prior Edge Functions, no Postmark secret present
+- Created Supabase Edge Function: `send-email` (deployed ACTIVE, verifyJWT: true)
+  - File: `supabase/functions/send-email/index.ts`
+  - Accepts POST with: email_type, recipient_email, recipient_name, template_alias (optional override),
+    template_data (optional), related_table (optional), related_id (optional), dry_run (optional)
+  - Validates: email_type (against 12-value allowlist), recipient_email format, template resolution
+  - Uses SUPABASE_SERVICE_ROLE_KEY (server-side only) to write to email_events table
+  - Reads POSTMARK_SERVER_TOKEN from secrets only — never exposed to frontend
+  - Reads POSTMARK_FROM_EMAIL (default: hello@mein.world) and POSTMARK_MESSAGE_STREAM from secrets
+  - Dry run mode: logs email_events row, skips Postmark call, returns dry_run: true
+  - Full send: inserts pending row → calls Postmark template API → updates to sent/failed
+  - Stores postmark_message_id on success; stores error_message on failure
+  - Returns only safe error messages to callers; internal errors logged via console.error only
+  - Missing POSTMARK_SERVER_TOKEN: returns safe 500 and logs failed event
+  - Unknown template alias (Postmark 422): surfaces safe template error to caller
+
+Secrets required (to be added via Supabase dashboard or secrets manager):
+  - POSTMARK_SERVER_TOKEN — required for live sends; function degrades safely without it
+  - POSTMARK_FROM_EMAIL — optional, defaults to hello@mein.world
+  - POSTMARK_MESSAGE_STREAM — optional, omitted from Postmark payload if not set
+  - ADMIN_NOTIFICATION_EMAIL — reserved for Phase 4/5 use; not used in Phase 2
+
+Email type → template alias map (templates must be created in Postmark dashboard):
+  - consent_request          → mein-consent-request
+  - consent_confirmation     → mein-consent-confirmation
+  - consent_declined         → mein-consent-declined
+  - submission_received      → mein-submission-received
+  - submission_approved      → mein-submission-approved
+  - submission_published     → mein-submission-published
+  - contact_confirmation     → mein-contact-confirmation
+  - admin_new_contact        → mein-admin-new-contact
+  - admin_new_submission     → mein-admin-new-submission
+  - join_confirmation        → mein-join-confirmation
+  - drop_signup_confirmation → mein-drop-signup-confirmation
+  - drop_launch_notification → mein-drop-launch-notification
+
+Security/access:
+  - verifyJWT: true — only authenticated callers (admin or trusted server) can invoke
+  - Public forms do NOT call send-email directly in Phase 2
+  - Arbitrary email dispatch is admin/server-only to prevent abuse
+
+Test (curl dry_run example — requires valid JWT):
+  curl -X POST https://bjimkxrangfaiwofrzkf.supabase.co/functions/v1/send-email \
+    -H "Authorization: Bearer <admin-jwt>" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "email_type": "submission_received",
+      "recipient_email": "test@example.com",
+      "recipient_name": "Test Person",
+      "template_data": { "submission_type": "future_me" },
+      "dry_run": true
+    }'
+
+Verification results:
+  - send-email deployed ACTIVE in Supabase Edge Functions
+  - email_events insert/update cycle tested and confirmed (insert pending → update sent with dry_run marker)
+  - No POSTMARK_ string anywhere in frontend src/ code
+  - email_events table accepts all fields the function writes
+  - Build: clean (pre-existing chunk size warning only)
+  - No public page or form behavior changed
+
+Manual Postmark dashboard steps required before live sends:
+  1. Create a Postmark account and server at postmarkapp.com
+  2. Add sender domain/email (must match POSTMARK_FROM_EMAIL, e.g. hello@mein.world)
+  3. Verify sender domain DNS records in Postmark
+  4. Create each of the 12 template aliases listed above
+  5. Set POSTMARK_SERVER_TOKEN secret in Supabase (dashboard → Settings → Edge Functions → Secrets)
+  6. Optionally set POSTMARK_FROM_EMAIL and POSTMARK_MESSAGE_STREAM
 
 ---
 
