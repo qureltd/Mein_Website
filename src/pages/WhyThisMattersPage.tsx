@@ -220,17 +220,12 @@ export default function WhyThisMattersPage() {
             {/* Right: principle panel */}
             <div className="lg:col-span-3">
               <FadeUp delay={120}>
-                <div className="relative overflow-hidden rounded-3xl border border-[#1e2a3a]/60 bg-[#1a2333] shadow-lg p-6 md:p-8">
-                  {/* Watermark — hidden on mobile */}
-                  <div className="absolute -right-8 -bottom-8 opacity-[0.05] pointer-events-none select-none hidden sm:block">
-                    <OpenMIcon size={200} />
-                  </div>
-
+                <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#1c2638] shadow-md p-6 md:p-8">
                   {/* Panel label */}
                   <div className="relative z-10 mb-5 flex items-center gap-2">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1">
                       <span className="h-1.5 w-1.5 rounded-full bg-gold-mein" />
-                      <span className="font-sora text-[10px] font-bold uppercase tracking-[0.12em] text-white/55">
+                      <span className="font-sora text-[10px] font-bold uppercase tracking-[0.12em] text-white/50">
                         Mein principles
                       </span>
                     </span>
@@ -242,11 +237,11 @@ export default function WhyThisMattersPage() {
                       <div
                         key={p.num}
                         className={`flex items-start gap-4 py-4 ${
-                          i < principles.length - 1 ? 'border-b border-white/[0.08]' : ''
+                          i < principles.length - 1 ? 'border-b border-white/[0.07]' : ''
                         }`}
                       >
-                        {/* Gold number badge */}
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold-mein font-sora text-xs font-black text-charcoal">
+                        {/* Soft blue/white number badge */}
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-blue-mein/30 bg-blue-mein/15 font-sora text-xs font-bold text-blue-light">
                           {p.num}
                         </span>
                         <div>
