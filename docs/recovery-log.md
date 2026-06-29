@@ -435,3 +435,45 @@ Phase 5 — Consent workflow and `/consent/:token` form
 
 ### Next Phase
 Phase 6 — Submission review + Wall publishing workflow
+## MEIN End-of-Day Checkpoint — 2026-06-28
+
+### Branch
+feature/mein-phases2-to-10-buildout
+
+### End-of-Day Tag
+checkpoint-mein-eod-20260628-phase10-final-qa-release
+
+### Completed Today
+- Phase 2: Postmark email infrastructure
+- Phase 3: Public forms connected to correct tables
+- Phase 4: Admin shell, auth, and dashboard structure
+- Phase 5: Consent workflow and /consent/:token form
+- Phase 6: Submission review + Wall publishing workflow
+- Phase 7: Shop product manager + Shopify link-out setup
+- Phase 8: Contact messages + members/join interests admin sections
+- Phase 9: Hardening, roles, audit logs, exports, and QA
+- Phase 10: Final QA, cleanup, documentation, and release readiness checkpoint
+
+### Key Checkpoints Created Today
+- checkpoint-mein-start-20260628-phase2-postmark
+- checkpoint-mein-phase5-consent-complete
+- checkpoint-mein-midday-20260628-phase5-synced-after-merge
+- checkpoint-mein-phase7-shop-manager-complete
+- checkpoint-mein-phase8-contact-join-ops-complete
+- checkpoint-mein-phase9-hardening-qa-complete
+- checkpoint-mein-eod-20260628-phase10-final-qa-release
+
+### Checks
+- npm run build: pass
+- Security/RLS audit: completed
+- Admin role enforcement: completed
+- Public form hardening: completed
+- Launch readiness review: completed
+
+### Known Issues / Follow-Up
+- Create all required Postmark templates before live email sending.
+- Consider post-launch rate limiting for public forms.
+- Consider future code-splitting for large JS/image bundle warning.
+
+### Recovery Point
+This checkpoint marks the safe end-of-day recovery point after MEIN Phases 2 through 10 work.
