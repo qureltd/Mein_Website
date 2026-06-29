@@ -143,5 +143,34 @@ Deno.serve(async (req: Request) => {
     console.error("Email send failed (non-fatal):", emailErr);
   }
 
+  // Admin alert — only if ADMIN_ALERT_EMAIL is configured
+  const adminEmail = Deno.env.get("ADMIN_ALERT_EMAIL");
+  if (adminEmail) {
+    const siteUrlForAdmin = Deno.env.get("SITE_URL") ?? "https://mein.world";
+    try {
+      await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${serviceRoleKey}`,
+          "x-client-info": "submit-contact/1.0",
+        },
+        body: JSON.stringify({
+          email_type: "admin_new_contact",
+          recipient_email: adminEmail,
+          template_data: {
+            admin_contact_url: `${siteUrlForAdmin}/admin/contact`,
+            sender_name: name?.trim() || undefined,
+            contact_type: contact_type ?? "general",
+          },
+          related_table: "contact_messages",
+          related_id: inserted.id,
+        }),
+      });
+    } catch (adminEmailErr) {
+      console.error("Admin contact alert failed (non-fatal):", adminEmailErr);
+    }
+  }
+
   return ok({ id: inserted.id });
 });
