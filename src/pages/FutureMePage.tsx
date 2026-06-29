@@ -7,7 +7,6 @@ import {
   OpenMIcon,
   MeinTagBadge,
 } from '../components/BrandElements'
-import { supabase } from '../lib/supabase'
 
 import futureMePortal   from '../assets/Portal_Icon.png'
 import futureMeNoteCard from '../assets/Future_Me_Letter.png'
@@ -140,23 +139,29 @@ export default function FutureMePage() {
     try {
       const age     = parseInt(form.age) || null
       const under18 = age !== null && age < 18
-      const { error: dbError } = await supabase.from('submissions').insert({
-        name: form.name,
-        email: form.email,
-        age,
-        type: 'future_me',
-        title: 'Future Me Message',
-        content: form.message,
-        status: 'received',
-        is_under_18: under18,
-        guardian_name:  under18 ? form.guardianName  : null,
-        guardian_email: under18 ? form.guardianEmail : null,
-      })
-      if (dbError) throw dbError
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-submission`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY },
+          body: JSON.stringify({
+            name:           form.name,
+            email:          form.email,
+            age:            age ?? undefined,
+            type:           'future_me',
+            title:          'Future Me Message',
+            content:        form.message,
+            guardian_name:  under18 ? form.guardianName  : undefined,
+            guardian_email: under18 ? form.guardianEmail : undefined,
+          }),
+        }
+      )
+      const data = await res.json()
+      if (!res.ok || !data.success) throw new Error(data.error ?? 'Submission failed.')
       setSubmitted(true)
-    } catch (err) {
+    } catch (submitErr) {
       setError('Something went wrong. Please try again.')
-      console.error(err)
+      console.error(submitErr)
     } finally {
       setLoading(false)
     }

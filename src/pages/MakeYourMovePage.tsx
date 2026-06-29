@@ -8,7 +8,6 @@ import {
   SectionDivider,
   ConsentBadge,
 } from '../components/BrandElements'
-import { supabase } from '../lib/supabase'
 
 // ─── Move config ─────────────────────────────────────────────────────────────
 
@@ -211,24 +210,30 @@ export default function MakeYourMovePage() {
     try {
       const age = parseInt(form.age) || null
       const under18 = age !== null && age < 18
-      const { error: dbError } = await supabase.from('submissions').insert({
-        name: form.name,
-        display_name: form.displayName || null,
-        email: form.email,
-        age,
-        type: form.moveType,
-        title: form.title || null,
-        content: form.content,
-        is_under_18: under18,
-        guardian_email: under18 ? form.guardianEmail : null,
-        guardian_name: under18 ? form.guardianName : null,
-        status: 'received',
-      })
-      if (dbError) throw dbError
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-submission`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY },
+          body: JSON.stringify({
+            name:           form.name,
+            display_name:   form.displayName || undefined,
+            email:          form.email,
+            age:            age ?? undefined,
+            type:           form.moveType,
+            title:          form.title || undefined,
+            content:        form.content,
+            guardian_name:  under18 ? form.guardianName  : undefined,
+            guardian_email: under18 ? form.guardianEmail : undefined,
+          }),
+        }
+      )
+      const data = await res.json()
+      if (!res.ok || !data.success) throw new Error(data.error ?? 'Submission failed.')
       setSubmitted(true)
-    } catch (err) {
+    } catch (submitErr) {
       setError('Something went wrong. Please try again.')
-      console.error(err)
+      console.error(submitErr)
     } finally {
       setLoading(false)
     }
@@ -238,17 +243,27 @@ export default function MakeYourMovePage() {
     e.preventDefault()
     if (notSureForm._trap) return  // honeypot triggered
     setNotSureLoading(true)
-    await supabase.from('submissions').insert({
-      name: notSureForm.name,
-      email: notSureForm.email,
-      type: 'contact',
-      title: 'Not sure yet — help me find my move',
-      content: notSureForm.interests || 'No details provided.',
-      status: 'received',
-      is_under_18: false,
-    })
-    setNotSureLoading(false)
-    setNotSureDone(true)
+    try {
+      await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-submission`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY },
+          body: JSON.stringify({
+            name:    notSureForm.name,
+            email:   notSureForm.email,
+            type:    'contact',
+            title:   'Not sure yet — help me find my move',
+            content: notSureForm.interests || 'No details provided.',
+          }),
+        }
+      )
+    } catch {
+      // Non-fatal — show done state regardless
+    } finally {
+      setNotSureLoading(false)
+      setNotSureDone(true)
+    }
   }
 
   return (

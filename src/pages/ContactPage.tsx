@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { ArrowRight, Check, Lightbulb, HelpCircle, Building2, Sparkles } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
 import { OpenMIcon, HandwrittenAccent, SectionDivider } from '../components/BrandElements'
-import { supabase } from '../lib/supabase'
 import { useSearchParams } from 'react-router-dom'
 
 const contactRoutes = [
@@ -107,22 +106,32 @@ export default function ContactPage() {
     if (form._trap) return  // honeypot triggered — silently ignore
     setLoading(true)
     setError(null)
-    const { error: dbError } = await supabase.from('contact_messages').insert({
-      contact_type: contactTypeFromRoute(selectedRoute),
-      name:         form.name,
-      email:        form.email,
-      subject:      form.subject || null,
-      message:      form.message,
-      status:       'new',
-    })
-    setLoading(false)
-    if (dbError) {
-      console.error('[ContactPage] contact_messages insert failed:', dbError.message)
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-contact`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY },
+          body: JSON.stringify({
+            contact_type: contactTypeFromRoute(selectedRoute),
+            name:    form.name,
+            email:   form.email,
+            subject: form.subject || undefined,
+            message: form.message,
+          }),
+        }
+      )
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        setError(data.error ?? 'Something went wrong. Please try again.')
+        return
+      }
+      setSubmitted(true)
+    } catch {
       setError('Something went wrong. Please try again.')
-      return
+    } finally {
+      setLoading(false)
     }
-    // TODO: Phase 4 — trigger contact_confirmation + admin_new_contact emails via server-side handler
-    setSubmitted(true)
   }
 
   return (

@@ -5,6 +5,9 @@ import { OpenMIcon, HandwrittenAccent, SectionDivider, StickerNote } from '../co
 import { supabase } from '../lib/supabase'
 import type { ShopProduct as DbShopProduct } from '../lib/supabase'
 
+const SUBMIT_CONTACT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-contact`
+const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
+
 import hoodieImg       from '../assets/shop/Hoodie_Art.png'
 import liveFutureImg   from '../assets/shop/Live_your_future_T.png'
 import itsAllMeinImg   from '../assets/shop/it_all_mein_black_tee.png'
@@ -298,31 +301,47 @@ export default function ShopPage() {
   async function handleNotify(e: React.FormEvent) {
     e.preventDefault()
     setNotifyLoading(true)
-    await supabase.from('contact_messages').insert({
-      contact_type: 'shop',
-      name:         notifyForm.name || null,
-      email:        notifyForm.email,
-      subject:      `Drop notification: ${notifyProduct}`,
-      message:      `User wants to be notified when "${notifyProduct}" drops.`,
-      status:       'new',
-    })
-    setNotifyLoading(false)
-    setNotifyDone(true)
+    try {
+      await fetch(SUBMIT_CONTACT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY },
+        body: JSON.stringify({
+          contact_type: 'shop',
+          name:    notifyForm.name || undefined,
+          email:   notifyForm.email,
+          subject: `Drop notification: ${notifyProduct}`,
+          message: `User wants to be notified when "${notifyProduct}" drops.`,
+        }),
+      })
+    } catch {
+      // Non-fatal — show done state regardless
+    } finally {
+      setNotifyLoading(false)
+      setNotifyDone(true)
+    }
   }
 
   async function handleAccessSubmit(e: React.FormEvent) {
     e.preventDefault()
     setAccessLoading(true)
-    await supabase.from('contact_messages').insert({
-      contact_type: 'shop',
-      name:         accessForm.name || null,
-      email:        accessForm.email,
-      subject:      'Drop 001 — early access',
-      message:      'Drop 001 early access signup.',
-      status:       'new',
-    })
-    setAccessLoading(false)
-    setAccessDone(true)
+    try {
+      await fetch(SUBMIT_CONTACT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY },
+        body: JSON.stringify({
+          contact_type: 'shop',
+          name:    accessForm.name || undefined,
+          email:   accessForm.email,
+          subject: 'Drop 001 — early access',
+          message: 'Drop 001 early access signup.',
+        }),
+      })
+    } catch {
+      // Non-fatal
+    } finally {
+      setAccessLoading(false)
+      setAccessDone(true)
+    }
   }
 
   return (
