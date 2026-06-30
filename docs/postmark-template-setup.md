@@ -14,7 +14,7 @@ Set these as Supabase Edge Function secrets:
 | Variable | Description |
 |---|---|
 | `POSTMARK_SERVER_TOKEN` | Your Postmark server API token |
-| `POSTMARK_FROM_EMAIL` | Verified sender address — e.g. `hello@mein.world` |
+| `POSTMARK_FROM_EMAIL` | Verified sender address — e.g. `hello@meintoday.com` |
 | `POSTMARK_MESSAGE_STREAM` | Message stream ID — use `outbound` for transactional emails |
 | `SITE_URL` | Public site URL — e.g. `https://mein.world` |
 | `ADMIN_ALERT_EMAIL` | Email address to receive admin alert emails |

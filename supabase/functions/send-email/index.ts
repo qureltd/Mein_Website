@@ -110,7 +110,7 @@ function layout(cardContent: string): string {
     <p style="font-size:12px;color:#9CA3AF;text-align:center;margin:0;line-height:1.7;">
       Mein &mdash; Live your future today.<br>
       This email was sent because you interacted with Mein.<br>
-      Questions? <a href="mailto:hello@mein.world" style="color:#9CA3AF;text-decoration:underline;">hello@mein.world</a>
+      Questions? <a href="mailto:hello@meintoday.com" style="color:#9CA3AF;text-decoration:underline;">hello@meintoday.com</a>
     </p>
   </td></tr>
 
@@ -158,7 +158,7 @@ const ADULT_SIG_HTML = `<p style="font-size:14px;color:#6B7280;line-height:1.8;m
 
 const YOUTH_SIG_TEXT = "\nKeep moving,\nEva\nCo-Creator, Mein\nLive your future today.";
 const ADULT_SIG_TEXT = "\nWarmly,\nEva\nCo-Creator, Mein\nLive your future today.";
-const TEXT_FOOTER = "\n\n---\nMein — Live your future today.\nQuestions? hello@mein.world";
+const TEXT_FOOTER = "\n\n---\nMein — Live your future today.\nQuestions? hello@meintoday.com";
 
 interface EmailContent {
   subject: string;
@@ -376,6 +376,7 @@ function buildEmail(emailType: string, vars: Vars): EmailContent {
       const shopUrl = v(vars, "shop_url", "https://mein.world/shop");
       const dropName = v(vars, "drop_name", "The drop");
       const subject = "The drop is here";
+      const dropUnsubHtml = `<p style="font-size:12px;color:#9CA3AF;line-height:1.7;margin:16px 0 0 0;padding-top:16px;border-top:1px solid #E5E7EB;">You&apos;re receiving this because you signed up for MEIN drop updates. To unsubscribe, email <a href="mailto:hello@meintoday.com" style="color:#9CA3AF;text-decoration:underline;">hello@meintoday.com</a>.</p>`;
       return {
         subject,
         htmlBody: layout(
@@ -383,7 +384,8 @@ function buildEmail(emailType: string, vars: Vars): EmailContent {
           `<p style="font-size:15px;color:#111111;line-height:1.65;margin:0 0 14px 0;">${bold(dropName)} is here.</p>` +
           p("The drop you signed up for is now live. Head to the shop to see it.") +
           ctaButton("Shop now", shopUrl) +
-          YOUTH_SIG_HTML
+          YOUTH_SIG_HTML +
+          dropUnsubHtml
         ),
         textBody: [
           fn ? `Hey ${fn},` : "Hey Mein Builder,",
@@ -394,6 +396,7 @@ function buildEmail(emailType: string, vars: Vars): EmailContent {
           "",
           `Shop now: ${shopUrl}`,
           YOUTH_SIG_TEXT,
+          "\nYou're receiving this because you signed up for MEIN drop updates. To unsubscribe, email hello@meintoday.com.",
           TEXT_FOOTER,
         ].join("\n"),
       };
@@ -766,7 +769,7 @@ Deno.serve(async (req: Request) => {
     return errorResponse("Email service is not configured. Contact the administrator.", 500);
   }
 
-  const fromEmail = Deno.env.get("POSTMARK_FROM_EMAIL") ?? "hello@mein.world";
+  const fromEmail = Deno.env.get("POSTMARK_FROM_EMAIL") ?? "hello@meintoday.com";
   const messageStream = Deno.env.get("POSTMARK_MESSAGE_STREAM");
 
   // ── Send via Postmark /email with server-generated content ──────────────────

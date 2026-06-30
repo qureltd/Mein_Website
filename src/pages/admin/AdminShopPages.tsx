@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { ShoppingBag, Package, Plus, Pencil, Eye, EyeOff, Star, StarOff, ExternalLink, X, AlertTriangle } from 'lucide-react'
+import { ShoppingBag, Package, Plus, Pencil, Eye, EyeOff, Star, StarOff, ExternalLink, X, AlertTriangle, Send, CheckCircle, Loader2, Mail } from 'lucide-react'
 import { supabase, type ShopProduct, type ShopDrop, type ShopProductStatus, type ShopProductPlatform, type ShopDropStatus } from '../../lib/supabase'
 import { AdminPageHeader, StatCard, AdminTable, PlaceholderSection } from '../../components/AdminLayout'
 
@@ -611,6 +611,241 @@ function DropModal({
   )
 }
 
+// ── DropLaunchModal ───────────────────────────────────────────────────────────
+
+type LaunchMode = 'preview' | 'dry_run' | 'send'
+
+interface LaunchPreview {
+  recipient_count: number
+  already_sent: boolean
+  sent_at: string | null
+}
+
+interface LaunchResult {
+  sent: number
+  failed: number
+  skipped: number
+  total_eligible: number
+}
+
+function DropLaunchModal({ drop, onClose }: { drop: ShopDrop; onClose: () => void }) {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
+  const [preview, setPreview] = useState<LaunchPreview | null>(null)
+  const [previewLoading, setPreviewLoading] = useState(true)
+  const [previewError, setPreviewError] = useState<string | null>(null)
+  const [testSending, setTestSending] = useState(false)
+  const [testSent, setTestSent] = useState(false)
+  const [testError, setTestError] = useState<string | null>(null)
+  const [confirmSend, setConfirmSend] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [result, setResult] = useState<LaunchResult | null>(null)
+  const [sendError, setSendError] = useState<string | null>(null)
+
+  async function callLaunch(mode: LaunchMode) {
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
+    if (!token) throw new Error('No active session.')
+
+    const res = await fetch(`${supabaseUrl}/functions/v1/send-drop-launch`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        drop_id: drop.id,
+        mode,
+        confirm: mode === 'send' ? true : undefined,
+      }),
+    })
+    const data = await res.json() as Record<string, unknown>
+    if (!data.success) throw new Error((data.error as string) ?? 'Request failed.')
+    return data
+  }
+
+  useEffect(() => {
+    setPreviewLoading(true)
+    callLaunch('preview')
+      .then((data) => setPreview({
+        recipient_count: data.recipient_count as number,
+        already_sent: data.already_sent as boolean,
+        sent_at: data.sent_at as string | null,
+      }))
+      .catch((e) => setPreviewError(e.message))
+      .finally(() => setPreviewLoading(false))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function handleTest() {
+    setTestSending(true)
+    setTestError(null)
+    try {
+      await callLaunch('dry_run')
+      setTestSent(true)
+    } catch (e) {
+      setTestError(e instanceof Error ? e.message : 'Test failed.')
+    } finally {
+      setTestSending(false)
+    }
+  }
+
+  async function handleSend() {
+    setSending(true)
+    setSendError(null)
+    try {
+      const data = await callLaunch('send')
+      setResult({
+        sent: data.sent as number,
+        failed: data.failed as number,
+        skipped: data.skipped as number,
+        total_eligible: data.total_eligible as number,
+      })
+    } catch (e) {
+      setSendError(e instanceof Error ? e.message : 'Send failed.')
+    } finally {
+      setSending(false)
+      setConfirmSend(false)
+    }
+  }
+
+  const fmtDate = (d: string) => new Date(d).toLocaleString('en-GB', {
+    day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  })
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-t-3xl md:rounded-2xl w-full max-w-md shadow-2xl z-10">
+        <div className="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <Mail size={16} className="text-blue-mein" />
+            <div>
+              <h2 className="font-sora font-bold text-sm text-charcoal">Launch Notification</h2>
+              <p className="text-[11px] text-gray-mid font-sora truncate max-w-[220px]">{drop.name}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+            <X size={16} className="text-gray-mid" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-5">
+          {/* Result state */}
+          {result ? (
+            <div className="text-center py-4">
+              <CheckCircle size={36} className="text-green-500 mx-auto mb-3" />
+              <h3 className="font-sora font-bold text-lg text-charcoal">Notification sent.</h3>
+              <div className="mt-4 bg-gray-50 rounded-xl border border-gray-100 px-4 py-3 text-left space-y-1">
+                <p className="text-xs font-sora text-gray-dark"><span className="font-semibold text-green-700">Sent:</span> {result.sent}</p>
+                {result.failed > 0 && <p className="text-xs font-sora text-red-600"><span className="font-semibold">Failed:</span> {result.failed}</p>}
+                {result.skipped > 0 && <p className="text-xs font-sora text-gray-mid"><span className="font-semibold">Skipped (already sent):</span> {result.skipped}</p>}
+              </div>
+              <button onClick={onClose} className="mt-5 px-5 py-2 bg-blue-mein text-white rounded-xl text-sm font-sora font-semibold hover:bg-blue-700 transition-colors">
+                Done
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Preview panel */}
+              <div className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-4">
+                <p className="text-xs font-sora font-semibold text-gray-mid uppercase tracking-wide mb-2">Recipients</p>
+                {previewLoading ? (
+                  <div className="flex items-center gap-2 text-gray-mid">
+                    <Loader2 size={14} className="animate-spin" />
+                    <span className="text-sm font-sora">Loading…</span>
+                  </div>
+                ) : previewError ? (
+                  <p className="text-sm font-sora text-red-600">{previewError}</p>
+                ) : preview ? (
+                  <div className="space-y-1.5">
+                    <p className="font-sora font-bold text-2xl text-charcoal">{preview.recipient_count.toLocaleString()}</p>
+                    <p className="text-xs text-gray-mid font-sora">
+                      People who opted into drop updates (deduplicated by email)
+                    </p>
+                    {preview.already_sent && preview.sent_at && (
+                      <div className="flex items-center gap-1.5 mt-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                        <AlertTriangle size={12} className="text-amber-600 shrink-0" />
+                        <p className="text-xs font-sora text-amber-700">
+                          Already sent on {fmtDate(preview.sent_at)}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+
+              {/* Test send */}
+              <div>
+                <p className="text-xs font-sora font-semibold text-gray-mid mb-2">Step 1 — Test</p>
+                {testSent ? (
+                  <div className="flex items-center gap-2 text-green-600 bg-green-50 border border-green-100 rounded-xl px-4 py-2.5">
+                    <CheckCircle size={14} />
+                    <span className="text-sm font-sora font-semibold">Test email sent to your address.</span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleTest}
+                    disabled={testSending || previewLoading}
+                    className="w-full flex items-center justify-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 rounded-xl px-4 py-2.5 text-sm font-sora font-semibold text-charcoal transition-colors disabled:opacity-50"
+                  >
+                    {testSending ? <><Loader2 size={14} className="animate-spin" /> Sending test…</> : <><Mail size={14} /> Send test email to me</>}
+                  </button>
+                )}
+                {testError && <p className="mt-1.5 text-xs font-sora text-red-600">{testError}</p>}
+              </div>
+
+              {/* Real send */}
+              <div>
+                <p className="text-xs font-sora font-semibold text-gray-mid mb-2">Step 2 — Send to all recipients</p>
+                {preview?.already_sent && (
+                  <div className="flex items-center gap-1.5 mb-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                    <AlertTriangle size={12} className="text-amber-600 shrink-0" />
+                    <p className="text-xs font-sora text-amber-700">This drop notification was already sent. Sending again will be blocked.</p>
+                  </div>
+                )}
+                {!confirmSend ? (
+                  <button
+                    onClick={() => setConfirmSend(true)}
+                    disabled={previewLoading || !preview || preview.already_sent || preview.recipient_count === 0}
+                    className="w-full flex items-center justify-center gap-2 bg-blue-mein text-white rounded-xl px-4 py-2.5 text-sm font-sora font-semibold hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <Send size={14} />
+                    Send to {preview?.recipient_count ?? '…'} recipients
+                  </button>
+                ) : (
+                  <div className="border border-red-200 bg-red-50 rounded-xl px-4 py-3 space-y-3">
+                    <p className="text-sm font-sora font-semibold text-red-700">
+                      Send launch notification to {preview?.recipient_count} people?
+                    </p>
+                    <p className="text-xs font-sora text-red-600">This cannot be undone. Each recipient receives one email.</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleSend}
+                        disabled={sending}
+                        className="flex-1 flex items-center justify-center gap-1.5 bg-red-600 text-white rounded-lg px-4 py-2 text-sm font-sora font-semibold hover:bg-red-700 transition-colors disabled:opacity-50"
+                      >
+                        {sending ? <><Loader2 size={13} className="animate-spin" /> Sending…</> : 'Confirm send'}
+                      </button>
+                      <button
+                        onClick={() => setConfirmSend(false)}
+                        disabled={sending}
+                        className="px-4 py-2 text-sm font-sora font-semibold text-gray-mid hover:text-charcoal transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {sendError && <p className="mt-1.5 text-xs font-sora text-red-600">{sendError}</p>}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Shop Overview ─────────────────────────────────────────────────────────────
 
 export function AdminShopPage() {
@@ -900,13 +1135,14 @@ export function AdminShopDropsPage() {
   const [drops, setDrops] = useState<ShopDrop[]>([])
   const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState<'create' | ShopDrop | null>(null)
+  const [launchModal, setLaunchModal] = useState<ShopDrop | null>(null)
   const [actionId, setActionId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     const { data } = await supabase
       .from('shop_drops')
-      .select('id, name, slug, description, status, launch_date, featured, hero_product_id, visible, sort_order, created_at, updated_at')
+      .select('id, name, slug, description, status, launch_date, featured, hero_product_id, visible, sort_order, launch_email_sent_at, launch_email_sent_by, created_at, updated_at')
       .order('sort_order')
       .order('created_at', { ascending: false })
     setDrops((data as ShopDrop[]) ?? [])
@@ -960,7 +1196,7 @@ export function AdminShopDropsPage() {
         />
       ) : (
         <AdminTable
-          heads={['Name', 'Status', 'Launch date', 'Visible', 'Featured', '']}
+          heads={['Name', 'Status', 'Launch date', 'Visible', 'Featured', 'Notify', '']}
           loading={loading}
         >
           {drops.map((d) => (
@@ -997,6 +1233,19 @@ export function AdminShopDropsPage() {
               </td>
               <td className="px-4 py-3.5">
                 <button
+                  onClick={() => setLaunchModal(d)}
+                  title={d.launch_email_sent_at ? `Sent ${new Date(d.launch_email_sent_at).toLocaleDateString('en-GB')}` : 'Send launch notification'}
+                  className={`p-1.5 rounded-lg transition-colors ${
+                    d.launch_email_sent_at
+                      ? 'text-green-600 bg-green-50 cursor-default'
+                      : 'text-gray-mid hover:text-blue-mein hover:bg-blue-pale'
+                  }`}
+                >
+                  {d.launch_email_sent_at ? <CheckCircle size={13} /> : <Send size={13} />}
+                </button>
+              </td>
+              <td className="px-4 py-3.5">
+                <button
                   onClick={() => setModal(d)}
                   className="p-1.5 rounded-lg text-gray-mid hover:text-charcoal hover:bg-gray-100 transition-colors"
                   title="Edit"
@@ -1014,6 +1263,13 @@ export function AdminShopDropsPage() {
           drop={modal === 'create' ? null : modal}
           onClose={() => setModal(null)}
           onSaved={() => { setModal(null); load() }}
+        />
+      )}
+
+      {launchModal && (
+        <DropLaunchModal
+          drop={launchModal}
+          onClose={() => { setLaunchModal(null); load() }}
         />
       )}
     </>

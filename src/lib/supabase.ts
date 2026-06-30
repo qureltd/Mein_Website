@@ -89,7 +89,7 @@ export interface ContactMessage {
 }
 
 export type JoinInterestStatus = 'new' | 'reviewed' | 'contacted' | 'invited' | 'active' | 'followed_up' | 'archived'
-export type JoinPath = 'young_person' | 'parent_guardian' | 'creator' | 'school_partner' | 'supporter' | 'partner'
+export type JoinPath = 'young_person' | 'parent_guardian' | 'creator' | 'school_partner' | 'supporter' | 'partner' | 'shop_early_access'
 
 export interface JoinInterest {
   id: string
@@ -184,6 +184,8 @@ export interface ShopDrop {
   hero_product_id: string | null
   visible: boolean
   sort_order: number
+  launch_email_sent_at: string | null
+  launch_email_sent_by: string | null
   created_at: string
   updated_at: string
 }

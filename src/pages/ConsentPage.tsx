@@ -220,7 +220,7 @@ export default function ConsentPage() {
               <div className="bg-blue-pale rounded-xl border border-blue-mein/15 p-4 text-xs font-sora text-gray-dark leading-relaxed">
                 By signing below, you confirm that you are the parent or legal guardian of the young person named above.
                 Giving consent means Mein may use their submission as described. Declining means their submission will not proceed.
-                You can contact <a href="mailto:hello@mein.world" className="text-blue-mein hover:underline">hello@mein.world</a> at any time with questions.
+                You can contact <a href="mailto:hello@meintoday.com" className="text-blue-mein hover:underline">hello@meintoday.com</a> at any time with questions.
               </div>
 
               {/* Email hint */}

@@ -33,7 +33,9 @@ const PRIORITY_COLORS: Record<Priority, string> = {
 
 const PATH_LABELS: Record<string, string> = {
   young_person: 'Young person', parent_guardian: 'Parent / guardian',
-  creator: 'Creator', school_partner: 'School / educator / partner', supporter: 'Supporter', partner: 'Partner',
+  creator: 'Creator', school_partner: 'School / educator / partner',
+  supporter: 'Supporter', partner: 'Partner',
+  shop_early_access: 'Shop / early access',
 }
 
 const CONSENT_STATUS_COLORS: Record<string, string> = {

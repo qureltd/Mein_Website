@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase'
 import type { ShopProduct as DbShopProduct } from '../lib/supabase'
 
 const SUBMIT_CONTACT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-contact`
+const SUBMIT_SHOP_EARLY_ACCESS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-shop-early-access`
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 import hoodieImg       from '../assets/shop/Hoodie_Art.png'
@@ -259,9 +260,11 @@ export default function ShopPage() {
   const [notifyDone, setNotifyDone]       = useState(false)
   const [notifyLoading, setNotifyLoading] = useState(false)
 
-  const [accessForm, setAccessForm]       = useState({ name: '', email: '' })
+  const [accessForm, setAccessForm]       = useState({ email: '' })
   const [accessDone, setAccessDone]       = useState(false)
+  const [accessDuplicate, setAccessDuplicate] = useState(false)
   const [accessLoading, setAccessLoading] = useState(false)
+  const [accessError, setAccessError]     = useState<string | null>(null)
 
   useEffect(() => {
     async function loadProducts() {
@@ -324,23 +327,24 @@ export default function ShopPage() {
   async function handleAccessSubmit(e: React.FormEvent) {
     e.preventDefault()
     setAccessLoading(true)
+    setAccessError(null)
     try {
-      await fetch(SUBMIT_CONTACT_URL, {
+      const res = await fetch(SUBMIT_SHOP_EARLY_ACCESS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY },
-        body: JSON.stringify({
-          contact_type: 'shop',
-          name:    accessForm.name || undefined,
-          email:   accessForm.email,
-          subject: 'Drop 001 — early access',
-          message: 'Drop 001 early access signup.',
-        }),
+        body: JSON.stringify({ email: accessForm.email }),
       })
+      const data = await res.json() as { success: boolean; duplicate?: boolean; error?: string }
+      if (!data.success) {
+        setAccessError(data.error ?? 'Something went wrong. Please try again.')
+        return
+      }
+      setAccessDuplicate(!!data.duplicate)
+      setAccessDone(true)
     } catch {
-      // Non-fatal
+      setAccessError('Network error. Please try again.')
     } finally {
       setAccessLoading(false)
-      setAccessDone(true)
     }
   }
 
@@ -538,10 +542,14 @@ export default function ShopPage() {
                   <div className="w-14 h-14 rounded-full bg-gold-mein flex items-center justify-center mx-auto mb-5">
                     <Check size={24} className="text-charcoal" strokeWidth={3} />
                   </div>
-                  <h3 className="font-sora font-bold text-xl text-white">You're on the list.</h3>
+                  <h3 className="font-sora font-bold text-xl text-white">
+                    {accessDuplicate ? "You're already on the list." : "You're on the list."}
+                  </h3>
                   <HandwrittenAccent text="We'll let you know first." className="text-lg block mt-2 text-gold-mein" />
                   <p className="mt-3 text-sm text-white/50 font-sora max-w-xs mx-auto">
-                    When Drop 001 is ready, you'll hear about it before anyone else.
+                    {accessDuplicate
+                      ? "We already have your email for drop updates."
+                      : "When Drop 001 is ready, you'll hear about it before anyone else."}
                   </p>
                 </div>
               ) : (
@@ -555,11 +563,14 @@ export default function ShopPage() {
                         type="email"
                         required
                         value={accessForm.email}
-                        onChange={(e) => setAccessForm((f) => ({ ...f, email: e.target.value }))}
+                        onChange={(e) => setAccessForm({ email: e.target.value })}
                         placeholder="your@email.com"
                         className="w-full bg-white/10 border border-white/15 rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-white/30 font-sora focus:outline-none focus:ring-2 focus:ring-gold-mein/50 focus:border-gold-mein/50 transition-colors"
                       />
                     </div>
+                    {accessError && (
+                      <p className="text-sm text-red-400 font-sora">{accessError}</p>
+                    )}
                     <button
                       type="submit"
                       disabled={accessLoading}
@@ -570,7 +581,7 @@ export default function ShopPage() {
                     </button>
                   </form>
                   <p className="mt-4 text-center font-sora text-xs text-white/30">
-                    No spam. Just the drop.
+                    Enter your email to get early access and MEIN drop updates.
                   </p>
                 </div>
               )}

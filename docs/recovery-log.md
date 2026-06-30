@@ -161,7 +161,7 @@ Changes:
   - Validates: email_type (against 12-value allowlist), recipient_email format, template resolution
   - Uses SUPABASE_SERVICE_ROLE_KEY (server-side only) to write to email_events table
   - Reads POSTMARK_SERVER_TOKEN from secrets only — never exposed to frontend
-  - Reads POSTMARK_FROM_EMAIL (default: hello@mein.world) and POSTMARK_MESSAGE_STREAM from secrets
+  - Reads POSTMARK_FROM_EMAIL (default: hello@meintoday.com) and POSTMARK_MESSAGE_STREAM from secrets
   - Dry run mode: logs email_events row, skips Postmark call, returns dry_run: true
   - Full send: inserts pending row → calls Postmark template API → updates to sent/failed
   - Stores postmark_message_id on success; stores error_message on failure
@@ -171,7 +171,7 @@ Changes:
 
 Secrets required (to be added via Supabase dashboard or secrets manager):
   - POSTMARK_SERVER_TOKEN — required for live sends; function degrades safely without it
-  - POSTMARK_FROM_EMAIL — optional, defaults to hello@mein.world
+  - POSTMARK_FROM_EMAIL — optional, defaults to hello@meintoday.com
   - POSTMARK_MESSAGE_STREAM — optional, omitted from Postmark payload if not set
   - ADMIN_NOTIFICATION_EMAIL — reserved for Phase 4/5 use; not used in Phase 2
 
@@ -216,7 +216,7 @@ Verification results:
 
 Manual Postmark dashboard steps required before live sends:
   1. Create a Postmark account and server at postmarkapp.com
-  2. Add sender domain/email (must match POSTMARK_FROM_EMAIL, e.g. hello@mein.world)
+  2. Add sender domain/email (must match POSTMARK_FROM_EMAIL, e.g. hello@meintoday.com)
   3. Verify sender domain DNS records in Postmark
   4. Create each of the 12 template aliases listed above
   5. Set POSTMARK_SERVER_TOKEN secret in Supabase (dashboard → Settings → Edge Functions → Secrets)
