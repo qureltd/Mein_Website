@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { ShoppingBag, Package, Plus, Pencil, Eye, EyeOff, Star, StarOff, ExternalLink, X, AlertTriangle, Send, CheckCircle, Loader2, Mail } from 'lucide-react'
+import { ShoppingBag, Package, Plus, Pencil, Eye, EyeOff, Star, StarOff, ExternalLink, X, AlertTriangle, Send, CheckCircle, Loader2, Mail, Upload, ImageOff } from 'lucide-react'
 import { supabase, type ShopProduct, type ShopDrop, type ShopProductStatus, type ShopProductPlatform, type ShopDropStatus } from '../../lib/supabase'
 import { AdminPageHeader, StatCard, AdminTable, PlaceholderSection } from '../../components/AdminLayout'
 
@@ -23,6 +23,10 @@ function auditLog(action: string, entity_type: string, entity_id: string, notes?
     })
   )
 }
+
+const STORAGE_BUCKET = 'shop-products'
+const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp']
+const MAX_BYTES = 5 * 1024 * 1024
 
 const PRODUCT_STATUSES: ShopProductStatus[] = ['coming_soon', 'live', 'sold_out', 'hidden', 'archived']
 const PLATFORMS: ShopProductPlatform[] = ['shopify', 'gelato', 'printful', 'external', 'coming_soon']
@@ -85,11 +89,139 @@ type DropForm = {
   featured: boolean
   visible: boolean
   sort_order: number
+  image_url: string
 }
 
 const EMPTY_DROP: DropForm = {
   name: '', slug: '', description: '', status: 'draft',
-  launch_date: '', featured: false, visible: false, sort_order: 0,
+  launch_date: '', featured: false, visible: false, sort_order: 0, image_url: '',
+}
+
+// ── ImageUploader ─────────────────────────────────────────────────────────────
+
+function ImageUploader({
+  entityId,
+  folder,
+  value,
+  onChange,
+  fit = 'contain',
+  bg,
+}: {
+  entityId: string | null
+  folder: 'products' | 'drops'
+  value: string
+  onChange: (url: string) => void
+  fit?: 'contain' | 'cover'
+  bg?: string
+}) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [uploadDone, setUploadDone] = useState(false)
+
+  async function handleFile(file: File) {
+    setUploadError(null)
+    setUploadDone(false)
+    if (!ALLOWED_MIME.includes(file.type)) {
+      setUploadError('Only JPG, PNG, and WebP images are allowed.')
+      return
+    }
+    if (file.size > MAX_BYTES) {
+      setUploadError('File must be under 5 MB.')
+      return
+    }
+    if (!entityId) return
+    setUploading(true)
+    const ext = file.name.split('.').pop() ?? 'jpg'
+    const path = `${folder}/${entityId}/${Date.now()}.${ext}`
+    const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(path, file, { upsert: true })
+    if (error) { setUploadError(error.message); setUploading(false); return }
+    const { data: { publicUrl } } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path)
+    onChange(publicUrl)
+    setUploadDone(true)
+    setUploading(false)
+  }
+
+  const canUpload = !!entityId
+
+  return (
+    <div className="space-y-3">
+      {/* Upload button or amber warning */}
+      {canUpload ? (
+        <div className="flex items-center gap-2">
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
+          />
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            disabled={uploading}
+            className="flex items-center gap-1.5 border border-gray-200 bg-white hover:bg-gray-50 rounded-lg px-3 py-1.5 text-xs font-sora font-semibold text-charcoal transition-colors disabled:opacity-50"
+          >
+            {uploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+            {uploading ? 'Uploading…' : value ? 'Replace image' : 'Upload image'}
+          </button>
+          {value && !uploading && (
+            <button
+              type="button"
+              onClick={() => { onChange(''); setUploadDone(false) }}
+              className="flex items-center gap-1 text-xs font-sora text-red-500 hover:text-red-700 transition-colors"
+            >
+              <X size={11} /> Remove
+            </button>
+          )}
+          {uploadDone && !uploading && (
+            <span className="flex items-center gap-1 text-xs font-sora text-green-600">
+              <CheckCircle size={11} /> Uploaded
+            </span>
+          )}
+        </div>
+      ) : (
+        <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+          <AlertTriangle size={12} className="text-amber-600 shrink-0" />
+          <p className="text-xs font-sora text-amber-700">Save the record first to enable file upload.</p>
+        </div>
+      )}
+
+      {uploadError && (
+        <p className="text-xs font-sora text-red-600">{uploadError}</p>
+      )}
+
+      {/* URL paste fallback */}
+      <div>
+        <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Or paste image URL</label>
+        <input
+          value={value}
+          onChange={(e) => { onChange(e.target.value); setUploadDone(false) }}
+          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal font-mono focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
+          placeholder="/assets/shop/image.png or https://…"
+        />
+      </div>
+
+      {/* Preview */}
+      {value ? (
+        <div
+          className="rounded-xl overflow-hidden border border-gray-100"
+          style={{ backgroundColor: bg || '#F5F5F5', height: 120 }}
+        >
+          <img
+            src={value}
+            alt="Preview"
+            className={`w-full h-full object-${fit}`}
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+          />
+        </div>
+      ) : (
+        <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 h-20 flex items-center justify-center">
+          <ImageOff size={20} className="text-gray-300" />
+        </div>
+      )}
+    </div>
+  )
 }
 
 // ── ProductModal ──────────────────────────────────────────────────────────────
@@ -264,15 +396,14 @@ function ProductModal({
 
           <div className="border-t border-gray-100 pt-5 space-y-4">
             <p className="text-xs font-sora font-semibold text-gray-mid uppercase tracking-wide">Image</p>
-            <div>
-              <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Image URL</label>
-              <input
-                value={form.image_url}
-                onChange={(e) => field('image_url', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-sora text-charcoal font-mono focus:outline-none focus:ring-2 focus:ring-blue-mein/30"
-                placeholder="/assets/shop/Hoodie_Art.png"
-              />
-            </div>
+            <ImageUploader
+              entityId={product?.id ?? null}
+              folder="products"
+              value={form.image_url}
+              onChange={(url) => field('image_url', url)}
+              fit={form.image_fit}
+              bg={form.image_bg}
+            />
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-sora font-semibold text-gray-mid mb-1">Alt text</label>
@@ -317,16 +448,6 @@ function ProductModal({
                 ))}
               </div>
             </div>
-            {form.image_url && (
-              <div className="rounded-xl overflow-hidden border border-gray-100" style={{ backgroundColor: form.image_bg || '#F5F5F5', height: 120 }}>
-                <img
-                  src={form.image_url}
-                  alt="Preview"
-                  className={`w-full h-full object-${form.image_fit}`}
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                />
-              </div>
-            )}
           </div>
 
           <div className="border-t border-gray-100 pt-5 space-y-4">
@@ -445,6 +566,7 @@ function DropModal({
       featured:    drop.featured,
       visible:     drop.visible,
       sort_order:  drop.sort_order,
+      image_url:   drop.image_url ?? '',
     }
   })
   const [saving, setSaving] = useState(false)
@@ -474,6 +596,7 @@ function DropModal({
       featured:    form.featured,
       visible:     form.visible,
       sort_order:  Number(form.sort_order),
+      image_url:   form.image_url.trim() || null,
       updated_at:  new Date().toISOString(),
     }
 
@@ -591,6 +714,17 @@ function DropModal({
               />
               <span className="text-sm font-sora text-charcoal">Featured</span>
             </label>
+          </div>
+
+          <div className="border-t border-gray-100 pt-4 space-y-3">
+            <p className="text-xs font-sora font-semibold text-gray-mid uppercase tracking-wide">Banner image</p>
+            <ImageUploader
+              entityId={drop?.id ?? null}
+              folder="drops"
+              value={form.image_url}
+              onChange={(url) => field('image_url', url)}
+              fit="cover"
+            />
           </div>
         </div>
 
@@ -1142,7 +1276,7 @@ export function AdminShopDropsPage() {
   const load = useCallback(async () => {
     const { data } = await supabase
       .from('shop_drops')
-      .select('id, name, slug, description, status, launch_date, featured, hero_product_id, visible, sort_order, launch_email_sent_at, launch_email_sent_by, created_at, updated_at')
+      .select('id, name, slug, description, status, launch_date, featured, hero_product_id, image_url, visible, sort_order, launch_email_sent_at, launch_email_sent_by, created_at, updated_at')
       .order('sort_order')
       .order('created_at', { ascending: false })
     setDrops((data as ShopDrop[]) ?? [])

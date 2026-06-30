@@ -3,7 +3,7 @@ import { ArrowRight, X, Check, Bell, ExternalLink } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
 import { OpenMIcon, HandwrittenAccent, SectionDivider, StickerNote } from '../components/BrandElements'
 import { supabase } from '../lib/supabase'
-import type { ShopProduct as DbShopProduct } from '../lib/supabase'
+import type { ShopProduct as DbShopProduct, ShopDrop } from '../lib/supabase'
 
 const SUBMIT_CONTACT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-contact`
 const SUBMIT_SHOP_EARLY_ACCESS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-shop-early-access`
@@ -32,6 +32,7 @@ type DisplayProduct = {
   darkText: boolean
   external_url: string | null
   external_platform: string
+  alt: string
 }
 
 // ─── Hardcoded fallback products ─────────────────────────────────────────────
@@ -50,6 +51,7 @@ const FALLBACK_PRODUCTS: DisplayProduct[] = [
     darkText: false,
     external_url: null,
     external_platform: 'coming_soon',
+    alt: 'Open M Hoodie',
   },
   {
     id: 'fallback-2',
@@ -63,6 +65,7 @@ const FALLBACK_PRODUCTS: DisplayProduct[] = [
     darkText: false,
     external_url: null,
     external_platform: 'coming_soon',
+    alt: 'Live Your Future Today Tee',
   },
   {
     id: 'fallback-3',
@@ -76,6 +79,7 @@ const FALLBACK_PRODUCTS: DisplayProduct[] = [
     darkText: false,
     external_url: null,
     external_platform: 'coming_soon',
+    alt: "It's All Mein Tee",
   },
   {
     id: 'fallback-4',
@@ -89,6 +93,7 @@ const FALLBACK_PRODUCTS: DisplayProduct[] = [
     darkText: true,
     external_url: null,
     external_platform: 'coming_soon',
+    alt: 'MEIN Core Tee',
   },
   {
     id: 'fallback-5',
@@ -102,6 +107,7 @@ const FALLBACK_PRODUCTS: DisplayProduct[] = [
     darkText: false,
     external_url: null,
     external_platform: 'coming_soon',
+    alt: 'MEIN Chest Logo Tee',
   },
   {
     id: 'fallback-6',
@@ -115,6 +121,7 @@ const FALLBACK_PRODUCTS: DisplayProduct[] = [
     darkText: false,
     external_url: null,
     external_platform: 'coming_soon',
+    alt: 'Mein Mover Cap',
   },
 ]
 
@@ -135,6 +142,7 @@ function dbProductToDisplay(p: DbShopProduct): DisplayProduct {
     darkText,
     external_url: p.external_url ?? null,
     external_platform: p.external_platform ?? 'coming_soon',
+    alt: p.image_alt ?? p.name,
   }
 }
 
@@ -155,6 +163,14 @@ const LABEL_STYLE: Record<string, string> = {
   'Early access': 'bg-white/10 text-white border border-white/20 backdrop-blur-sm',
   'Shop now':     'bg-green-500 text-white',
   'Sold out':     'bg-white/10 text-white/50 border border-white/10',
+}
+
+function dropStatusText(drop: ShopDrop | null): string {
+  if (!drop) return 'Coming soon.'
+  if (drop.status === 'active') return 'Live now.'
+  if (drop.status === 'preview') return 'Coming soon.'
+  if (drop.status === 'closed') return 'Drop closed.'
+  return 'Coming soon.'
 }
 
 // ─── ProductCard ──────────────────────────────────────────────────────────────
@@ -179,7 +195,7 @@ function ProductCard({
         {product.img ? (
           <img
             src={product.img}
-            alt={product.name}
+            alt={product.alt}
             className={`h-full w-full ${product.imageFit === 'cover' ? 'object-cover' : 'object-contain'}`}
             loading="lazy"
           />
@@ -252,6 +268,7 @@ function ProductCard({
 
 export default function ShopPage() {
   const [products, setProducts]           = useState<DisplayProduct[]>([])
+  const [activeDrop, setActiveDrop]       = useState<ShopDrop | null>(null)
   const [heroImg, setHeroImg]             = useState<string>(FALLBACK_HERO_IMG)
   const [productsLoading, setProductsLoading] = useState(true)
 
@@ -267,27 +284,38 @@ export default function ShopPage() {
   const [accessError, setAccessError]     = useState<string | null>(null)
 
   useEffect(() => {
-    async function loadProducts() {
-      const { data, error } = await supabase
-        .from('shop_products')
-        .select('id, drop_id, name, slug, short_description, product_type, status, price_display, image_url, image_alt, image_fit, image_bg, featured, sort_order, visible, external_url, external_platform, created_at')
-        .eq('visible', true)
-        .order('featured', { ascending: false })
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: false })
+    async function load() {
+      const [{ data: productData }, { data: dropData }] = await Promise.all([
+        supabase
+          .from('shop_products')
+          .select('id, drop_id, name, slug, short_description, product_type, status, price_display, image_url, image_alt, image_fit, image_bg, featured, sort_order, visible, external_url, external_platform, created_at')
+          .eq('visible', true)
+          .order('featured', { ascending: false })
+          .order('sort_order', { ascending: true })
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('shop_drops')
+          .select('id, name, slug, description, status, launch_date, featured, hero_product_id, image_url, visible, sort_order, launch_email_sent_at, launch_email_sent_by, created_at, updated_at')
+          .eq('visible', true)
+          .order('sort_order', { ascending: true })
+          .limit(1),
+      ])
 
-      if (error || !data || data.length === 0) {
+      const drop = dropData?.[0] as ShopDrop | undefined
+      setActiveDrop(drop ?? null)
+
+      if (!productData || productData.length === 0) {
         setProducts(FALLBACK_PRODUCTS)
-        setHeroImg(FALLBACK_HERO_IMG)
+        setHeroImg(drop?.image_url ?? FALLBACK_HERO_IMG)
       } else {
-        const displayProducts = (data as DbShopProduct[]).map(dbProductToDisplay)
+        const displayProducts = (productData as DbShopProduct[]).map(dbProductToDisplay)
         setProducts(displayProducts)
-        const featuredWithImg = displayProducts.find((p) => p.img)
-        if (featuredWithImg) setHeroImg(featuredWithImg.img)
+        const firstWithImg = displayProducts.find((p) => p.img)
+        setHeroImg(drop?.image_url ?? firstWithImg?.img ?? FALLBACK_HERO_IMG)
       }
       setProductsLoading(false)
     }
-    loadProducts()
+    load()
   }, [])
 
   function openNotify(productName: string) {
@@ -377,7 +405,7 @@ export default function ShopPage() {
                 <div className="inline-flex items-center gap-2.5 mb-6">
                   <span className="w-2 h-2 rounded-full bg-gold-mein flex-shrink-0" />
                   <span className="font-sora text-xs font-bold text-white/60 uppercase tracking-[0.22em]">
-                    Drop 001
+                    {activeDrop?.name ?? 'Drop 001'}
                   </span>
                 </div>
 
@@ -424,12 +452,12 @@ export default function ShopPage() {
               >
                 <img
                   src={heroImg}
-                  alt="Drop 001 hero piece"
+                  alt={`${activeDrop?.name ?? 'Drop 001'} hero piece`}
                   className="h-full w-full object-contain"
                 />
                 <div className="absolute top-4 left-4">
                   <span className="inline-flex items-center gap-1.5 bg-gold-mein text-charcoal text-[10px] font-sora font-bold px-3 py-1.5 rounded-full uppercase tracking-[0.15em]">
-                    Drop 001 — Hero piece
+                    {activeDrop?.name ?? 'Drop 001'} — Hero piece
                   </span>
                 </div>
               </div>
@@ -445,10 +473,10 @@ export default function ShopPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <p className="font-sora text-xs font-bold text-white/40 uppercase tracking-[0.22em] mb-1.5">
-                Drop 001 — Coming soon.
+                {activeDrop?.name ?? 'Drop 001'} — {dropStatusText(activeDrop)}
               </p>
               <HandwrittenAccent
-                text="I'm building it. This is just the proof."
+                text={activeDrop?.description ?? "I'm building it. This is just the proof."}
                 className="text-2xl md:text-3xl text-white"
               />
             </div>
@@ -467,7 +495,7 @@ export default function ShopPage() {
             <div className="mb-10 md:mb-14">
               <SectionDivider className="bg-gold-mein mb-4" />
               <h2 className="font-sora font-extrabold text-3xl md:text-4xl text-white">
-                Drop 001 — Preview.
+                {activeDrop?.name ?? 'Drop 001'} — Preview.
               </h2>
               <p className="mt-2 font-sora text-white/50 text-base">
                 Wear what reminds you who you're becoming.
@@ -509,7 +537,7 @@ export default function ShopPage() {
               It's a reminder you chose to become something.
             </p>
             <p className="mt-5 font-sora text-base text-white/50 max-w-md mx-auto leading-relaxed">
-              Every piece in Drop 001 carries the same energy as the movement — built for people who are already in motion.
+              Every piece in {activeDrop?.name ?? 'Drop 001'} carries the same energy as the movement — built for people who are already in motion.
             </p>
           </FadeUp>
         </div>
@@ -524,14 +552,14 @@ export default function ShopPage() {
                 <div className="inline-flex items-center gap-2 bg-gold-mein/10 border border-gold-mein/20 rounded-full px-4 py-1.5 mb-5">
                   <span className="w-1.5 h-1.5 rounded-full bg-gold-mein" />
                   <span className="font-sora text-xs font-bold text-gold-mein uppercase tracking-[0.2em]">
-                    Drop 001
+                    {activeDrop?.name ?? 'Drop 001'}
                   </span>
                 </div>
                 <h2 className="font-sora font-extrabold text-3xl md:text-4xl text-white leading-tight">
                   Get early access.
                 </h2>
                 <p className="mt-3 font-sora text-base text-white/50">
-                  Be first to know when Drop 001 goes live.
+                  Be first to know when {activeDrop?.name ?? 'Drop 001'} goes live.
                 </p>
               </div>
             </FadeUp>
@@ -549,7 +577,7 @@ export default function ShopPage() {
                   <p className="mt-3 text-sm text-white/50 font-sora max-w-xs mx-auto">
                     {accessDuplicate
                       ? "We already have your email for drop updates."
-                      : "When Drop 001 is ready, you'll hear about it before anyone else."}
+                      : `When ${activeDrop?.name ?? 'Drop 001'} is ready, you'll hear about it before anyone else.`}
                   </p>
                 </div>
               ) : (

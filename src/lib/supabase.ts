@@ -182,6 +182,7 @@ export interface ShopDrop {
   launch_date: string | null
   featured: boolean
   hero_product_id: string | null
+  image_url: string | null
   visible: boolean
   sort_order: number
   launch_email_sent_at: string | null
