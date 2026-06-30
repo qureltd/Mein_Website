@@ -1,6 +1,6 @@
-import { useRef } from 'react'
+import { useState, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ArrowRight, Check } from 'lucide-react'
+import { ArrowRight, Check, Loader2 } from 'lucide-react'
 import { FadeUp } from '../hooks/useInView'
 import {
   OpenMIcon,
@@ -11,65 +11,23 @@ import {
 
 // ── Join path config ──────────────────────────────────────────────────────────
 
-const JOIN_PATH_KEYS = ['young-person', 'parent', 'creator', 'partner', 'supporter'] as const
+const JOIN_PATH_KEYS = ['young-person', 'parent', 'creator', 'school-educator', 'supporter', 'partner'] as const
 type JoinPathKey = typeof JOIN_PATH_KEYS[number]
 
 interface JoinPathOption {
   key: JoinPathKey
   label: string
-  headline: string
-  description: string
-  ctaLabel: string
-  href: string
+  dbValue: string
   accent: 'blue' | 'gold'
 }
 
 const JOIN_PATHS: JoinPathOption[] = [
-  {
-    key: 'young-person',
-    label: 'Young person',
-    headline: "You're joining as a young person.",
-    description: 'Explore, create, speak, build, represent, or just start unsure. Mein is built for you.',
-    ctaLabel: 'Start here',
-    href: '/make-your-move',
-    accent: 'blue',
-  },
-  {
-    key: 'parent',
-    label: 'Parent or guardian',
-    headline: "You're here as a parent or guardian.",
-    description: 'Understand how Mein works, how consent is handled, and how you can support a young person safely.',
-    ctaLabel: 'Learn how it works',
-    href: '/parents',
-    accent: 'gold',
-  },
-  {
-    key: 'creator',
-    label: 'Creator',
-    headline: "You're joining as a creator.",
-    description: 'Help shape content, stories, and ideas. Collaborate with Mein to produce youth-led creative work.',
-    ctaLabel: 'Collaborate with Mein',
-    href: '/contact?type=creator',
-    accent: 'blue',
-  },
-  {
-    key: 'partner',
-    label: 'School or partner',
-    headline: "You're here as a school or partner.",
-    description: 'Bring Mein to your students or community. We offer structured programmes, projects, and ongoing support.',
-    ctaLabel: 'Partner with us',
-    href: '/schools',
-    accent: 'gold',
-  },
-  {
-    key: 'supporter',
-    label: 'Supporter',
-    headline: "You want to support the movement.",
-    description: 'Cheer it on, spread the word, volunteer, or contribute in any way you can. Every form of support matters.',
-    ctaLabel: 'Support the movement',
-    href: '/contact?type=support',
-    accent: 'blue',
-  },
+  { key: 'young-person',     label: 'Young person',          dbValue: 'young_person',    accent: 'blue' },
+  { key: 'parent',           label: 'Parent or guardian',    dbValue: 'parent_guardian', accent: 'gold' },
+  { key: 'creator',          label: 'Creator',               dbValue: 'creator',         accent: 'blue' },
+  { key: 'school-educator',  label: 'School or educator',    dbValue: 'school_educator', accent: 'gold' },
+  { key: 'supporter',        label: 'Supporter',             dbValue: 'supporter',       accent: 'blue' },
+  { key: 'partner',          label: 'Partner',               dbValue: 'partner',         accent: 'gold' },
 ]
 
 const JOIN_PATH_MAP = Object.fromEntries(JOIN_PATHS.map(p => [p.key, p])) as Record<JoinPathKey, JoinPathOption>
@@ -78,22 +36,36 @@ function normalizeJoinPathParam(raw: string | null): JoinPathKey | null {
   if (!raw) return null
   const s = raw.trim().toLowerCase()
   const aliases: Record<string, JoinPathKey> = {
-    youth: 'young-person',
-    young: 'young-person',
-    guardian: 'parent',
-    'parent-guardian': 'parent',
-    school: 'partner',
-    sponsor: 'partner',
-    organisation: 'partner',
-    organization: 'partner',
-    support: 'supporter',
+    youth:            'young-person',
+    young:            'young-person',
+    'young_person':   'young-person',
+    guardian:         'parent',
+    'parent-guardian':'parent',
+    'parent_guardian':'parent',
+    school:           'school-educator',
+    'school_partner': 'school-educator',
+    'school-partner': 'school-educator',
+    organisation:     'partner',
+    organization:     'partner',
+    support:          'supporter',
   }
   if (aliases[s]) return aliases[s]
   if ((JOIN_PATH_KEYS as readonly string[]).includes(s)) return s as JoinPathKey
   return null
 }
 
+// ── Interest options ──────────────────────────────────────────────────────────
 
+const INTEREST_OPTIONS = [
+  'Movement updates',
+  'Merch / product drops',
+  'Youth opportunities',
+  'School sessions',
+  'Creative calls',
+  'Future Me activities',
+]
+
+// ── Belonging badges ──────────────────────────────────────────────────────────
 
 const belongingBadges = [
   { text: 'For the quiet ones.', variant: 'blue' },
@@ -109,7 +81,8 @@ const badgeStyles = {
   gold: 'bg-gold-pale text-gold-dark border-2 border-yellow-300/60 shadow-md',
 }
 
-// Inline SVG — abstract "belonging orbit" graphic. Purely decorative.
+// ── Orbit graphic ─────────────────────────────────────────────────────────────
+
 function BelongingOrbit() {
   return (
     <svg
@@ -126,14 +99,14 @@ function BelongingOrbit() {
         <path d="M 1054 664 L 841 797 L 841 1353 L 1056 1432 L 1059 667 Z" fill="#F4B400" fillRule="evenodd" />
       </g>
       <path d="M 28 148 Q 60 68 130 60 Q 200 52 228 128" stroke="#2F6BFF" strokeWidth="1.5" strokeLinecap="round" opacity="0.22" fill="none" />
-      <circle cx="130" cy="16" r="5" fill="#2F6BFF" opacity="0.55" />
+      <circle cx="130" cy="16"  r="5" fill="#2F6BFF" opacity="0.55" />
       <circle cx="244" cy="130" r="5" fill="#2F6BFF" opacity="0.40" />
       <circle cx="32"  cy="102" r="4" fill="#2F6BFF" opacity="0.35" />
       <circle cx="68"  cy="220" r="4" fill="#2F6BFF" opacity="0.30" />
       <circle cx="200" cy="34"  r="5" fill="#F4B400" opacity="0.60" />
       <circle cx="222" cy="186" r="4" fill="#F4B400" opacity="0.45" />
       <circle cx="52"  cy="174" r="4" fill="#F4B400" opacity="0.38" />
-      <circle cx="130" cy="48" r="3.5" fill="#2F6BFF" opacity="0.45" />
+      <circle cx="130" cy="48"  r="3.5" fill="#2F6BFF" opacity="0.45" />
       <circle cx="212" cy="130" r="3"   fill="#F4B400" opacity="0.50" />
       <circle cx="48"  cy="130" r="3"   fill="#2F6BFF" opacity="0.40" />
       <circle cx="130" cy="212" r="3.5" fill="#F4B400" opacity="0.40" />
@@ -148,22 +121,296 @@ function BelongingOrbit() {
   )
 }
 
+// ── Join form ─────────────────────────────────────────────────────────────────
+
+interface FormState {
+  first_name: string
+  email: string
+  joining_as: JoinPathKey | ''
+  interests: string[]
+  message: string
+  consented_to_updates: boolean
+}
+
+function JoinForm({ initialPath }: { initialPath: JoinPathKey | null }) {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
+
+  const [form, setForm] = useState<FormState>({
+    first_name: '',
+    email: '',
+    joining_as: initialPath ?? '',
+    interests: [],
+    message: '',
+    consented_to_updates: false,
+  })
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [duplicate, setDuplicate] = useState(false)
+  const [fieldError, setFieldError] = useState<string | null>(null)
+
+  function setPath(key: JoinPathKey) {
+    setForm(f => ({ ...f, joining_as: f.joining_as === key ? '' : key }))
+  }
+
+  function toggleInterest(label: string) {
+    setForm(f => ({
+      ...f,
+      interests: f.interests.includes(label)
+        ? f.interests.filter(i => i !== label)
+        : [...f.interests, label],
+    }))
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setFieldError(null)
+
+    if (!form.joining_as) { setFieldError('Please select how you are joining.'); return }
+    if (!form.email.trim()) { setFieldError('Please enter your email address.'); return }
+    if (!form.consented_to_updates) { setFieldError('Please agree to receive MEIN updates to join.'); return }
+
+    setSubmitting(true)
+
+    try {
+      const payload = {
+        first_name:           form.first_name.trim() || undefined,
+        email:                form.email.trim(),
+        joining_as:           JOIN_PATH_MAP[form.joining_as].dbValue,
+        interests:            form.interests.length > 0 ? form.interests : undefined,
+        message:              form.message.trim() || undefined,
+        consented_to_updates: true,
+        _trap:                undefined,
+      }
+
+      const res = await fetch(`${supabaseUrl}/functions/v1/submit-join`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': anonKey,
+        },
+        body: JSON.stringify(payload),
+      })
+
+      const data = await res.json() as { success: boolean; error?: string; duplicate?: boolean }
+
+      if (!data.success) {
+        setFieldError(data.error ?? 'Something went wrong. Please try again.')
+        return
+      }
+
+      if (data.duplicate) {
+        setDuplicate(true)
+        setSubmitted(true)
+      } else {
+        setSubmitted(true)
+      }
+    } catch {
+      setFieldError('Network error. Please check your connection and try again.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (submitted) {
+    const isYoungPerson = form.joining_as === 'young-person'
+    return (
+      <div className="rounded-2xl bg-white border-2 border-blue-mein/20 p-8 md:p-10 text-center shadow-lg">
+        <div className="w-12 h-12 rounded-full bg-blue-pale flex items-center justify-center mx-auto mb-4">
+          <Check size={22} className="text-blue-mein" strokeWidth={2.5} />
+        </div>
+        <h3 className="font-sora font-extrabold text-xl text-charcoal mb-2">
+          {duplicate ? "You're already in!" : "You're in the movement."}
+        </h3>
+        <p className="font-sora text-gray-dark text-sm leading-relaxed max-w-sm mx-auto">
+          {duplicate
+            ? "We already have your details. We'll be in touch when there's something for you."
+            : `Thanks${form.first_name ? `, ${form.first_name}` : ''}. Check your inbox — a confirmation is on its way.`}
+        </p>
+        {isYoungPerson && !duplicate && (
+          <div className="mt-6 pt-5 border-t border-gray-100">
+            <p className="text-xs text-gray-mid font-sora mb-4">
+              Ready to make your first move?
+            </p>
+            <Link
+              to="/make-your-move"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-mein text-white rounded-full text-sm font-sora font-bold shadow-md hover:bg-blue-600 transition-colors"
+            >
+              Make Your Move
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+      {/* Path pills */}
+      <div>
+        <p className="text-xs font-sora font-semibold text-gray-mid uppercase tracking-wide mb-3">
+          I am joining as
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {JOIN_PATHS.map((path) => {
+            const isActive = form.joining_as === path.key
+            const isGold = path.accent === 'gold'
+            return (
+              <button
+                key={path.key}
+                type="button"
+                onClick={() => setPath(path.key)}
+                aria-pressed={isActive}
+                className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-sora font-semibold border-2 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-mein ${
+                  isActive
+                    ? isGold
+                      ? 'bg-gold-mein border-gold-mein text-charcoal shadow-sm scale-[1.03]'
+                      : 'bg-blue-mein border-blue-mein text-white shadow-sm scale-[1.03]'
+                    : 'bg-white border-gray-200 text-gray-dark hover:border-blue-mein/60 hover:text-blue-mein'
+                }`}
+              >
+                {isActive && <Check size={12} strokeWidth={3} />}
+                {path.label}
+              </button>
+            )
+          })}
+        </div>
+        {form.joining_as === 'young-person' && (
+          <p className="mt-2.5 text-xs text-gray-mid font-sora leading-relaxed">
+            If you are under 18, please make sure a parent or guardian knows you are joining MEIN updates.
+          </p>
+        )}
+      </div>
+
+      {/* Name + Email */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-xs font-sora font-semibold text-gray-mid mb-1.5">
+            First name <span className="text-gray-400 font-normal">(optional)</span>
+          </label>
+          <input
+            type="text"
+            value={form.first_name}
+            onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))}
+            placeholder="e.g. Amara"
+            maxLength={100}
+            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-sora text-charcoal focus:outline-none focus:ring-2 focus:ring-blue-mein/30 placeholder:text-gray-300"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-sora font-semibold text-gray-mid mb-1.5">
+            Email address <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="email"
+            value={form.email}
+            onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+            placeholder="you@example.com"
+            required
+            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-sora text-charcoal focus:outline-none focus:ring-2 focus:ring-blue-mein/30 placeholder:text-gray-300"
+          />
+        </div>
+      </div>
+
+      {/* Interests */}
+      <div>
+        <p className="text-xs font-sora font-semibold text-gray-mid uppercase tracking-wide mb-3">
+          What are you interested in? <span className="normal-case font-normal">(optional)</span>
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {INTEREST_OPTIONS.map((label) => {
+            const checked = form.interests.includes(label)
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => toggleInterest(label)}
+                aria-pressed={checked}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-sora font-semibold border transition-all duration-150 ${
+                  checked
+                    ? 'bg-blue-pale border-blue-mein text-blue-mein'
+                    : 'bg-white border-gray-200 text-gray-dark hover:border-blue-mein/50 hover:text-blue-mein'
+                }`}
+              >
+                {checked && <Check size={10} strokeWidth={3} className="inline mr-1 -mt-0.5" />}
+                {label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Optional message */}
+      <div>
+        <label className="block text-xs font-sora font-semibold text-gray-mid mb-1.5">
+          Anything you'd like to add? <span className="font-normal">(optional)</span>
+        </label>
+        <textarea
+          value={form.message}
+          onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
+          placeholder="Introduce yourself, ask a question, or just say hi."
+          rows={3}
+          maxLength={2000}
+          className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-sora text-charcoal focus:outline-none focus:ring-2 focus:ring-blue-mein/30 resize-none placeholder:text-gray-300"
+        />
+      </div>
+
+      {/* Consent */}
+      <div className="bg-blue-pale/40 border border-blue-mein/15 rounded-xl px-4 py-3.5">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={form.consented_to_updates}
+            onChange={e => setForm(f => ({ ...f, consented_to_updates: e.target.checked }))}
+            className="mt-0.5 rounded border-gray-300 text-blue-mein focus:ring-blue-mein/30"
+          />
+          <span className="text-sm font-sora text-charcoal leading-snug">
+            I agree to receive MEIN updates, movement news, opportunities, and drop announcements by email.
+            <span className="block mt-1 text-xs text-gray-mid">Required to join. You can unsubscribe at any time.</span>
+          </span>
+        </label>
+      </div>
+
+      {fieldError && (
+        <p className="text-sm text-red-600 font-sora">{fieldError}</p>
+      )}
+
+      {/* Honeypot — hidden from real users */}
+      <input type="text" name="_trap" className="hidden" tabIndex={-1} aria-hidden="true" />
+
+      <button
+        type="submit"
+        disabled={submitting}
+        className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-mein text-white rounded-xl text-sm font-sora font-bold shadow-md hover:bg-blue-600 transition-colors disabled:opacity-60"
+      >
+        {submitting ? (
+          <><Loader2 size={16} className="animate-spin" /> Joining…</>
+        ) : (
+          <>Join the Movement <ArrowRight size={15} /></>
+        )}
+      </button>
+    </form>
+  )
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function JoinPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const normalizedPath = normalizeJoinPathParam(searchParams.get('path'))
-  const pathsRef = useRef<HTMLDivElement>(null)
+  const formRef = useRef<HTMLDivElement>(null)
 
   function handlePillClick(key: JoinPathKey) {
-    if (normalizedPath === key) {
-      setSearchParams({})
+    const next = normalizedPath === key ? null : key
+    if (next) {
+      setSearchParams({ path: next })
     } else {
-      setSearchParams({ path: key })
-      requestAnimationFrame(() => {
-        pathsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      })
+      setSearchParams({})
     }
+    requestAnimationFrame(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
   }
 
   return (
@@ -210,10 +457,17 @@ export default function JoinPage() {
 
           <FadeUp delay={310}>
             <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-3">
-              <Link to="/join#paths" className="btn-gold inline-flex text-sm py-3 px-8">
+              <a
+                href="#join-form"
+                className="btn-gold inline-flex text-sm py-3 px-8"
+                onClick={e => {
+                  e.preventDefault()
+                  formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }}
+              >
                 Join the Movement
                 <ArrowRight size={15} />
-              </Link>
+              </a>
               <Link
                 to="/make-your-move"
                 className="text-sm font-sora font-semibold text-white/60 hover:text-white/90 transition-colors"
@@ -268,9 +522,9 @@ export default function JoinPage() {
         </div>
       </section>
 
-      {/* ─── 3. AUDIENCE PATHS ───────────────────────────────────────────── */}
-      <section id="paths" className="py-16 md:py-20 bg-[#FAFAF8]" ref={pathsRef}>
-        <div className="container-wide section-padding max-w-3xl mx-auto">
+      {/* ─── 3. JOIN FORM ────────────────────────────────────────────────── */}
+      <section id="join-form" className="py-16 md:py-20 bg-[#FAFAF8]" ref={formRef}>
+        <div className="container-wide section-padding max-w-2xl mx-auto">
           <FadeUp>
             <div className="text-center mb-10">
               <SectionDivider className="mx-auto mb-5" />
@@ -283,7 +537,7 @@ export default function JoinPage() {
             </div>
           </FadeUp>
 
-          {/* Prominent pill switcher */}
+          {/* Quick-select pills — clicking pre-selects path in the form below */}
           <FadeUp delay={80}>
             <div className="flex flex-wrap gap-2.5 justify-center mb-8">
               {JOIN_PATHS.map((path) => {
@@ -299,7 +553,7 @@ export default function JoinPage() {
                         ? isGold
                           ? 'bg-gold-mein border-gold-mein text-charcoal shadow-md scale-[1.04]'
                           : 'bg-blue-mein border-blue-mein text-white shadow-md scale-[1.04]'
-                        : 'bg-white border-gray-support text-gray-dark hover:border-blue-mein/60 hover:text-blue-mein hover:shadow-sm'
+                        : 'bg-white border-gray-200 text-gray-dark hover:border-blue-mein/60 hover:text-blue-mein hover:shadow-sm'
                     }`}
                   >
                     {isActive && <Check size={13} strokeWidth={3} />}
@@ -310,51 +564,11 @@ export default function JoinPage() {
             </div>
           </FadeUp>
 
-          {/* Selected path card */}
-          {normalizedPath ? (
-            <FadeUp key={normalizedPath}>
-              {(() => {
-                const path = JOIN_PATH_MAP[normalizedPath]
-                const isGold = path.accent === 'gold'
-                return (
-                  <div className={`rounded-2xl border-2 p-7 md:p-9 shadow-lg transition-all duration-200 ${
-                    isGold ? 'bg-gold-pale border-yellow-300/60' : 'bg-blue-pale border-blue-mein/25'
-                  }`}>
-                    <p className={`font-sora text-xs font-bold uppercase tracking-widest mb-3 ${
-                      isGold ? 'text-gold-dark' : 'text-blue-mein'
-                    }`}>
-                      Your path
-                    </p>
-                    <h3 className="font-sora font-extrabold text-xl md:text-2xl text-charcoal leading-snug">
-                      {path.headline}
-                    </h3>
-                    <p className="mt-3 font-sora text-base text-gray-dark leading-relaxed max-w-lg">
-                      {path.description}
-                    </p>
-                    <Link
-                      to={path.href}
-                      className={`mt-7 inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-sora font-bold shadow-md transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] ${
-                        isGold
-                          ? 'bg-gold-mein text-charcoal hover:bg-gold-dark hover:text-white'
-                          : 'bg-blue-mein text-white hover:bg-blue-600'
-                      }`}
-                    >
-                      {path.ctaLabel}
-                      <ArrowRight size={15} />
-                    </Link>
-                  </div>
-                )
-              })()}
-            </FadeUp>
-          ) : (
-            <FadeUp delay={120}>
-              <div className="rounded-2xl border-2 border-dashed border-gray-support bg-white px-7 py-10 text-center">
-                <p className="font-sora font-semibold text-base text-gray-mid">
-                  Select a path above to see where to go next.
-                </p>
-              </div>
-            </FadeUp>
-          )}
+          <FadeUp delay={140}>
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-7 md:p-9">
+              <JoinForm key={normalizedPath ?? 'default'} initialPath={normalizedPath} />
+            </div>
+          </FadeUp>
         </div>
       </section>
 
@@ -420,7 +634,7 @@ export default function JoinPage() {
           <FadeUp>
             <SectionDivider className="mx-auto mb-5" />
             <h2 className="font-sora font-extrabold text-2xl md:text-3xl text-charcoal">
-              Ready to join the movement?
+              Ready to make your first move?
             </h2>
             <p className="mt-3 text-gray-dark font-sora">
               Start where you are. One step is enough.

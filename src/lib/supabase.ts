@@ -89,7 +89,7 @@ export interface ContactMessage {
 }
 
 export type JoinInterestStatus = 'new' | 'reviewed' | 'contacted' | 'invited' | 'active' | 'followed_up' | 'archived'
-export type JoinPath = 'young_person' | 'parent_guardian' | 'creator' | 'school_partner' | 'supporter'
+export type JoinPath = 'young_person' | 'parent_guardian' | 'creator' | 'school_partner' | 'supporter' | 'partner'
 
 export interface JoinInterest {
   id: string
@@ -103,6 +103,8 @@ export interface JoinInterest {
   consent_required: boolean
   consent_status: 'not_required' | 'required' | 'pending' | 'received' | 'declined'
   status: JoinInterestStatus
+  message: string | null
+  consented_to_updates: boolean
   admin_notes: string | null
   priority: Priority
   follow_up_required: boolean
