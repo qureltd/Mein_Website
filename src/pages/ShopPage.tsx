@@ -29,10 +29,21 @@ type DisplayProduct = {
   img: string
   imgBg: string
   imageFit: 'contain' | 'cover'
+  imageScale: number
   darkText: boolean
   external_url: string | null
   external_platform: string
   alt: string
+}
+
+// ─── Scale fallback by slug (used when DB image_scale is null) ────────────────
+const SCALE_BY_SLUG: Record<string, number> = {
+  'open-m-hoodie':              1.00,
+  'live-your-future-today-tee': 1.10,
+  'its-all-mein-tee':           1.12,
+  'mein-core-tee':              1.00,
+  'mein-chest-logo-tee':        1.18,
+  'mein-mover-cap':             1.05,
 }
 
 // ─── Hardcoded fallback products ─────────────────────────────────────────────
@@ -48,7 +59,8 @@ const FALLBACK_PRODUCTS: DisplayProduct[] = [
     img: hoodieImg,
     imgBg: '#EBEBEB',
     imageFit: 'contain',
-    darkText: false,
+    imageScale: 1.00,
+    darkText: true,
     external_url: null,
     external_platform: 'coming_soon',
     alt: 'Open M Hoodie',
@@ -62,6 +74,7 @@ const FALLBACK_PRODUCTS: DisplayProduct[] = [
     img: liveFutureImg,
     imgBg: '#111111',
     imageFit: 'contain',
+    imageScale: 1.10,
     darkText: false,
     external_url: null,
     external_platform: 'coming_soon',
@@ -76,6 +89,7 @@ const FALLBACK_PRODUCTS: DisplayProduct[] = [
     img: itsAllMeinImg,
     imgBg: '#111111',
     imageFit: 'contain',
+    imageScale: 1.12,
     darkText: false,
     external_url: null,
     external_platform: 'coming_soon',
@@ -90,6 +104,7 @@ const FALLBACK_PRODUCTS: DisplayProduct[] = [
     img: coreTeeImg,
     imgBg: '#F0EFED',
     imageFit: 'contain',
+    imageScale: 1.00,
     darkText: true,
     external_url: null,
     external_platform: 'coming_soon',
@@ -104,6 +119,7 @@ const FALLBACK_PRODUCTS: DisplayProduct[] = [
     img: chestLogoImg,
     imgBg: '#1A1A1A',
     imageFit: 'contain',
+    imageScale: 1.18,
     darkText: false,
     external_url: null,
     external_platform: 'coming_soon',
@@ -118,6 +134,7 @@ const FALLBACK_PRODUCTS: DisplayProduct[] = [
     img: capImg,
     imgBg: '#0D0D0D',
     imageFit: 'contain',
+    imageScale: 1.05,
     darkText: false,
     external_url: null,
     external_platform: 'coming_soon',
@@ -130,6 +147,10 @@ const FALLBACK_HERO_IMG = hoodieImg
 function dbProductToDisplay(p: DbShopProduct): DisplayProduct {
   const label = p.price_display ?? (p.status === 'live' ? 'Shop now' : p.status === 'coming_soon' ? 'Coming soon' : 'Drop preview')
   const darkText = p.image_bg ? isLightColor(p.image_bg) : false
+  const scaleFromDb = p.image_scale ? parseFloat(p.image_scale) : NaN
+  const imageScale = Number.isFinite(scaleFromDb) && scaleFromDb > 0
+    ? scaleFromDb
+    : SCALE_BY_SLUG[p.slug] ?? 1
   return {
     id: p.id,
     name: p.name,
@@ -139,6 +160,7 @@ function dbProductToDisplay(p: DbShopProduct): DisplayProduct {
     img: p.image_url ?? '',
     imgBg: p.image_bg ?? '#111111',
     imageFit: p.image_fit ?? 'contain',
+    imageScale,
     darkText,
     external_url: p.external_url ?? null,
     external_platform: p.external_platform ?? 'coming_soon',
@@ -186,24 +208,27 @@ function ProductCard({
   const isLive = hasLink
 
   return (
-    <article className="group">
+    <article className="group flex flex-col rounded-2xl overflow-hidden border border-white/[0.06] bg-[#1c1c1c] shadow-lg">
       {/* Image tile */}
       <div
-        className="relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded-3xl shadow-md"
+        className="relative aspect-[3/4] overflow-hidden flex-shrink-0"
         style={{ backgroundColor: product.imgBg }}
       >
         {product.img ? (
           <img
             src={product.img}
             alt={product.alt}
-            className={`h-full w-full ${product.imageFit === 'cover' ? 'object-cover' : 'object-contain'}`}
+            className={`absolute inset-0 h-full w-full ${product.imageFit === 'cover' ? 'object-cover' : 'object-contain'}`}
+            style={{ transform: `scale(${product.imageScale})`, transformOrigin: 'center' }}
             loading="lazy"
           />
         ) : (
-          <div className="w-16 h-16 rounded-full bg-white/10" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full bg-white/10" />
+          </div>
         )}
 
-        {/* Status label */}
+        {/* Status label — top left */}
         <div className="absolute left-3 top-3 z-10">
           <span className={`inline-flex items-center text-[10px] font-sora font-bold px-2.5 py-1 rounded-full uppercase tracking-[0.15em] ${LABEL_STYLE[product.label] ?? 'bg-white/10 text-white'}`}>
             {product.label}
@@ -213,52 +238,50 @@ function ProductCard({
         {/* Category — top right */}
         {product.category && (
           <div className="absolute right-3 top-3 z-10">
-            <span className={`font-sora text-[10px] font-semibold uppercase tracking-widest ${product.darkText ? 'text-gray-mid' : 'text-white/30'}`}>
+            <span className="bg-black/50 backdrop-blur-sm text-white/70 font-sora text-[10px] font-semibold uppercase tracking-widest px-2 py-1 rounded-full">
               {product.category}
             </span>
           </div>
         )}
 
         {/* Hover shimmer */}
-        <div className="pointer-events-none absolute inset-0 bg-white/0 transition-colors duration-300 group-hover:bg-white/5" />
+        <div className="pointer-events-none absolute inset-0 bg-white/0 transition-colors duration-300 group-hover:bg-white/[0.04]" />
       </div>
 
-      {/* Text */}
-      <div className="mt-3 px-1">
-        <h3 className={`font-caveat text-xl md:text-2xl leading-snug ${product.darkText ? 'text-charcoal' : 'text-white'}`}>
+      {/* Product info — always on dark card bg */}
+      <div className="flex flex-col flex-1 px-4 pt-3.5 pb-4 gap-1">
+        <h3 className="font-caveat text-xl md:text-2xl leading-snug text-white">
           {product.name}
         </h3>
         {product.note && (
-          <p className={`mt-0.5 font-sora text-xs leading-snug hidden sm:block ${product.darkText ? 'text-gray-dark' : 'text-white/60'}`}>
+          <p className="font-sora text-xs leading-relaxed text-white/55 hidden sm:block">
             {product.note}
           </p>
         )}
 
-        {isLive ? (
-          <a
-            href={product.external_url!}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`mt-2 inline-flex items-center gap-1.5 text-xs font-sora font-semibold transition-all duration-200 ${
-              product.darkText ? 'text-blue-mein hover:text-blue-dark' : 'text-gold-mein hover:text-gold-light'
-            }`}
-          >
-            <ExternalLink size={11} />
-            Shop now
-            <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
-          </a>
-        ) : (
-          <button
-            onClick={() => onNotify(product.name)}
-            className={`mt-2 inline-flex items-center gap-1.5 text-xs font-sora font-semibold transition-all duration-200 ${
-              product.darkText ? 'text-blue-mein hover:text-blue-dark' : 'text-gold-mein hover:text-gold-light'
-            }`}
-          >
-            <Bell size={11} />
-            Notify me
-            <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
-          </button>
-        )}
+        <div className="mt-auto pt-2">
+          {isLive ? (
+            <a
+              href={product.external_url!}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-sora font-semibold text-gold-mein hover:text-gold-light transition-colors duration-200"
+            >
+              <ExternalLink size={11} />
+              Shop now
+              <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
+            </a>
+          ) : (
+            <button
+              onClick={() => onNotify(product.name)}
+              className="inline-flex items-center gap-1.5 text-xs font-sora font-semibold text-gold-mein hover:text-gold-light transition-colors duration-200"
+            >
+              <Bell size={11} />
+              Notify me
+              <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
+            </button>
+          )}
+        </div>
       </div>
     </article>
   )
@@ -288,7 +311,7 @@ export default function ShopPage() {
       const [{ data: productData }, { data: dropData }] = await Promise.all([
         supabase
           .from('shop_products')
-          .select('id, drop_id, name, slug, short_description, product_type, status, price_display, image_url, image_alt, image_fit, image_bg, featured, sort_order, visible, external_url, external_platform, created_at')
+          .select('id, drop_id, name, slug, short_description, product_type, status, price_display, image_url, image_alt, image_fit, image_bg, image_scale, featured, sort_order, visible, external_url, external_platform, created_at')
           .eq('visible', true)
           .order('featured', { ascending: false })
           .order('sort_order', { ascending: true })
