@@ -40,9 +40,9 @@ type DisplayProduct = {
 const SCALE_BY_SLUG: Record<string, number> = {
   'open-m-hoodie':              1.00,
   'live-your-future-today-tee': 1.10,
-  'its-all-mein-tee':           1.12,
+  'its-all-mein-tee':           1.32,
   'mein-core-tee':              1.00,
-  'mein-chest-logo-tee':        1.18,
+  'mein-chest-logo-tee':        1.35,
   'mein-mover-cap':             1.05,
 }
 
@@ -89,7 +89,7 @@ const FALLBACK_PRODUCTS: DisplayProduct[] = [
     img: itsAllMeinImg,
     imgBg: '#111111',
     imageFit: 'contain',
-    imageScale: 1.12,
+    imageScale: 1.32,
     darkText: false,
     external_url: null,
     external_platform: 'coming_soon',
@@ -119,7 +119,7 @@ const FALLBACK_PRODUCTS: DisplayProduct[] = [
     img: chestLogoImg,
     imgBg: '#1A1A1A',
     imageFit: 'contain',
-    imageScale: 1.18,
+    imageScale: 1.35,
     darkText: false,
     external_url: null,
     external_platform: 'coming_soon',
@@ -187,6 +187,21 @@ const LABEL_STYLE: Record<string, string> = {
   'Sold out':     'bg-white/10 text-white/50 border border-white/10',
 }
 
+// On light image backgrounds the transparent-white badge variants are invisible.
+// Swap them to a solid dark pill so they read on any tile colour.
+const LABEL_STYLE_LIGHT_OVERRIDE: Record<string, string> = {
+  'Coming soon':  'bg-black/70 text-white',
+  'Early access': 'bg-black/70 text-white',
+  'Sold out':     'bg-black/60 text-white/70',
+}
+
+function getLabelStyle(label: string, darkText: boolean): string {
+  if (darkText && LABEL_STYLE_LIGHT_OVERRIDE[label]) {
+    return LABEL_STYLE_LIGHT_OVERRIDE[label]
+  }
+  return LABEL_STYLE[label] ?? 'bg-white/10 text-white'
+}
+
 function dropStatusText(drop: ShopDrop | null): string {
   if (!drop) return 'Coming soon.'
   if (drop.status === 'active') return 'Live now.'
@@ -230,7 +245,7 @@ function ProductCard({
 
         {/* Status label — top left */}
         <div className="absolute left-3 top-3 z-10">
-          <span className={`inline-flex items-center text-[10px] font-sora font-bold px-2.5 py-1 rounded-full uppercase tracking-[0.15em] ${LABEL_STYLE[product.label] ?? 'bg-white/10 text-white'}`}>
+          <span className={`inline-flex items-center text-[10px] font-sora font-bold px-2.5 py-1 rounded-full uppercase tracking-[0.15em] ${getLabelStyle(product.label, product.darkText)}`}>
             {product.label}
           </span>
         </div>
